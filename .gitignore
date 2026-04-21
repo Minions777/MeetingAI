@@ -1,0 +1,17 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+[Dd]ebug/
+[Rr]elease/
+x64/
+*.nupkg
+.nuget/
+Thumbs.db
+.DS_Store
+*.wav
+*.mp3
+Recordings/
