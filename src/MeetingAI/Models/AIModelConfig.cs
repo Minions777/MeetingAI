@@ -276,7 +276,21 @@ namespace MeetingAI.Models
 
             [AIProvider.Zhipu] = new List<string>
             {
-                // GLM-4 系列 (最新)
+                // GLM-5.1 系列 (最新)
+                "glm-5.1",                 // ⭐ 最新模型，代码能力大大增强
+                "glm-5",                   // 擅长复杂系统工程与长程Agent任务
+                
+                // GLM-4.7 系列
+                "glm-4.7",                 // 强化编码能力、长程任务规划
+                "glm-4.7-FlashX",         // GLM-4.7的轻量高速版本
+                
+                // GLM-4.6 系列
+                "glm-4.6",                 // 超强性能，高级编码能力
+                
+                // GLM-4.5 系列
+                "glm-4.5-air",            // 高性价比，推理、编码强劲
+                
+                // GLM-4 系列 (保留兼容性)
                 "glm-4-0520",
                 "glm-4-plus",
                 "glm-4-flash",
@@ -306,11 +320,26 @@ namespace MeetingAI.Models
 
             [AIProvider.MiniMax] = new List<string>
             {
-                // MiniMax-Text 系列 (最新)
+                // MiniMax-M2.7 系列 (最新)
+                "MiniMax-M2.7",            // ⭐ 最新模型，开启自我迭代
+                "MiniMax-M2.7-highspeed", // M2.7极速版，效果不变，更快
+                
+                // MiniMax-M2.5 系列
+                "MiniMax-M2.5",            // 顶尖性能与极致性价比
+                "MiniMax-M2.5-highspeed", // M2.5极速版，效果不变，更快
+                
+                // MiniMax-M2.1 系列
+                "MiniMax-M2.1",            // 强大多语言编程能力
+                "MiniMax-M2.1-highspeed", // M2.1极速版，效果不变，更快
+                
+                // MiniMax-M2 系列
+                "MiniMax-M2",              // 专为高效编码与Agent工作流
+                
+                // MiniMax-Text 系列 (保留兼容性)
                 "MiniMax-Text-01",
                 "MiniMax-Text-01-preview",
                 
-                // abab 系列
+                // abab 系列 (保留兼容性)
                 "abab7-preview",
                 "abab7-chat",
                 "abab6.5s-chat",
@@ -389,7 +418,7 @@ namespace MeetingAI.Models
             
             // 国内厂商
             [AIProvider.DeepSeek] = "https://api.deepseek.com/v1",
-            [AIProvider.Zhipu] = "https://open.bigmodel.cn/api/paas/v4",      // 智谱 GLM-4 API
+            [AIProvider.Zhipu] = "https://open.bigmodel.cn/api/paas/v4",      // 智谱 GLM API
             [AIProvider.MiniMax] = "https://api.minimaxi.com/v1",            // MiniMax 海螺 AI
             
             // 本地部署
@@ -407,8 +436,8 @@ namespace MeetingAI.Models
             [AIProvider.OpenAI] = 128000,      // GPT-4o 支持 128K
             [AIProvider.Anthropic] = 200000,  // Claude 支持 200K
             [AIProvider.DeepSeek] = 64000,     // DeepSeek-V3 支持 64K
-            [AIProvider.Zhipu] = 128000,       // GLM-4 支持 128K
-            [AIProvider.MiniMax] = 100000,    // MiniMax-Text-01 支持 100K
+            [AIProvider.Zhipu] = 128000,       // GLM-5.1 支持 128K
+            [AIProvider.MiniMax] = 204800,    // MiniMax-M2.7 支持 204.8K
             [AIProvider.Ollama] = 8192,       // 本地模型通常较小
             [AIProvider.Custom] = 4096
         };
