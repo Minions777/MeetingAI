@@ -1,69 +1,94 @@
-# 🎙️ MeetingAI - 会议纪要助手
+# 🎙️ MeetingAI v2
 
-Windows 11 会议记录 AI 小工具，支持录音、转录、AI 总结和一键复制。
+重构后的 MeetingAI 会议助手，采用模块化架构，支持多 AI Provider。
 
-## ✨ 功能特性
+## 功能特性
 
 - 🔴 **会议录音** - 系统音频 + 麦克风混合录制
-- 🔊 **语音转文字** - 支持 OpenAI Whisper API
-- 🤖 **AI 总结** - 支持多种 AI 模型
+- 🔊 **语音转文字** - 支持 Whisper API / Ollama 本地转录
+- 🤖 **AI 摘要** - 支持 OpenAI / Claude / DeepSeek / Ollama / 智谱 / MiniMax
 - 📋 **一键复制** - 快速复制会议摘要
-- ⚙️ **多模型配置** - OpenAI / Claude / Gemini / DeepSeek / Ollama
+- ⚙️ **多模型配置** - 可配置多个 AI Provider 并随时切换
 
-## 🛠️ 技术栈
-
-- .NET 8 + WPF
-- NAudio - 音频录制
-- MVVM 架构
-
-## 📁 项目结构
+## 架构设计
 
 ```
 MeetingAI/
-├── Models/              # 数据模型
-├── Services/            # 业务服务
-├── ViewModels/          # 视图模型
-└── Views/               # 界面视图
+├── src/
+│   ├── MeetingAI.Client/     # WPF 主客户端 (MVVM)
+│   ├── MeetingAI.Core/       # 核心业务逻辑
+│   │   ├── Services/        # 录音、转录、摘要服务
+│   │   ├── Providers/       # AI Provider 抽象层
+│   │   └── Models/          # 数据模型
+│   └── MeetingAI.Shared/    # 共享基础设施
+│       ├── Configuration/    # 配置管理
+│       ├── Logging/          # 日志服务
+│       └── i18n/             # 多语言支持
+└── tests/
+    └── MeetingAI.Core.Tests/ # 单元测试
 ```
 
-## 🚀 快速开始
+## 技术栈
+
+- .NET 8 + WPF
+- CommunityToolkit.Mvvm (MVVM)
+- NAudio (音频录制)
+- Serilog (日志)
+- xUnit + Moq (测试)
+
+## 快速开始
 
 ### 环境要求
+
 - Windows 10/11
 - .NET 8 SDK
-- API Key（根据使用的 AI 模型）
+- API Key (根据使用的 AI 模型)
 
 ### 运行项目
 
 ```bash
-cd src/MeetingAI
+cd src/MeetingAI.Client
 dotnet restore
 dotnet run
 ```
 
-### AI 模型配置
+### AI Provider 配置
 
-| 厂商 | 推荐模型 | 特点 |
-|------|---------|------|
-| OpenAI | gpt-4o-mini | 速度快、成本低 |
-| Claude | claude-3-5-sonnet | 分析能力强 |
-| DeepSeek | deepseek-chat | 性价比高 |
-| Gemini | gemini-2.0-flash | 免费额度大 |
-| Ollama | llama3.2 | 完全本地 |
+| 厂商 | 支持功能 | 默认模型 |
+|------|---------|---------|
+| OpenAI | 转录 + 摘要 | gpt-4o-mini |
+| DeepSeek | 摘要 | deepseek-chat |
+| Anthropic | 摘要 | claude-3-5-sonnet |
+| Ollama | 转录 + 摘要 | llama3.2 |
+| 智谱 | 摘要 | glm-4 |
+| MiniMax | 摘要 | MiniMax-Text-01 |
 
-## 📝 使用流程
+## 项目结构说明
 
-1. 选择 AI 模型配置
-2. 点击「开始录音」开始会议录制
-3. 会议结束后点击「停止」
-4. 点击「转录」将音频转为文字
-5. 点击「生成摘要」获得 AI 会议纪要
-6. 点击「一键复制」复制摘要内容
+### Provider 抽象层
 
-## 📄 许可证
+参考 Cherry Studio 的 Provider 设计模式：
+
+```csharp
+public interface IAIProvider
+{
+    string Id { get; }
+    string Name { get; }
+    bool IsConfigured { get; }
+    Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken ct);
+    Task<Transcript> TranscribeAsync(AudioData audio, TranscriptionOptions? options, CancellationToken ct);
+}
+```
+
+### 配置管理
+
+使用 DPAPI 加密敏感信息 (API Key)：
+
+```csharp
+SecureStorage.Encrypt(apiKey);   // 加密存储
+SecureStorage.Decrypt(apiKey);  // 解密使用
+```
+
+## License
 
 MIT License
-
----
-
-Made with ❤️ for better meetings

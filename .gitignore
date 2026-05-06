@@ -3,15 +3,35 @@ bin/
 obj/
 *.user
 *.suo
+*.userosscache
+*.sln.docstates
 .vs/
-.vscode/
+*.csproj.user
+
+# Build results
 [Dd]ebug/
 [Rr]elease/
 x64/
+x86/
+
+# NuGet
 *.nupkg
-.nuget/
-Thumbs.db
+*.snupkg
+packages/
+
+# Logs
+logs/
+*.log
+
+# OS
 .DS_Store
-*.wav
-*.mp3
-Recordings/
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Backup
+backup/
+*.bak
