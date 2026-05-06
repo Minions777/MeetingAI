@@ -21,7 +21,14 @@ public partial class SettingsViewModel : ObservableObject
     // Editing fields
     [ObservableProperty] private string _editName = "";
     [ObservableProperty] private AIProviderType _editProviderType;
-    [ObservableProperty] private string _editApiKey = "";
+    
+    private string _editApiKey = "";
+    public string EditApiKey
+    {
+        get => _editApiKey;
+        set => SetProperty(ref _editApiKey, value);
+    }
+    
     [ObservableProperty] private string _editBaseUrl = "";
     [ObservableProperty] private string _editModel = "";
     [ObservableProperty] private string _editWhisperModel = "";
@@ -137,6 +144,16 @@ public partial class SettingsViewModel : ObservableObject
     private void CancelEdit()
     {
         IsEditing = false;
+    }
+    
+    [RelayCommand]
+    private void SaveAndClose()
+    {
+        if (IsEditing)
+        {
+            SaveProvider();
+        }
+        // The window will handle closing
     }
     
     [RelayCommand]

@@ -4,137 +4,366 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="设置" 
-        Height="600" Width="800"
+        Title="Settings" 
+        Height="650" Width="900"
         WindowStartupLocation="CenterOwner"
-        Background="#1E1E1E"
+        Background="{StaticResource BackgroundPrimaryBrush}"
+        WindowStyle="None"
+        AllowsTransparency="True"
         ResizeMode="NoResize">
     
-    <Grid Margin="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="48"
+                      ResizeBorderThickness="0"
+                      CornerRadius="0"
+                      GlassFrameThickness="0"/>
+    </WindowChrome.WindowChrome>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         
-        <!-- Provider List -->
-        <Border Grid.Column="0" Background="#2D2D30" CornerRadius="8" Margin="0,0,10,0">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Grid.Row="0" Text="AI Providers" 
-                           Foreground="White" FontSize="14" FontWeight="SemiBold"
-                           Margin="16,16,16,12"/>
-                
-                <ListBox Grid.Row="1" 
-                         ItemsSource="{Binding Providers}"
-                         SelectedItem="{Binding SelectedProvider}"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         Margin="8,0">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="4">
-                                <TextBlock Text="{Binding Name}" Foreground="White"/>
-                                <TextBlock Text="{Binding ProviderType}" 
-                                           Foreground="#888888" FontSize="11"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                
-                <Button Grid.Row="2" Content="➕ 添加" 
-                        Command="{Binding AddProviderCommand}"
-                        Style="{StaticResource ModernButtonStyle}"
-                        Margin="16"/>
-            </Grid>
-        </Border>
+        <!-- Title Bar -->
+        <Grid Grid.Row="0" Background="{StaticResource BackgroundPrimaryBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Traffic Lights -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="16,0,0,0">
+                <Button Width="14" Height="14" Margin="6,0,0,0"
+                        Background="#FF5F57" BorderThickness="0" Cursor="Hand"
+                        Click="CloseButton_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="7"/>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button Width="14" Height="14" Margin="6,0,0,0"
+                        Background="#FEBC2E" BorderThickness="0" Cursor="Hand"
+                        Click="MinimizeButton_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="7"/>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button Width="14" Height="14" Margin="6,0,0,0"
+                        Background="#28C840" BorderThickness="0" Cursor="Hand"
+                        Click="MaximizeButton_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="7"/>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+            
+            <!-- Title -->
+            <TextBlock Grid.Column="1" Text="Settings"
+                       Style="{StaticResource HeadlineStyle}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            
+            <!-- Save Button -->
+            <Button Grid.Column="2" 
+                    Content="Done"
+                    Command="{Binding SaveAndCloseCommand}"
+                    Style="{StaticResource AppleSecondaryButtonStyle}"
+                    Margin="0,0,16,0"
+                    Padding="20,8"/>
+        </Grid>
         
-        <!-- Provider Editor -->
-        <Border Grid.Column="1" Background="#2D2D30" CornerRadius="8" Padding="20">
-            <Grid Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Grid.Row="0" Text="编辑 Provider" 
-                           Foreground="White" FontSize="16" FontWeight="SemiBold"
-                           Margin="0,0,0,20"/>
-                
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <TextBlock Text="名称" Foreground="#AAAAAA" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        
-                        <TextBlock Text="Provider 类型" Foreground="#AAAAAA" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding AvailableProviderTypes}"
-                                  SelectedItem="{Binding EditProviderType}"
-                                  Style="{StaticResource ModernComboBoxStyle}" 
-                                  Margin="0,0,0,12"/>
-                        
-                        <TextBlock Text="API Key" Foreground="#AAAAAA" Margin="0,0,0,4"/>
-                        <PasswordBox x:Name="ApiKeyBox"
-                                      Style="{StaticResource ModernPasswordBoxStyle}"
-                                      Margin="0,0,0,12"/>
-                        
-                        <TextBlock Text="Base URL" Foreground="#AAAAAA" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditBaseUrl, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        
-                        <TextBlock Text="模型" Foreground="#AAAAAA" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditModel, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        
-                        <TextBlock Text="Whisper 模型 (转录)" Foreground="#AAAAAA" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditWhisperModel, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        
-                        <TextBlock Text="Max Tokens" Foreground="#AAAAAA" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding EditMaxTokens, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,12"/>
-                        
-                        <TextBlock Text="Temperature" Foreground="#AAAAAA" Margin="0,0,0,4"/>
-                        <Slider Value="{Binding EditTemperature}" 
-                                 Minimum="0" Maximum="1" 
-                                 TickFrequency="0.1"
-                                 Style="{StaticResource ModernSliderStyle}"
-                                 Margin="0,0,0,12"/>
-                        
-                        <CheckBox Content="启用" 
-                                  IsChecked="{Binding EditIsEnabled}"
-                                  Foreground="White"
-                                  Margin="0,0,0,12"/>
-                        
-                        <Button Content="🧪 测试连接" 
-                                Command="{Binding TestConnectionCommand}"
-                                Style="{StaticResource ModernButtonStyle}"
-                                HorizontalAlignment="Left"
-                                Margin="0,0,0,12"/>
-                        
-                        <TextBlock Text="{Binding StatusText}" Foreground="#4EC9B0"/>
-                    </StackPanel>
-                </ScrollViewer>
-                
-                <StackPanel Grid.Row="2" Orientation="Horizontal" 
-                            HorizontalAlignment="Right" Margin="0,16,0,0">
-                    <Button Content="💾 保存" 
-                            Command="{Binding SaveProviderCommand}"
-                            Style="{StaticResource AccentButtonStyle}"
-                            Width="100" Height="36"
-                            Margin="0,0,10,0"/>
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Provider List Sidebar -->
+            <Border Grid.Column="0" 
+                    Background="{StaticResource BackgroundSecondaryBrush}" 
+                    CornerRadius="16"
+                    Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
                     
-                    <Button Content="❌ 取消" 
-                            Command="{Binding CancelEditCommand}"
-                            Style="{StaticResource ModernButtonStyle}"
-                            Width="100" Height="36"/>
-                </StackPanel>
-            </Grid>
-        </Border>
+                    <!-- Sidebar Header -->
+                    <TextBlock Grid.Row="0" Text="AI Providers"
+                               Style="{StaticResource TitleSmallStyle}"
+                               Margin="12,8,12,20"/>
+                    
+                    <!-- Provider List -->
+                    <ListBox Grid.Row="1" 
+                             ItemsSource="{Binding Providers}"
+                             SelectedItem="{Binding SelectedProvider}"
+                             Style="{StaticResource AppleListBoxStyle}"
+                             SelectionChanged="ProviderList_SelectionChanged">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource AppleListBoxItemStyle}"/>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Name}" 
+                                                   Style="{StaticResource BodyStyle}"/>
+                                        <TextBlock Text="{Binding ProviderType}" 
+                                                   Style="{StaticResource CaptionStyle}"
+                                                   Foreground="{StaticResource LabelTertiaryBrush}"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <Ellipse Grid.Column="1" 
+                                             Width="10" Height="10"
+                                             VerticalAlignment="Center"
+                                             Margin="12,0,0,0">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Fill" Value="{StaticResource SystemGreenBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                        <Setter Property="Fill" Value="{StaticResource LabelTertiaryBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    
+                    <!-- Add Button -->
+                    <Button Grid.Row="2"
+                            Command="{Binding AddProviderCommand}"
+                            Style="{StaticResource AppleSecondaryButtonStyle}"
+                            Margin="0,16,0,0"
+                            Padding="0,14">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Path Data="{StaticResource PlusIcon}" 
+                                  Fill="{StaticResource SystemBlueBrush}"
+                                  Width="16" Height="16" Stretch="Uniform"
+                                  Margin="0,0,8,0"/>
+                            <TextBlock Text="Add Provider"
+                                       Foreground="{StaticResource SystemBlueBrush}"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+            
+            <!-- Provider Editor Panel -->
+            <Border Grid.Column="2" 
+                    Background="{StaticResource BackgroundSecondaryBrush}" 
+                    CornerRadius="16"
+                    Padding="28">
+                <Grid Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Editor Header -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                        <TextBlock Text="Edit Provider" 
+                                   Style="{StaticResource TitleSmallStyle}"/>
+                        <TextBlock Text="{Binding SelectedProvider.Name}" 
+                                   Style="{StaticResource SubheadStyle}"
+                                   Foreground="{StaticResource LabelTertiaryBrush}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    
+                    <!-- Editor Form -->
+                    <ScrollViewer Grid.Row="1" 
+                                  Style="{StaticResource AppleScrollViewerStyle}"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- Name -->
+                            <TextBlock Text="Name" 
+                                       Style="{StaticResource CaptionStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource AppleTextBoxStyle}"
+                                     Margin="0,0,0,20"/>
+                            
+                            <!-- Provider Type -->
+                            <TextBlock Text="Provider Type" 
+                                       Style="{StaticResource CaptionStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <ComboBox ItemsSource="{Binding AvailableProviderTypes}"
+                                      SelectedItem="{Binding EditProviderType}"
+                                      Style="{StaticResource AppleComboBoxStyle}"
+                                      Margin="0,0,0,20"/>
+                            
+                            <!-- API Key -->
+                            <TextBlock Text="API Key" 
+                                       Style="{StaticResource CaptionStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <PasswordBox x:Name="ApiKeyBox"
+                                          Style="{StaticResource ApplePasswordBoxStyle}"
+                                          Margin="0,0,0,20"
+                                          PasswordChanged="ApiKeyBox_PasswordChanged"/>
+                            
+                            <!-- Base URL -->
+                            <TextBlock Text="Base URL" 
+                                       Style="{StaticResource CaptionStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding EditBaseUrl, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource AppleTextBoxStyle}"
+                                     Margin="0,0,0,20"/>
+                            
+                            <!-- Model -->
+                            <TextBlock Text="Model" 
+                                       Style="{StaticResource CaptionStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding EditModel, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource AppleTextBoxStyle}"
+                                     Margin="0,0,0,20"/>
+                            
+                            <!-- Whisper Model -->
+                            <TextBlock Text="Whisper Model (Transcription)" 
+                                       Style="{StaticResource CaptionStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding EditWhisperModel, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource AppleTextBoxStyle}"
+                                     Margin="0,0,0,20"/>
+                            
+                            <!-- Max Tokens -->
+                            <TextBlock Text="Max Tokens" 
+                                       Style="{StaticResource CaptionStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding EditMaxTokens, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource AppleTextBoxStyle}"
+                                     Margin="0,0,0,20"/>
+                            
+                            <!-- Temperature -->
+                            <TextBlock Text="Temperature" 
+                                       Style="{StaticResource CaptionStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="60"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider Grid.Column="0"
+                                        Value="{Binding EditTemperature}" 
+                                        Minimum="0" Maximum="2" 
+                                        TickFrequency="0.1"
+                                        Style="{StaticResource AppleSliderStyle}"/>
+                                <TextBlock Grid.Column="1" 
+                                           Text="{Binding EditTemperature, StringFormat='{}{0:F1}'}"
+                                           Style="{StaticResource BodyStyle}"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                            
+                            <!-- Enabled -->
+                            <CheckBox Content="Enabled"
+                                      IsChecked="{Binding EditIsEnabled}"
+                                      Style="{StaticResource AppleCheckBoxStyle}"
+                                      Margin="0,0,0,20"/>
+                            
+                            <!-- Test Connection -->
+                            <Button Command="{Binding TestConnectionCommand}"
+                                    Style="{StaticResource AppleSecondaryButtonStyle}"
+                                    HorizontalAlignment="Left"
+                                    Padding="20,12"
+                                    Margin="0,0,0,16">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource InfoIcon}" 
+                                          Fill="{StaticResource SystemBlueBrush}"
+                                          Width="16" Height="16" Stretch="Uniform"
+                                          Margin="0,0,8,0"/>
+                                    <TextBlock Text="Test Connection"
+                                               Foreground="{StaticResource SystemBlueBrush}"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Status Text -->
+                            <TextBlock Text="{Binding StatusText}"
+                                       Style="{StaticResource SubheadStyle}"
+                                       Foreground="{StaticResource SystemGreenBrush}"
+                                       Visibility="{Binding StatusText, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                    
+                    <!-- Action Buttons -->
+                    <StackPanel Grid.Row="2" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Right" 
+                                Margin="0,24,0,0">
+                        <Button Command="{Binding DeleteProviderCommand}"
+                                Style="{StaticResource AppleSecondaryButtonStyle}"
+                                Padding="20,12"
+                                Margin="0,0,12,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource TrashIcon}" 
+                                      Fill="{StaticResource SystemRedBrush}"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,8,0"/>
+                                <TextBlock Text="Delete"
+                                           Foreground="{StaticResource SystemRedBrush}"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <Button Command="{Binding SaveProviderCommand}"
+                                Style="{StaticResource ApplePrimaryButtonStyle}"
+                                Padding="24,12">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource CheckmarkIcon}" 
+                                      Fill="White"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,8,0"/>
+                                <TextBlock Text="Save"
+                                           Foreground="White"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- Empty State -->
+                <Grid Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Visible}">
+                    <StackPanel HorizontalAlignment="Center" 
+                                VerticalAlignment="Center">
+                        <Path Data="{StaticResource SettingsIcon}" 
+                              Fill="{StaticResource LabelTertiaryBrush}"
+                              Width="64" Height="64" Stretch="Uniform"
+                              HorizontalAlignment="Center"
+                              Opacity="0.5"/>
+                        <TextBlock Text="Select a provider to edit" 
+                                   Style="{StaticResource HeadlineStyle}"
+                                   Foreground="{StaticResource LabelTertiaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,20,0,8"/>
+                        <TextBlock Text="Or click Add Provider to create a new one"
+                                   Style="{StaticResource SubheadStyle}"
+                                   Foreground="{StaticResource LabelTertiaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
