@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <!-- 应用标题 -->
+  <data name="AppTitle" xml:space="preserve">
+    <value>MeetingAI - 智能会议助手</value>
+  </data>
+
+  <!-- 主窗口 -->
+  <data name="MainWindow_Title" xml:space="preserve">
+    <value>会议助手</value>
+  </data>
+  
+  <!-- 按钮 -->
+  <data name="Button_StartRecording" xml:space="preserve">
+    <value>开始录音</value>
+  </data>
+  <data name="Button_StopRecording" xml:space="preserve">
+    <value>停止录音</value>
+  </data>
+  <data name="Button_PauseRecording" xml:space="preserve">
+    <value>暂停录音</value>
+  </data>
+  <data name="Button_ResumeRecording" xml:space="preserve">
+    <value>继续录音</value>
+  </data>
+  <data name="Button_Transcribe" xml:space="preserve">
+    <value>转录</value>
+  </data>
+  <data name="Button_Summarize" xml:space="preserve">
+    <value>生成摘要</value>
+  </data>
+  <data name="Button_Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="Button_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Button_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Button_Settings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Button_History" xml:space="preserve">
+    <value>历史</value>
+  </data>
+  <data name="Button_Export" xml:space="preserve">
+    <value>导出</value>
+  </data>
+
+  <!-- 标签 -->
+  <data name="Label_Transcript" xml:space="preserve">
+    <value>转录文本</value>
+  </data>
+  <data name="Label_Summary" xml:space="preserve">
+    <value>会议摘要</value>
+  </data>
+  <data name="Label_Overview" xml:space="preserve">
+    <value>会议概要</value>
+  </data>
+  <data name="Label_KeyPoints" xml:space="preserve">
+    <value>关键要点</value>
+  </data>
+  <data name="Label_ActionItems" xml:space="preserve">
+    <value>行动项</value>
+  </data>
+  <data name="Label_Decisions" xml:space="preserve">
+    <value>决议</value>
+  </data>
+  <data name="Label_Duration" xml:space="preserve">
+    <value>时长</value>
+  </data>
+  <data name="Label_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Label_Provider" xml:space="preserve">
+    <value>AI 服务商</value>
+  </data>
+  <data name="Label_ApiKey" xml:space="preserve">
+    <value>API Key</value>
+  </data>
+
+  <!-- 状态 -->
+  <data name="Status_Ready" xml:space="preserve">
+    <value>就绪</value>
+  </data>
+  <data name="Status_Recording" xml:space="preserve">
+    <value>录音中...</value>
+  </data>
+  <data name="Status_Paused" xml:space="preserve">
+    <value>已暂停</value>
+  </data>
+  <data name="Status_Transcribing" xml:space="preserve">
+    <value>转录中...</value>
+  </data>
+  <data name="Status_Summarizing" xml:space="preserve">
+    <value>生成摘要中...</value>
+  </data>
+  <data name="Status_Completed" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="Status_Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+
+  <!-- 提示消息 -->
+  <data name="Message_RecordingStarted" xml:space="preserve">
+    <value>开始录音</value>
+  </data>
+  <data name="Message_RecordingStopped" xml:space="preserve">
+    <value>录音已停止</value>
+  </data>
+  <data name="Message_TranscribeSuccess" xml:space="preserve">
+    <value>转录完成</value>
+  </data>
+  <data name="Message_SummarySuccess" xml:space="preserve">
+    <value>摘要生成完成</value>
+  </data>
+  <data name="Message_Copied" xml:space="preserve">
+    <value>已复制到剪贴板</value>
+  </data>
+  <data name="Message_Saved" xml:space="preserve">
+    <value>已保存</value>
+  </data>
+  <data name="Message_Error" xml:space="preserve">
+    <value>发生错误</value>
+  </data>
+
+  <!-- 设置页面 -->
+  <data name="Settings_Title" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Settings_General" xml:space="preserve">
+    <value>常规</value>
+  </data>
+  <data name="Settings_Providers" xml:space="preserve">
+    <value>AI 服务商</value>
+  </data>
+  <data name="Settings_Hotkeys" xml:space="preserve">
+    <value>快捷键</value>
+  </data>
+  <data name="Settings_About" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="Settings_TestConnection" xml:space="preserve">
+    <value>测试连接</value>
+  </data>
+  <data name="Settings_ConnectionSuccess" xml:space="preserve">
+    <value>连接成功</value>
+  </data>
+  <data name="Settings_ConnectionFailed" xml:space="preserve">
+    <value>连接失败</value>
+  </data>
+
+  <!-- 历史页面 -->
+  <data name="History_Title" xml:space="preserve">
+    <value>会议历史</value>
+  </data>
+  <data name="History_Search" xml:space="preserve">
+    <value>搜索会议...</value>
+  </data>
+  <data name="History_NoRecords" xml:space="preserve">
+    <value>暂无会议记录</value>
+  </data>
+  <data name="History_DeleteConfirm" xml:space="preserve">
+    <value>确定要删除这条会议记录吗？</value>
+  </data>
+  <data name="History_DeleteTitle" xml:space="preserve">
+    <value>删除确认</value>
+  </data>
+
+  <!-- 快捷键 -->
+  <data name="Hotkey_ToggleRecording" xml:space="preserve">
+    <value>切换录音</value>
+  </data>
+  <data name="Hotkey_StopRecording" xml:space="preserve">
+    <value>停止录音</value>
+  </data>
+  <data name="Hotkey_Description" xml:space="preserve">
+    <value>提示：即使应用未聚焦，这些快捷键也可以使用</value>
+  </data>
+
+  <!-- 错误消息 -->
+  <data name="Error_NoMicrophone" xml:space="preserve">
+    <value>未检测到麦克风</value>
+  </data>
+  <data name="Error_ApiKeyEmpty" xml:space="preserve">
+    <value>请先配置 API Key</value>
+  </data>
+  <data name="Error_TranscribeFailed" xml:space="preserve">
+    <value>转录失败</value>
+  </data>
+  <data name="Error_SummaryFailed" xml:space="preserve">
+    <value>摘要生成失败</value>
+  </data>
+  <data name="Error_NetworkError" xml:space="preserve">
+    <value>网络错误</value>
+  </data>
+</root>

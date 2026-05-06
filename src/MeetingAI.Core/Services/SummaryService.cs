@@ -83,7 +83,12 @@ public class SummaryService : ISummaryService
         var response = await provider.ChatAsync(request, ct);
         
         var summary = ParseSummaryResponse(response.Content);
-        LoggerService.Info($"Summary generated successfully");
+        
+        // 记录摘要生成统计
+        LoggerService.Info($"摘要生成完成: Overview={summary.Overview?.Length ?? 0}字符, " +
+            $"KeyPoints={summary.KeyPoints.Count}条, " +
+            $"ActionItems={summary.ActionItems.Count}条, " +
+            $"Decisions={summary.Decisions.Count}条");
         
         return summary;
     }
@@ -92,9 +97,16 @@ public class SummaryService : ISummaryService
     {
         var summary = new Summary();
         
-        // Simple parsing - in production could use more sophisticated approach
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            LoggerService.Warning("AI 返回内容为空");
+            summary.Overview = "[摘要生成失败：AI 返回内容为空]";
+            return summary;
+        }
+        
         var lines = content.Split('\n');
         var currentSection = "";
+        var parseSuccess = false;
         
         foreach (var line in lines)
         {
@@ -124,28 +136,99 @@ public class SummaryService : ISummaryService
                 {
                     case "overview":
                         if (string.IsNullOrEmpty(summary.Overview))
+                        {
                             summary.Overview = cleanLine;
+                            parseSuccess = true;
+                        }
                         break;
                     case "keypoints":
                         if (!string.IsNullOrEmpty(cleanLine))
+                        {
                             summary.KeyPoints.Add(cleanLine);
+                            parseSuccess = true;
+                        }
                         break;
                     case "actionitems":
                         if (!string.IsNullOrEmpty(cleanLine))
+                        {
                             summary.ActionItems.Add(cleanLine);
+                            parseSuccess = true;
+                        }
                         break;
                     case "decisions":
                         if (!string.IsNullOrEmpty(cleanLine))
+                        {
                             summary.Decisions.Add(cleanLine);
+                            parseSuccess = true;
+                        }
                         break;
                 }
             }
         }
         
-        // If no sections were parsed, use the entire content as overview
-        if (string.IsNullOrEmpty(summary.Overview))
+        // 如果没有成功解析到任何内容，添加警告并使用原始内容
+        if (!parseSuccess)
         {
-            summary.Overview = content.Length > 200 ? content.Substring(0, 200) + "..." : content;
+            LoggerService.Warning("摘要解析失败，AI 返回格式可能不规范");
+            
+            // 尝试更宽松的解析策略
+            summary = TryFallbackParsing(content);
+            
+            if (string.IsNullOrEmpty(summary.Overview))
+            {
+                // 最终 fallback：截取前200字符作为概览
+                summary.Overview = content.Length > 200 ? content.Substring(0, 200) + "..." : content;
+                LoggerService.Warning($"使用原始内容前200字符作为摘要: {summary.Overview.Length}字符");
+            }
+        }
+        
+        return summary;
+    }
+    
+    /// <summary>
+    /// 备用解析策略：尝试更宽松的格式匹配
+    /// </summary>
+    private Summary TryFallbackParsing(string content)
+    {
+        var summary = new Summary();
+        
+        // 移除 Markdown 代码块
+        var cleanContent = content
+            .Replace("```", "")
+            .Replace("`", "");
+        
+        // 按行分割，尝试提取内容
+        var lines = cleanContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        
+        var collectedContent = new List<string>();
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+            // 过滤掉标题符号但保留内容
+            if (trimmed.Length > 2)
+            {
+                var cleanLine = trimmed
+                    .TrimStart('#', '*', '-', '>', ' ')
+                    .Trim();
+                
+                if (!string.IsNullOrEmpty(cleanLine) && !cleanLine.StartsWith("请") && !cleanLine.StartsWith("根据"))
+                {
+                    collectedContent.Add(cleanLine);
+                }
+            }
+        }
+        
+        // 如果收集到内容，第一条作为概览，其余作为要点
+        if (collectedContent.Count > 0)
+        {
+            summary.Overview = collectedContent[0];
+            
+            for (int i = 1; i < collectedContent.Count && i <= 5; i++)
+            {
+                summary.KeyPoints.Add(collectedContent[i]);
+            }
+            
+            LoggerService.Info($"备用解析成功: {collectedContent.Count}条内容");
         }
         
         return summary;
