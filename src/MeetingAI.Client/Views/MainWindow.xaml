@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:local="clr-namespace:MeetingAI.Client.Views"
         mc:Ignorable="d"
         Title="MeetingAI" 
@@ -36,7 +37,7 @@
             </Grid.ColumnDefinitions>
             
             <!-- Traffic Lights -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="16,0,0,0" WindowChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="16,0,0,0" shell:WindowChrome.IsHitTestVisibleInChrome="True">
                 <Button x:Name="CloseButton" Width="14" Height="14" Margin="6,0,0,0"
                         Background="#FF5F57" BorderThickness="0" Cursor="Hand"
                         Click="CloseButton_Click">
@@ -77,7 +78,7 @@
                     Style="{StaticResource AppleIconButtonStyle}"
                     Margin="0,0,8,0"
                     ToolTip="Settings"
-                    WindowChrome:WindowChrome.IsHitTestVisibleInChrome="True">
+                    shell:WindowChrome.IsHitTestVisibleInChrome="True">
                 <Path Data="{StaticResource SettingsIcon}" 
                       Fill="{StaticResource LabelSecondaryBrush}"
                       Width="20" Height="20" Stretch="Uniform"/>
@@ -181,23 +182,7 @@
                                 <!-- Record/Stop Button -->
                                 <Button Command="{Binding ToggleRecordingCommand}"
                                         Style="{StaticResource AppleRecordButtonStyle}"
-                                        Margin="0,0,32,0">
-                                    <Button.Content>
-                                        <Grid>
-                                            <!-- Record Circle (idle) -->
-                                            <Ellipse x:Name="recordIcon"
-                                                     Fill="White"
-                                                     Width="24" Height="24"
-                                                     Visibility="{Binding IsRecording, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Visible}"/>
-                                            <!-- Stop Square (recording) -->
-                                            <Border x:Name="stopIcon"
-                                                    Background="White"
-                                                    CornerRadius="4"
-                                                    Width="22" Height="22"
-                                                    Visibility="{Binding IsRecording, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"/>
-                                        </Grid>
-                                    </Button.Content>
-                                </Button>
+                                        Margin="0,0,32,0"/>
                                 
                                 <!-- Pause/Resume Button -->
                                 <Button Command="{Binding PauseResumeCommand}"
@@ -205,11 +190,11 @@
                                         IsEnabled="{Binding IsRecording}"
                                         Margin="0,0,16,0">
                                     <StackPanel Orientation="Horizontal">
-                                        <Path Data="{Binding IsPaused, Converter={StaticResource PauseResumeIconConverter}, FallbackValue={StaticResource PauseIcon}}" 
+                                        <Path Data="{StaticResource PauseIcon}" 
                                               Fill="{StaticResource SystemBlueBrush}"
                                               Width="16" Height="16" Stretch="Uniform"
                                               Margin="0,0,8,0"/>
-                                        <TextBlock Text="{Binding IsPaused, Converter={StaticResource PauseResumeTextConverter}, FallbackValue='Pause'}"
+                                        <TextBlock Text="Pause"
                                                    Foreground="{StaticResource SystemBlueBrush}"/>
                                     </StackPanel>
                                 </Button>
