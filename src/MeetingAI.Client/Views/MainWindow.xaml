@@ -10,13 +10,13 @@
         Height="700" Width="1100"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundPrimaryBrush}"
+        Background="{StaticResource BackgroundSecondaryBrush}"
         WindowStyle="None"
         AllowsTransparency="True"
         ResizeMode="CanResizeWithGrip">
     
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="48"
+        <WindowChrome CaptionHeight="32"
                       ResizeBorderThickness="8"
                       CornerRadius="0"
                       GlassFrameThickness="0"/>
@@ -24,69 +24,75 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="48"/>
+            <RowDefinition Height="32"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <!-- Title Bar -->
+        <!-- Title Bar (Windows 11 style) -->
         <Grid Grid.Row="0" Background="{StaticResource BackgroundPrimaryBrush}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <!-- Traffic Lights -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="16,0,0,0" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                <Button x:Name="CloseButton" Width="14" Height="14" Margin="6,0,0,0"
-                        Background="#FF5F57" BorderThickness="0" Cursor="Hand"
-                        Click="CloseButton_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="7"/>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <Button x:Name="MinimizeButton" Width="14" Height="14" Margin="6,0,0,0"
-                        Background="#FEBC2E" BorderThickness="0" Cursor="Hand"
+            <!-- Drag Area -->
+            <TextBlock Grid.Column="0" Text="MeetingAI"
+                       Style="{StaticResource SubheadStyle}"
+                       Foreground="{StaticResource LabelSecondaryBrush}"
+                       VerticalAlignment="Center"
+                       Margin="12,0,0,0"/>
+            
+            <!-- Window Controls -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button x:Name="MinimizeButton" 
+                        Width="46" Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
                         Click="MinimizeButton_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="7"/>
+                            <Border Background="{TemplateBinding Background}">
+                                <Path Data="M4,12H20" Stroke="{StaticResource LabelSecondaryBrush}" StrokeThickness="1" Width="12" Height="12" Stretch="Uniform"/>
+                            </Border>
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
-                <Button x:Name="MaximizeButton" Width="14" Height="14" Margin="6,0,0,0"
-                        Background="#28C840" BorderThickness="0" Cursor="Hand"
+                <Button x:Name="MaximizeButton" 
+                        Width="46" Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
                         Click="MaximizeButton_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="7"/>
+                            <Border Background="{TemplateBinding Background}">
+                                <Path Data="M4,4H16V16H4V4M6,8V14H14V8H6M8,2H18V18H2V8" Stroke="{StaticResource LabelSecondaryBrush}" StrokeThickness="1" Width="12" Height="12" Stretch="Uniform"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button x:Name="CloseButton" 
+                        Width="46" Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="CloseButton_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" Background="{TemplateBinding Background}">
+                                <Path Data="M6,6L18,18M6,18L18,6" Stroke="{StaticResource LabelSecondaryBrush}" StrokeThickness="1" Width="12" Height="12" Stretch="Uniform"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource SystemErrorBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
             </StackPanel>
-            
-            <!-- Title -->
-            <TextBlock Grid.Column="1" Text="MeetingAI"
-                       Style="{StaticResource HeadlineStyle}"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            
-            <!-- Settings Button -->
-            <Button Grid.Column="2" 
-                    Command="{Binding OpenSettingsCommand}"
-                    Style="{StaticResource AppleIconButtonStyle}"
-                    Margin="0,0,8,0"
-                    ToolTip="Settings"
-                    shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                <Path Data="{StaticResource SettingsIcon}" 
-                      Fill="{StaticResource LabelSecondaryBrush}"
-                      Width="20" Height="20" Stretch="Uniform"/>
-            </Button>
         </Grid>
         
         <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="24">
+        <Grid Grid.Row="1" Margin="16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -94,10 +100,10 @@
             
             <!-- Provider Selector Bar -->
             <Border Grid.Row="0" 
-                    Background="{StaticResource BackgroundSecondaryBrush}" 
-                    CornerRadius="16"
-                    Padding="20,16"
-                    Margin="0,0,0,24">
+                    Background="{StaticResource BackgroundPrimaryBrush}" 
+                    CornerRadius="{StaticResource RadiusMedium}"
+                    Padding="16,12"
+                    Margin="0,0,0,16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -108,9 +114,9 @@
                     <!-- Provider Label -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <Path Data="{StaticResource BrainIcon}" 
-                              Fill="{StaticResource SystemBlueBrush}"
-                              Width="22" Height="22" Stretch="Uniform"
-                              Margin="0,0,12,0"/>
+                              Fill="{StaticResource SystemAccentBrush}"
+                              Width="20" Height="20" Stretch="Uniform"
+                              Margin="0,0,10,0"/>
                         <TextBlock Text="AI Provider" 
                                    Style="{StaticResource HeadlineStyle}"
                                    VerticalAlignment="Center"/>
@@ -122,14 +128,14 @@
                               SelectedItem="{Binding SelectedProvider}"
                               DisplayMemberPath="Name"
                               Style="{StaticResource AppleComboBoxStyle}"
-                              Margin="24,0"
-                              MaxWidth="300"
+                              Margin="16,0"
+                              MaxWidth="280"
                               HorizontalAlignment="Left"/>
                     
                     <!-- Status Indicator -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Ellipse Width="10" Height="10" 
-                                 Fill="{Binding IsRecording, Converter={StaticResource RecordingStatusColorConverter}, FallbackValue={StaticResource SystemGreenBrush}}"
+                        <Ellipse Width="8" Height="8" 
+                                 Fill="{Binding IsRecording, Converter={StaticResource RecordingStatusColorConverter}, FallbackValue={StaticResource SystemSuccessBrush}}"
                                  Margin="0,0,8,0"/>
                         <TextBlock Text="{Binding StatusText}" 
                                    Style="{StaticResource SubheadStyle}"
@@ -142,15 +148,15 @@
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="16"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 
                 <!-- Left Panel - Recording -->
                 <Border Grid.Column="0" 
-                        Background="{StaticResource BackgroundSecondaryBrush}" 
-                        CornerRadius="20"
-                        Padding="28">
+                        Background="{StaticResource BackgroundPrimaryBrush}" 
+                        CornerRadius="{StaticResource RadiusLarge}"
+                        Padding="24">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -162,19 +168,19 @@
                         <StackPanel Grid.Row="0" HorizontalAlignment="Center">
                             <!-- Duration Display -->
                             <TextBlock Text="{Binding DurationText}"
-                                       FontSize="64" FontWeight="200"
-                                       FontFamily="Segoe UI"
+                                       FontSize="56" FontWeight="300"
+                                       FontFamily="{StaticResource SegoeUIFont}"
                                        Foreground="{StaticResource LabelPrimaryBrush}"
                                        HorizontalAlignment="Center"
-                                       Margin="0,0,0,24"/>
+                                       Margin="0,0,0,20"/>
                             
-                            <!-- Waveform Visualizer (Volume) -->
-                            <Grid Height="60" Width="400" Margin="0,0,0,32">
+                            <!-- Volume Indicator -->
+                            <Grid Height="6" Margin="0,0,0,24">
                                 <ProgressBar Value="{Binding VolumeLevel}" 
-                                              Maximum="1"
-                                              Style="{StaticResource AppleProgressBarStyle}"
-                                              Height="8"
-                                              VerticalAlignment="Center"/>
+                                             Maximum="1"
+                                             Style="{StaticResource AppleProgressBarStyle}"
+                                             Height="6"
+                                             VerticalAlignment="Center"/>
                             </Grid>
                             
                             <!-- Control Buttons -->
@@ -182,30 +188,32 @@
                                 <!-- Record/Stop Button -->
                                 <Button Command="{Binding ToggleRecordingCommand}"
                                         Style="{StaticResource AppleRecordButtonStyle}"
-                                        Margin="0,0,32,0"/>
+                                        Margin="0,0,24,0"/>
                                 
                                 <!-- Pause/Resume Button -->
                                 <Button Command="{Binding PauseResumeCommand}"
                                         Style="{StaticResource AppleSecondaryButtonStyle}"
                                         IsEnabled="{Binding IsRecording}"
-                                        Margin="0,0,16,0">
+                                        Margin="0,0,12,0"
+                                        Padding="16,10">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Data="{StaticResource PauseIcon}" 
-                                              Fill="{StaticResource SystemBlueBrush}"
-                                              Width="16" Height="16" Stretch="Uniform"
+                                              Fill="{StaticResource LabelPrimaryBrush}"
+                                              Width="14" Height="14" Stretch="Uniform"
                                               Margin="0,0,8,0"/>
                                         <TextBlock Text="Pause"
-                                                   Foreground="{StaticResource SystemBlueBrush}"/>
+                                                   Foreground="{StaticResource LabelPrimaryBrush}"/>
                                     </StackPanel>
                                 </Button>
                                 
                                 <!-- Transcribe Button -->
                                 <Button Command="{Binding TranscribeCommand}"
-                                        Style="{StaticResource AppleSecondaryButtonStyle}">
+                                        Style="{StaticResource AppleSecondaryButtonStyle}"
+                                        Padding="16,10">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Data="{StaticResource DocTextIcon}" 
                                               Fill="{StaticResource LabelPrimaryBrush}"
-                                              Width="16" Height="16" Stretch="Uniform"
+                                              Width="14" Height="14" Stretch="Uniform"
                                               Margin="0,0,8,0"/>
                                         <TextBlock Text="Transcribe"
                                                    Foreground="{StaticResource LabelPrimaryBrush}"/>
@@ -215,10 +223,10 @@
                         </StackPanel>
                         
                         <!-- Transcript Section -->
-                        <Grid Grid.Row="1" Margin="0,32,0,0">
-                            <Border Background="{StaticResource BackgroundTertiaryBrush}" 
-                                    CornerRadius="16" 
-                                    Padding="20">
+                        <Grid Grid.Row="1" Margin="0,24,0,0">
+                            <Border Background="{StaticResource FillBrush}" 
+                                    CornerRadius="{StaticResource RadiusMedium}" 
+                                    Padding="16">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -226,11 +234,11 @@
                                     </Grid.RowDefinitions>
                                     
                                     <!-- Transcript Header -->
-                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
                                         <Path Data="{StaticResource DocTextIcon}" 
                                               Fill="{StaticResource LabelTertiaryBrush}"
-                                              Width="18" Height="18" Stretch="Uniform"
-                                              Margin="0,0,10,0"/>
+                                              Width="16" Height="16" Stretch="Uniform"
+                                              Margin="0,0,8,0"/>
                                         <TextBlock Text="Transcript" 
                                                    Style="{StaticResource SubheadStyle}"
                                                    Foreground="{StaticResource LabelTertiaryBrush}"/>
@@ -244,7 +252,7 @@
                                                    Style="{StaticResource BodyStyle}"
                                                    Foreground="{StaticResource LabelSecondaryBrush}"
                                                    TextWrapping="Wrap"
-                                                   LineHeight="26"/>
+                                                   LineHeight="24"/>
                                     </ScrollViewer>
                                 </Grid>
                             </Border>
@@ -255,15 +263,15 @@
                                 Command="{Binding SummarizeCommand}"
                                 Style="{StaticResource ApplePrimaryButtonStyle}"
                                 HorizontalAlignment="Stretch"
-                                Margin="0,24,0,0"
-                                Padding="0,16">
+                                Margin="0,20,0,0"
+                                Padding="0,14">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <Path Data="{StaticResource BrainIcon}" 
                                       Fill="White"
-                                      Width="20" Height="20" Stretch="Uniform"
-                                      Margin="0,0,10,0"/>
+                                      Width="18" Height="18" Stretch="Uniform"
+                                      Margin="0,0,8,0"/>
                                 <TextBlock Text="Generate Summary" 
-                                           FontSize="16" FontWeight="600"
+                                           FontSize="14" FontWeight="SemiBold"
                                            Foreground="White"/>
                             </StackPanel>
                         </Button>
@@ -272,9 +280,9 @@
                 
                 <!-- Right Panel - Summary -->
                 <Border Grid.Column="2" 
-                        Background="{StaticResource BackgroundSecondaryBrush}" 
-                        CornerRadius="20"
-                        Padding="28">
+                        Background="{StaticResource BackgroundPrimaryBrush}" 
+                        CornerRadius="{StaticResource RadiusLarge}"
+                        Padding="24">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -283,11 +291,11 @@
                         </Grid.RowDefinitions>
                         
                         <!-- Summary Header -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
                             <Path Data="{StaticResource BrainIcon}" 
-                                  Fill="{StaticResource SystemPurpleBrush}"
-                                  Width="24" Height="24" Stretch="Uniform"
-                                  Margin="0,0,12,0"/>
+                                  Fill="{StaticResource SystemAccentBrush}"
+                                  Width="22" Height="22" Stretch="Uniform"
+                                  Margin="0,0,10,0"/>
                             <TextBlock Text="Meeting Summary" 
                                        Style="{StaticResource TitleSmallStyle}"/>
                         </StackPanel>
@@ -297,13 +305,13 @@
                                       Style="{StaticResource AppleScrollViewerStyle}"
                                       VerticalScrollBarVisibility="Auto">
                             <Grid>
-                                <Border Background="{StaticResource BackgroundTertiaryBrush}" 
-                                        CornerRadius="16" 
-                                        Padding="24">
+                                <Border Background="{StaticResource FillBrush}" 
+                                        CornerRadius="{StaticResource RadiusMedium}" 
+                                        Padding="20">
                                     <TextBlock Text="{Binding SummaryText}"
                                                Style="{StaticResource BodyStyle}"
                                                TextWrapping="Wrap"
-                                               LineHeight="28"/>
+                                               LineHeight="26"/>
                                 </Border>
                                 
                                 <!-- Empty State -->
@@ -312,7 +320,7 @@
                                             Visibility="{Binding HasSummary, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Visible}">
                                     <Path Data="{StaticResource DocTextIcon}" 
                                           Fill="{StaticResource LabelTertiaryBrush}"
-                                          Width="64" Height="64" Stretch="Uniform"
+                                          Width="56" Height="56" Stretch="Uniform"
                                           HorizontalAlignment="Center"
                                           Opacity="0.5"/>
                                     <TextBlock Text="No summary yet" 
@@ -324,7 +332,9 @@
                                                Style="{StaticResource SubheadStyle}"
                                                Foreground="{StaticResource LabelTertiaryBrush}"
                                                HorizontalAlignment="Center"
-                                               TextAlignment="Center"/>
+                                               TextAlignment="Center"
+                                               MaxWidth="260"
+                                               TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Grid>
                         </ScrollViewer>
@@ -334,15 +344,15 @@
                                 Command="{Binding CopySummaryCommand}"
                                 Style="{StaticResource AppleSecondaryButtonStyle}"
                                 HorizontalAlignment="Right"
-                                Margin="0,20,0,0"
-                                Padding="20,12">
+                                Margin="0,16,0,0"
+                                Padding="16,10">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource CopyIcon}" 
-                                      Fill="{StaticResource SystemBlueBrush}"
-                                      Width="16" Height="16" Stretch="Uniform"
+                                      Fill="{StaticResource LabelPrimaryBrush}"
+                                      Width="14" Height="14" Stretch="Uniform"
                                       Margin="0,0,8,0"/>
                                 <TextBlock Text="Copy"
-                                           Foreground="{StaticResource SystemBlueBrush}"/>
+                                           Foreground="{StaticResource LabelPrimaryBrush}"/>
                             </StackPanel>
                         </Button>
                     </Grid>

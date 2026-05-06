@@ -2,42 +2,39 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- ============================================
-         Apple-Style Control Styles
+         Windows 11 Fluent Design Control Styles
          ============================================ -->
 
     <!-- ============================================
-         Primary Button (System Blue, Pill-shaped)
+         Primary Button (Windows 11 Accent Button)
          ============================================ -->
     <Style x:Key="ApplePrimaryButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SystemBlueBrush}"/>
+        <Setter Property="Background" Value="{StaticResource SystemAccentBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="20,12"/>
-        <Setter Property="FontSize" Value="15"/>
-        <Setter Property="FontWeight" Value="500"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="22"
+                            CornerRadius="{StaticResource RadiusSmall}"
                             Padding="{TemplateBinding Padding}">
-                        <Border.Effect>
-                            <DropShadowEffect ShadowDepth="0" BlurRadius="0" Opacity="0"/>
-                        </Border.Effect>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#0A84FF"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource SystemAccentDarkBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#0066CC"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource SystemAccentDarkBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Background" Value="#3A3A3C"/>
-                            <Setter Property="Foreground" Value="#636366"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillTertiaryBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource LabelDisabledBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -46,35 +43,38 @@
     </Style>
 
     <!-- ============================================
-         Secondary Button (Gray, Rounded Rect)
+         Secondary Button (Windows 11 Light Button)
          ============================================ -->
     <Style x:Key="AppleSecondaryButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource BackgroundElevatedBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource SystemBlueBrush}"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="Background" Value="{StaticResource FillBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="16,8"/>
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="FontWeight" Value="500"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="12"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource RadiusSmall}"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#48484A"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillSecondaryBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#3A3A3C"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillTertiaryBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Background" Value="#2C2C2E"/>
-                            <Setter Property="Foreground" Value="#636366"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillBrush}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource LabelDisabledBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -83,11 +83,11 @@
     </Style>
 
     <!-- ============================================
-         Record Button (Red, Circular)
+         Record Button (Red, Circular, Flat)
          ============================================ -->
     <Style x:Key="AppleRecordButtonStyle" TargetType="Button">
-        <Setter Property="Width" Value="72"/>
-        <Setter Property="Height" Value="72"/>
+        <Setter Property="Width" Value="64"/>
+        <Setter Property="Height" Value="64"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -95,30 +95,24 @@
                     <Grid>
                         <Ellipse x:Name="outerCircle"
                                  Fill="Transparent"
-                                 Stroke="{StaticResource SystemRedBrush}"
-                                 StrokeThickness="4"
-                                 Width="72" Height="72"/>
+                                 Stroke="{StaticResource SystemErrorBrush}"
+                                 StrokeThickness="2"
+                                 Width="64" Height="64"/>
                         <Ellipse x:Name="innerCircle"
-                                 Fill="{StaticResource SystemRedBrush}"
-                                 Width="56" Height="56">
-                            <Ellipse.Effect>
-                                <DropShadowEffect ShadowDepth="0" BlurRadius="12" Color="#FF3B30" Opacity="0.4"/>
-                            </Ellipse.Effect>
-                        </Ellipse>
+                                 Fill="{StaticResource SystemErrorBrush}"
+                                 Width="48" Height="48"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="innerCircle" Property="Fill" Value="#FF5151"/>
+                            <Setter TargetName="innerCircle" Property="Fill" Value="#E81123"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="innerCircle" Property="Fill" Value="#E62E2E"/>
-                            <Setter TargetName="innerCircle" Property="Width" Value="52"/>
-                            <Setter TargetName="innerCircle" Property="Height" Value="52"/>
+                            <Setter TargetName="innerCircle" Property="Width" Value="44"/>
+                            <Setter TargetName="innerCircle" Property="Height" Value="44"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="outerCircle" Property="Stroke" Value="#48484A"/>
-                            <Setter TargetName="innerCircle" Property="Fill" Value="#48484A"/>
-                            <Setter TargetName="innerCircle" Property="Effect" Value="{x:Null}"/>
+                            <Setter TargetName="outerCircle" Property="Stroke" Value="{StaticResource FillTertiaryBrush}"/>
+                            <Setter TargetName="innerCircle" Property="Fill" Value="{StaticResource FillTertiaryBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -127,11 +121,11 @@
     </Style>
 
     <!-- ============================================
-         Stop Button (Red, Rounded Square)
+         Stop Button (Red, Rounded Square, Flat)
          ============================================ -->
     <Style x:Key="AppleStopButtonStyle" TargetType="Button">
-        <Setter Property="Width" Value="72"/>
-        <Setter Property="Height" Value="72"/>
+        <Setter Property="Width" Value="64"/>
+        <Setter Property="Height" Value="64"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -139,25 +133,22 @@
                     <Grid>
                         <Border x:Name="outerBorder"
                                 Background="Transparent"
-                                CornerRadius="18"
-                                BorderBrush="{StaticResource SystemRedBrush}"
-                                BorderThickness="4"
-                                Width="72" Height="72"/>
+                                CornerRadius="{StaticResource RadiusMedium}"
+                                BorderBrush="{StaticResource SystemErrorBrush}"
+                                BorderThickness="2"
+                                Width="64" Height="64"/>
                         <Border x:Name="innerBorder"
-                                Background="{StaticResource SystemRedBrush}"
-                                CornerRadius="10"
-                                Width="40" Height="40">
-                            <Border.Effect>
-                                <DropShadowEffect ShadowDepth="0" BlurRadius="12" Color="#FF3B30" Opacity="0.4"/>
-                            </Border.Effect>
-                        </Border>
+                                Background="{StaticResource SystemErrorBrush}"
+                                CornerRadius="{StaticResource RadiusSmall}"
+                                Width="36" Height="36"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="innerBorder" Property="Background" Value="#FF5151"/>
+                            <Setter TargetName="innerBorder" Property="Background" Value="#E81123"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="innerBorder" Property="Background" Value="#E62E2E"/>
+                            <Setter TargetName="innerBorder" Property="Width" Value="32"/>
+                            <Setter TargetName="innerBorder" Property="Height" Value="32"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -166,33 +157,38 @@
     </Style>
 
     <!-- ============================================
-         Apple TextBox Style
+         Windows 11 TextBox Style
          ============================================ -->
     <Style x:Key="AppleTextBoxStyle" TargetType="TextBox">
-        <Setter Property="Background" Value="{StaticResource BackgroundSecondaryBrush}"/>
+        <Setter Property="Background" Value="{StaticResource BackgroundPrimaryBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="14,12"/>
-        <Setter Property="FontSize" Value="15"/>
-        <Setter Property="CaretBrush" Value="{StaticResource SystemBlueBrush}"/>
-        <Setter Property="SelectionBrush" Value="{StaticResource SystemBlueBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="CaretBrush" Value="{StaticResource SystemAccentBrush}"/>
+        <Setter Property="SelectionBrush" Value="{StaticResource SystemAccentBrush}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="12"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
-                        <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource RadiusSmall}">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundTertiaryBrush}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource SystemAccentBrush}"/>
+                            <Setter TargetName="border" Property="BorderThickness" Value="2"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundTertiaryBrush}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource LabelTertiaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource LabelDisabledBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -201,33 +197,34 @@
     </Style>
 
     <!-- ============================================
-         Apple PasswordBox Style
+         Windows 11 PasswordBox Style
          ============================================ -->
     <Style x:Key="ApplePasswordBoxStyle" TargetType="PasswordBox">
-        <Setter Property="Background" Value="{StaticResource BackgroundSecondaryBrush}"/>
+        <Setter Property="Background" Value="{StaticResource BackgroundPrimaryBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="14,12"/>
-        <Setter Property="FontSize" Value="15"/>
-        <Setter Property="CaretBrush" Value="{StaticResource SystemBlueBrush}"/>
-        <Setter Property="SelectionBrush" Value="{StaticResource SystemBlueBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="CaretBrush" Value="{StaticResource SystemAccentBrush}"/>
+        <Setter Property="SelectionBrush" Value="{StaticResource SystemAccentBrush}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="PasswordBox">
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="12"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
-                        <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource RadiusSmall}">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundTertiaryBrush}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource SystemAccentBrush}"/>
+                            <Setter TargetName="border" Property="BorderThickness" Value="2"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundTertiaryBrush}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource LabelTertiaryBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -236,33 +233,34 @@
     </Style>
 
     <!-- ============================================
-         Apple ComboBox Style
+         Windows 11 ComboBox Style
          ============================================ -->
     <Style x:Key="AppleComboBoxStyle" TargetType="ComboBox">
-        <Setter Property="Background" Value="{StaticResource BackgroundElevatedBrush}"/>
+        <Setter Property="Background" Value="{StaticResource BackgroundPrimaryBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="14,10"/>
-        <Setter Property="FontSize" Value="15"/>
-        <Setter Property="MinHeight" Value="44"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="MinHeight" Value="36"/>
     </Style>
 
     <!-- ============================================
-         Apple ProgressBar Style
+         Windows 11 ProgressBar Style
          ============================================ -->
     <Style x:Key="AppleProgressBarStyle" TargetType="ProgressBar">
-        <Setter Property="Background" Value="{StaticResource BackgroundElevatedBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource SystemBlueBrush}"/>
+        <Setter Property="Background" Value="{StaticResource FillTertiaryBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource SystemAccentBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Height" Value="6"/>
+        <Setter Property="Height" Value="4"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ProgressBar">
-                    <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="2">
                         <Border x:Name="PART_Track">
                             <Border x:Name="PART_Indicator"
                                     Background="{TemplateBinding Foreground}"
-                                    CornerRadius="3"
+                                    CornerRadius="2"
                                     HorizontalAlignment="Left"/>
                         </Border>
                     </Border>
@@ -272,16 +270,16 @@
     </Style>
 
     <!-- ============================================
-         Apple Slider Style
+         Windows 11 Slider Style
          ============================================ -->
     <Style x:Key="AppleSliderStyle" TargetType="Slider">
-        <Setter Property="Background" Value="{StaticResource BackgroundElevatedBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource SystemBlueBrush}"/>
-        <Setter Property="Height" Value="32"/>
+        <Setter Property="Background" Value="{StaticResource FillTertiaryBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource SystemAccentBrush}"/>
+        <Setter Property="Height" Value="21"/>
     </Style>
 
     <!-- ============================================
-         Apple ListBox Style
+         Windows 11 ListBox Style
          ============================================ -->
     <Style x:Key="AppleListBoxStyle" TargetType="ListBox">
         <Setter Property="Background" Value="Transparent"/>
@@ -293,27 +291,27 @@
     <Style x:Key="AppleListBoxItemStyle" TargetType="ListBoxItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
-        <Setter Property="Padding" Value="16,14"/>
-        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="Margin" Value="0,1"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="10"
+                            CornerRadius="{StaticResource RadiusSmall}"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundTertiaryBrush}"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillSecondaryBrush}"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsMouseOver" Value="True"/>
                                 <Condition Property="IsSelected" Value="False"/>
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundElevatedBrush}"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillBrush}"/>
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -322,32 +320,34 @@
     </Style>
 
     <!-- ============================================
-         Apple CheckBox Style
+         Windows 11 CheckBox Style
          ============================================ -->
     <Style x:Key="AppleCheckBoxStyle" TargetType="CheckBox">
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
-        <Setter Property="FontSize" Value="15"/>
-        <Setter Property="Padding" Value="12,0,0,0"/>
-        <Setter Property="MinHeight" Value="44"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Padding" Value="8,0,0,0"/>
+        <Setter Property="MinHeight" Value="32"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CheckBox">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="28"/>
+                            <ColumnDefinition Width="20"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Border x:Name="checkBorder"
-                                Width="24" Height="24"
-                                CornerRadius="6"
-                                Background="{StaticResource BackgroundElevatedBrush}"
-                                BorderThickness="0"
+                                Width="20" Height="20"
+                                CornerRadius="4"
+                                Background="{StaticResource BackgroundPrimaryBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
                                 VerticalAlignment="Center">
                             <Path x:Name="checkMark"
-                                  Data="M9,16.17L4.83,12l-1.42,1.41L9,19L21,7l-1.41-1.41L9,16.17z"
-                                  Fill="White"
-                                  Width="14" Height="14"
+                                  Data="M5,12L10,17L20,7"
+                                  Stroke="White"
+                                  StrokeThickness="2"
+                                  Width="12" Height="12"
                                   Stretch="Uniform"
                                   HorizontalAlignment="Center"
                                   VerticalAlignment="Center"
@@ -359,19 +359,18 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="checkBorder" Property="Background" Value="{StaticResource SystemBlueBrush}"/>
+                            <Setter TargetName="checkBorder" Property="Background" Value="{StaticResource SystemAccentBrush}"/>
+                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="{StaticResource SystemAccentBrush}"/>
                             <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="checkBorder" Property="Background" Value="#4A4A4C"/>
+                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="{StaticResource SystemAccentBrush}"/>
                         </Trigger>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsChecked" Value="True"/>
-                                <Condition Property="IsMouseOver" Value="True"/>
-                            </MultiTrigger.Conditions>
-                            <Setter TargetName="checkBorder" Property="Background" Value="#0A84FF"/>
-                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource LabelDisabledBrush}"/>
+                            <Setter TargetName="checkBorder" Property="Background" Value="{StaticResource FillBrush}"/>
+                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -379,7 +378,7 @@
     </Style>
 
     <!-- ============================================
-         Apple ScrollViewer Style
+         Windows 11 ScrollViewer Style
          ============================================ -->
     <Style x:Key="AppleScrollViewerStyle" TargetType="ScrollViewer">
         <Setter Property="Background" Value="Transparent"/>
@@ -388,40 +387,42 @@
     </Style>
 
     <!-- ============================================
-         Apple Card Panel Style
+         Windows 11 Card Style
          ============================================ -->
     <Style x:Key="AppleCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource BackgroundSecondaryBrush}"/>
-        <Setter Property="CornerRadius" Value="16"/>
-        <Setter Property="Padding" Value="20"/>
+        <Setter Property="Background" Value="{StaticResource BackgroundPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusMedium}"/>
+        <Setter Property="Padding" Value="16"/>
     </Style>
 
     <!-- ============================================
-         Icon Button Style (SF Symbols style)
+         Windows 11 Icon Button Style
          ============================================ -->
     <Style x:Key="AppleIconButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource SystemBlueBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="12"/>
-        <Setter Property="Width" Value="44"/>
-        <Setter Property="Height" Value="44"/>
+        <Setter Property="Padding" Value="8"/>
+        <Setter Property="Width" Value="36"/>
+        <Setter Property="Height" Value="36"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="22"
+                            CornerRadius="{StaticResource RadiusSmall}"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundElevatedBrush}"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundTertiaryBrush}"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillTertiaryBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

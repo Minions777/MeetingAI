@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Shared.Configuration;
 

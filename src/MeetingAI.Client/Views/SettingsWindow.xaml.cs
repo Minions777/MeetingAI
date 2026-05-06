@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using MeetingAI.Client.ViewModels;
+using MeetingAI.Shared.Configuration;
 
 namespace MeetingAI.Client.Views;
 

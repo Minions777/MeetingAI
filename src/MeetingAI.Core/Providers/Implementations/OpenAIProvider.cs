@@ -103,7 +103,7 @@ public class OpenAIProvider : BaseAIProvider
         {
             Text = text,
             Language = options?.Language ?? "zh",
-            Duration = audio.Duration
+            Duration = audio.Duration.TotalSeconds
         };
         
         // Parse segments if available

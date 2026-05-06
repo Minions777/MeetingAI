@@ -8,13 +8,13 @@
         Title="Settings" 
         Height="650" Width="900"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundPrimaryBrush}"
+        Background="{StaticResource BackgroundSecondaryBrush}"
         WindowStyle="None"
         AllowsTransparency="True"
         ResizeMode="NoResize">
     
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="48"
+        <WindowChrome CaptionHeight="32"
                       ResizeBorderThickness="0"
                       CornerRadius="0"
                       GlassFrameThickness="0"/>
@@ -22,75 +22,63 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="48"/>
+            <RowDefinition Height="32"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <!-- Title Bar -->
+        <!-- Title Bar (Windows 11 style) -->
         <Grid Grid.Row="0" Background="{StaticResource BackgroundPrimaryBrush}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <!-- Traffic Lights -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="16,0,0,0">
-                <Button Width="14" Height="14" Margin="6,0,0,0"
-                        Background="#FF5F57" BorderThickness="0" Cursor="Hand"
+            <!-- Drag Area -->
+            <TextBlock Grid.Column="0" Text="Settings"
+                       Style="{StaticResource SubheadStyle}"
+                       Foreground="{StaticResource LabelSecondaryBrush}"
+                       VerticalAlignment="Center"
+                       Margin="12,0,0,0"/>
+            
+            <!-- Window Controls -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button Content="Done"
+                        Command="{Binding SaveAndCloseCommand}"
+                        Style="{StaticResource AppleSecondaryButtonStyle}"
+                        Margin="0,0,8,0"
+                        Padding="16,6"/>
+                <Button Width="46" Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
                         Click="CloseButton_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="7"/>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <Button Width="14" Height="14" Margin="6,0,0,0"
-                        Background="#FEBC2E" BorderThickness="0" Cursor="Hand"
-                        Click="MinimizeButton_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="7"/>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <Button Width="14" Height="14" Margin="6,0,0,0"
-                        Background="#28C840" BorderThickness="0" Cursor="Hand"
-                        Click="MaximizeButton_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="7"/>
+                            <Border x:Name="border" Background="{TemplateBinding Background}">
+                                <Path Data="M6,6L18,18M6,18L18,6" Stroke="{StaticResource LabelSecondaryBrush}" StrokeThickness="1" Width="12" Height="12" Stretch="Uniform"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource SystemErrorBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
             </StackPanel>
-            
-            <!-- Title -->
-            <TextBlock Grid.Column="1" Text="Settings"
-                       Style="{StaticResource HeadlineStyle}"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            
-            <!-- Save Button -->
-            <Button Grid.Column="2" 
-                    Content="Done"
-                    Command="{Binding SaveAndCloseCommand}"
-                    Style="{StaticResource AppleSecondaryButtonStyle}"
-                    Margin="0,0,16,0"
-                    Padding="20,8"/>
         </Grid>
         
         <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="24">
+        <Grid Grid.Row="1" Margin="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="280"/>
-                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="16"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             
             <!-- Provider List Sidebar -->
             <Border Grid.Column="0" 
-                    Background="{StaticResource BackgroundSecondaryBrush}" 
-                    CornerRadius="16"
+                    Background="{StaticResource BackgroundPrimaryBrush}" 
+                    CornerRadius="{StaticResource RadiusMedium}"
                     Padding="16">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -102,7 +90,7 @@
                     <!-- Sidebar Header -->
                     <TextBlock Grid.Row="0" Text="AI Providers"
                                Style="{StaticResource TitleSmallStyle}"
-                               Margin="12,8,12,20"/>
+                               Margin="4,4,4,16"/>
                     
                     <!-- Provider List -->
                     <ListBox Grid.Row="1" 
@@ -126,15 +114,15 @@
                                         <TextBlock Text="{Binding ProviderType}" 
                                                    Style="{StaticResource CaptionStyle}"
                                                    Foreground="{StaticResource LabelTertiaryBrush}"
-                                                   Margin="0,4,0,0"/>
+                                                   Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <Ellipse Grid.Column="1" 
-                                             Width="10" Height="10"
+                                             Width="8" Height="8"
                                              VerticalAlignment="Center"
-                                             Margin="12,0,0,0">
+                                             Margin="8,0,0,0">
                                         <Ellipse.Style>
                                             <Style TargetType="Ellipse">
-                                                <Setter Property="Fill" Value="{StaticResource SystemGreenBrush}"/>
+                                                <Setter Property="Fill" Value="{StaticResource SystemSuccessBrush}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsEnabled}" Value="False">
                                                         <Setter Property="Fill" Value="{StaticResource LabelTertiaryBrush}"/>
@@ -152,15 +140,15 @@
                     <Button Grid.Row="2"
                             Command="{Binding AddProviderCommand}"
                             Style="{StaticResource AppleSecondaryButtonStyle}"
-                            Margin="0,16,0,0"
-                            Padding="0,14">
+                            Margin="0,12,0,0"
+                            Padding="0,12">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Path Data="{StaticResource PlusIcon}" 
-                                  Fill="{StaticResource SystemBlueBrush}"
-                                  Width="16" Height="16" Stretch="Uniform"
+                                  Fill="{StaticResource SystemAccentBrush}"
+                                  Width="14" Height="14" Stretch="Uniform"
                                   Margin="0,0,8,0"/>
                             <TextBlock Text="Add Provider"
-                                       Foreground="{StaticResource SystemBlueBrush}"/>
+                                       Foreground="{StaticResource SystemAccentBrush}"/>
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -168,201 +156,203 @@
             
             <!-- Provider Editor Panel -->
             <Border Grid.Column="2" 
-                    Background="{StaticResource BackgroundSecondaryBrush}" 
-                    CornerRadius="16"
-                    Padding="28">
-                <Grid Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    
-                    <!-- Editor Header -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,24">
-                        <TextBlock Text="Edit Provider" 
-                                   Style="{StaticResource TitleSmallStyle}"/>
-                        <TextBlock Text="{Binding SelectedProvider.Name}" 
-                                   Style="{StaticResource SubheadStyle}"
-                                   Foreground="{StaticResource LabelTertiaryBrush}"
-                                   Margin="0,4,0,0"/>
-                    </StackPanel>
-                    
-                    <!-- Editor Form -->
-                    <ScrollViewer Grid.Row="1" 
-                                  Style="{StaticResource AppleScrollViewerStyle}"
-                                  VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <!-- Name -->
-                            <TextBlock Text="Name" 
-                                       Style="{StaticResource CaptionStyle}"
+                    Background="{StaticResource BackgroundPrimaryBrush}" 
+                    CornerRadius="{StaticResource RadiusMedium}"
+                    Padding="24">
+                <Grid>
+                    <Grid Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Editor Header -->
+                        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                            <TextBlock Text="Edit Provider" 
+                                       Style="{StaticResource TitleSmallStyle}"/>
+                            <TextBlock Text="{Binding SelectedProvider.Name}" 
+                                       Style="{StaticResource SubheadStyle}"
                                        Foreground="{StaticResource LabelTertiaryBrush}"
-                                       Margin="0,0,0,8"/>
-                            <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource AppleTextBoxStyle}"
-                                     Margin="0,0,0,20"/>
-                            
-                            <!-- Provider Type -->
-                            <TextBlock Text="Provider Type" 
-                                       Style="{StaticResource CaptionStyle}"
-                                       Foreground="{StaticResource LabelTertiaryBrush}"
-                                       Margin="0,0,0,8"/>
-                            <ComboBox ItemsSource="{Binding AvailableProviderTypes}"
-                                      SelectedItem="{Binding EditProviderType}"
-                                      Style="{StaticResource AppleComboBoxStyle}"
-                                      Margin="0,0,0,20"/>
-                            
-                            <!-- API Key -->
-                            <TextBlock Text="API Key" 
-                                       Style="{StaticResource CaptionStyle}"
-                                       Foreground="{StaticResource LabelTertiaryBrush}"
-                                       Margin="0,0,0,8"/>
-                            <PasswordBox x:Name="ApiKeyBox"
-                                          Style="{StaticResource ApplePasswordBoxStyle}"
-                                          Margin="0,0,0,20"
-                                          PasswordChanged="ApiKeyBox_PasswordChanged"/>
-                            
-                            <!-- Base URL -->
-                            <TextBlock Text="Base URL" 
-                                       Style="{StaticResource CaptionStyle}"
-                                       Foreground="{StaticResource LabelTertiaryBrush}"
-                                       Margin="0,0,0,8"/>
-                            <TextBox Text="{Binding EditBaseUrl, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource AppleTextBoxStyle}"
-                                     Margin="0,0,0,20"/>
-                            
-                            <!-- Model -->
-                            <TextBlock Text="Model" 
-                                       Style="{StaticResource CaptionStyle}"
-                                       Foreground="{StaticResource LabelTertiaryBrush}"
-                                       Margin="0,0,0,8"/>
-                            <TextBox Text="{Binding EditModel, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource AppleTextBoxStyle}"
-                                     Margin="0,0,0,20"/>
-                            
-                            <!-- Whisper Model -->
-                            <TextBlock Text="Whisper Model (Transcription)" 
-                                       Style="{StaticResource CaptionStyle}"
-                                       Foreground="{StaticResource LabelTertiaryBrush}"
-                                       Margin="0,0,0,8"/>
-                            <TextBox Text="{Binding EditWhisperModel, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource AppleTextBoxStyle}"
-                                     Margin="0,0,0,20"/>
-                            
-                            <!-- Max Tokens -->
-                            <TextBlock Text="Max Tokens" 
-                                       Style="{StaticResource CaptionStyle}"
-                                       Foreground="{StaticResource LabelTertiaryBrush}"
-                                       Margin="0,0,0,8"/>
-                            <TextBox Text="{Binding EditMaxTokens, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource AppleTextBoxStyle}"
-                                     Margin="0,0,0,20"/>
-                            
-                            <!-- Temperature -->
-                            <TextBlock Text="Temperature" 
-                                       Style="{StaticResource CaptionStyle}"
-                                       Foreground="{StaticResource LabelTertiaryBrush}"
-                                       Margin="0,0,0,8"/>
-                            <Grid Margin="0,0,0,20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="60"/>
-                                </Grid.ColumnDefinitions>
-                                <Slider Grid.Column="0"
-                                        Value="{Binding EditTemperature}" 
-                                        Minimum="0" Maximum="2" 
-                                        TickFrequency="0.1"
-                                        Style="{StaticResource AppleSliderStyle}"/>
-                                <TextBlock Grid.Column="1" 
-                                           Text="{Binding EditTemperature, StringFormat='{}{0:F1}'}"
-                                           Style="{StaticResource BodyStyle}"
-                                           HorizontalAlignment="Right"
-                                           VerticalAlignment="Center"/>
-                            </Grid>
-                            
-                            <!-- Enabled -->
-                            <CheckBox Content="Enabled"
-                                      IsChecked="{Binding EditIsEnabled}"
-                                      Style="{StaticResource AppleCheckBoxStyle}"
-                                      Margin="0,0,0,20"/>
-                            
-                            <!-- Test Connection -->
-                            <Button Command="{Binding TestConnectionCommand}"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        
+                        <!-- Editor Form -->
+                        <ScrollViewer Grid.Row="1" 
+                                      Style="{StaticResource AppleScrollViewerStyle}"
+                                      VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <!-- Name -->
+                                <TextBlock Text="Name" 
+                                           Style="{StaticResource CaptionStyle}"
+                                           Foreground="{StaticResource LabelTertiaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource AppleTextBoxStyle}"
+                                         Margin="0,0,0,16"/>
+                        
+                                <!-- Provider Type -->
+                                <TextBlock Text="Provider Type" 
+                                           Style="{StaticResource CaptionStyle}"
+                                           Foreground="{StaticResource LabelTertiaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <ComboBox ItemsSource="{Binding AvailableProviderTypes}"
+                                          SelectedItem="{Binding EditProviderType}"
+                                          Style="{StaticResource AppleComboBoxStyle}"
+                                          Margin="0,0,0,16"/>
+                                
+                                <!-- API Key -->
+                                <TextBlock Text="API Key" 
+                                           Style="{StaticResource CaptionStyle}"
+                                           Foreground="{StaticResource LabelTertiaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <PasswordBox x:Name="ApiKeyBox"
+                                              Style="{StaticResource ApplePasswordBoxStyle}"
+                                              Margin="0,0,0,16"
+                                              PasswordChanged="ApiKeyBox_PasswordChanged"/>
+                                
+                                <!-- Base URL -->
+                                <TextBlock Text="Base URL" 
+                                           Style="{StaticResource CaptionStyle}"
+                                           Foreground="{StaticResource LabelTertiaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <TextBox Text="{Binding EditBaseUrl, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource AppleTextBoxStyle}"
+                                         Margin="0,0,0,16"/>
+                                
+                                <!-- Model -->
+                                <TextBlock Text="Model" 
+                                           Style="{StaticResource CaptionStyle}"
+                                           Foreground="{StaticResource LabelTertiaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <TextBox Text="{Binding EditModel, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource AppleTextBoxStyle}"
+                                         Margin="0,0,0,16"/>
+                                
+                                <!-- Whisper Model -->
+                                <TextBlock Text="Whisper Model (Transcription)" 
+                                           Style="{StaticResource CaptionStyle}"
+                                           Foreground="{StaticResource LabelTertiaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <TextBox Text="{Binding EditWhisperModel, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource AppleTextBoxStyle}"
+                                         Margin="0,0,0,16"/>
+                                
+                                <!-- Max Tokens -->
+                                <TextBlock Text="Max Tokens" 
+                                           Style="{StaticResource CaptionStyle}"
+                                           Foreground="{StaticResource LabelTertiaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <TextBox Text="{Binding EditMaxTokens, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource AppleTextBoxStyle}"
+                                         Margin="0,0,0,16"/>
+                                
+                                <!-- Temperature -->
+                                <TextBlock Text="Temperature" 
+                                           Style="{StaticResource CaptionStyle}"
+                                           Foreground="{StaticResource LabelTertiaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider Grid.Column="0"
+                                            Value="{Binding EditTemperature}" 
+                                            Minimum="0" Maximum="2" 
+                                            TickFrequency="0.1"
+                                            Style="{StaticResource AppleSliderStyle}"/>
+                                    <TextBlock Grid.Column="1" 
+                                               Text="{Binding EditTemperature, StringFormat='{}{0:F1}'}"
+                                               Style="{StaticResource BodyStyle}"
+                                               HorizontalAlignment="Right"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                                
+                                <!-- Enabled -->
+                                <CheckBox Content="Enabled"
+                                          IsChecked="{Binding EditIsEnabled}"
+                                          Style="{StaticResource AppleCheckBoxStyle}"
+                                          Margin="0,0,0,16"/>
+                                
+                                <!-- Test Connection -->
+                                <Button Command="{Binding TestConnectionCommand}"
+                                        Style="{StaticResource AppleSecondaryButtonStyle}"
+                                        HorizontalAlignment="Left"
+                                        Padding="16,10"
+                                        Margin="0,0,0,12">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource InfoIcon}" 
+                                              Fill="{StaticResource SystemAccentBrush}"
+                                              Width="14" Height="14" Stretch="Uniform"
+                                              Margin="0,0,8,0"/>
+                                        <TextBlock Text="Test Connection"
+                                                   Foreground="{StaticResource SystemAccentBrush}"/>
+                                    </StackPanel>
+                                </Button>
+                                
+                                <!-- Status Text -->
+                                <TextBlock Text="{Binding StatusText}"
+                                           Style="{StaticResource SubheadStyle}"
+                                           Foreground="{StaticResource SystemSuccessBrush}"
+                                           Visibility="{Binding StatusText, Converter={StaticResource StringToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                        
+                        <!-- Action Buttons -->
+                        <StackPanel Grid.Row="2" 
+                                    Orientation="Horizontal" 
+                                    HorizontalAlignment="Right" 
+                                    Margin="0,20,0,0">
+                            <Button Command="{Binding DeleteProviderCommand}"
                                     Style="{StaticResource AppleSecondaryButtonStyle}"
-                                    HorizontalAlignment="Left"
-                                    Padding="20,12"
-                                    Margin="0,0,0,16">
+                                    Padding="16,10"
+                                    Margin="0,0,12,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <Path Data="{StaticResource InfoIcon}" 
-                                          Fill="{StaticResource SystemBlueBrush}"
-                                          Width="16" Height="16" Stretch="Uniform"
+                                    <Path Data="{StaticResource TrashIcon}" 
+                                          Fill="{StaticResource SystemErrorBrush}"
+                                          Width="14" Height="14" Stretch="Uniform"
                                           Margin="0,0,8,0"/>
-                                    <TextBlock Text="Test Connection"
-                                               Foreground="{StaticResource SystemBlueBrush}"/>
+                                    <TextBlock Text="Delete"
+                                               Foreground="{StaticResource SystemErrorBrush}"/>
                                 </StackPanel>
                             </Button>
                             
-                            <!-- Status Text -->
-                            <TextBlock Text="{Binding StatusText}"
-                                       Style="{StaticResource SubheadStyle}"
-                                       Foreground="{StaticResource SystemGreenBrush}"
-                                       Visibility="{Binding StatusText, Converter={StaticResource StringToVisibilityConverter}}"/>
+                            <Button Command="{Binding SaveProviderCommand}"
+                                    Style="{StaticResource ApplePrimaryButtonStyle}"
+                                    Padding="20,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource CheckmarkIcon}" 
+                                          Fill="White"
+                                          Width="14" Height="14" Stretch="Uniform"
+                                          Margin="0,0,8,0"/>
+                                    <TextBlock Text="Save"
+                                               Foreground="White"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
-                    </ScrollViewer>
+                    </Grid>
                     
-                    <!-- Action Buttons -->
-                    <StackPanel Grid.Row="2" 
-                                Orientation="Horizontal" 
-                                HorizontalAlignment="Right" 
-                                Margin="0,24,0,0">
-                        <Button Command="{Binding DeleteProviderCommand}"
-                                Style="{StaticResource AppleSecondaryButtonStyle}"
-                                Padding="20,12"
-                                Margin="0,0,12,0">
-                            <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource TrashIcon}" 
-                                      Fill="{StaticResource SystemRedBrush}"
-                                      Width="16" Height="16" Stretch="Uniform"
-                                      Margin="0,0,8,0"/>
-                                <TextBlock Text="Delete"
-                                           Foreground="{StaticResource SystemRedBrush}"/>
-                            </StackPanel>
-                        </Button>
-                        
-                        <Button Command="{Binding SaveProviderCommand}"
-                                Style="{StaticResource ApplePrimaryButtonStyle}"
-                                Padding="24,12">
-                            <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource CheckmarkIcon}" 
-                                      Fill="White"
-                                      Width="16" Height="16" Stretch="Uniform"
-                                      Margin="0,0,8,0"/>
-                                <TextBlock Text="Save"
-                                           Foreground="White"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-                
-                <!-- Empty State -->
-                <Grid Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Visible}">
-                    <StackPanel HorizontalAlignment="Center" 
-                                VerticalAlignment="Center">
-                        <Path Data="{StaticResource SettingsIcon}" 
-                              Fill="{StaticResource LabelTertiaryBrush}"
-                              Width="64" Height="64" Stretch="Uniform"
-                              HorizontalAlignment="Center"
-                              Opacity="0.5"/>
-                        <TextBlock Text="Select a provider to edit" 
-                                   Style="{StaticResource HeadlineStyle}"
-                                   Foreground="{StaticResource LabelTertiaryBrush}"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,20,0,8"/>
-                        <TextBlock Text="Or click Add Provider to create a new one"
-                                   Style="{StaticResource SubheadStyle}"
-                                   Foreground="{StaticResource LabelTertiaryBrush}"
-                                   HorizontalAlignment="Center"/>
-                    </StackPanel>
+                    <!-- Empty State -->
+                    <Grid Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Visible}">
+                        <StackPanel HorizontalAlignment="Center" 
+                                    VerticalAlignment="Center">
+                            <Path Data="{StaticResource SettingsIcon}" 
+                                  Fill="{StaticResource LabelTertiaryBrush}"
+                                  Width="56" Height="56" Stretch="Uniform"
+                                  HorizontalAlignment="Center"
+                                  Opacity="0.5"/>
+                            <TextBlock Text="Select a provider to edit" 
+                                       Style="{StaticResource HeadlineStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,16,0,8"/>
+                            <TextBlock Text="Or click Add Provider to create a new one"
+                                       Style="{StaticResource SubheadStyle}"
+                                       Foreground="{StaticResource LabelTertiaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>

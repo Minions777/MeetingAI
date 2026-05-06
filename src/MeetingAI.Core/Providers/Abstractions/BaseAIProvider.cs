@@ -1,6 +1,7 @@
 using System.Text.Json;
 using MeetingAI.Core.Models;
 using MeetingAI.Shared.Configuration;
+using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Providers.Abstractions;
 
@@ -18,7 +19,7 @@ public abstract class BaseAIProvider : IAIProvider
     public abstract IReadOnlyList<string> SupportedChatModels { get; }
     public abstract IReadOnlyList<string> SupportedTranscriptionModels { get; }
     
-    public bool IsConfigured => _config?.IsConfigured ?? false;
+    public bool IsConfigured => !string.IsNullOrEmpty(_config?.ApiKey);
     public abstract bool SupportsTranscription { get; }
     public abstract bool SupportsChat { get; }
     

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MeetingAI.Shared.Logging;
@@ -227,7 +228,7 @@ public class ConfigurationService
             {
                 errors.Add("默认 Provider 不存在");
             }
-            else if (!defaultProvider.IsConfigured)
+            else if (string.IsNullOrEmpty(defaultProvider.ApiKey))
             {
                 errors.Add($"默认 Provider '{defaultProvider.Name}' 未配置 API Key");
             }
@@ -272,8 +273,6 @@ public class ConfigurationService
                 ApiKey = "***REDACTED***",
                 BaseUrl = p.BaseUrl,
                 IsEnabled = p.IsEnabled,
-                SupportsChat = p.SupportsChat,
-                SupportsTranscription = p.SupportsTranscription,
                 Temperature = p.Temperature,
                 MaxTokens = p.MaxTokens,
                 SystemPrompt = p.SystemPrompt,

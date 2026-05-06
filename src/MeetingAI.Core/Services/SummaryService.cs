@@ -1,4 +1,5 @@
 using MeetingAI.Core.Models;
+using MeetingAI.Core.Providers;
 using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Shared.Configuration;
 using MeetingAI.Shared.Constants;

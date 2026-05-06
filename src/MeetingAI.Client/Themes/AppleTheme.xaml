@@ -2,224 +2,195 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- ============================================
-         Apple Design System Colors - Dark Mode
+         Windows 11 Fluent Design System - Light
          ============================================ -->
-    
+
     <!-- System Colors -->
-    <Color x:Key="SystemBlueColor">#007AFF</Color>
-    <Color x:Key="SystemGreenColor">#34C759</Color>
-    <Color x:Key="SystemOrangeColor">#FF9500</Color>
-    <Color x:Key="SystemRedColor">#FF3B30</Color>
-    <Color x:Key="SystemPurpleColor">#5856D6</Color>
-    <Color x:Key="SystemYellowColor">#FFCC00</Color>
-    <Color x:Key="SystemTealColor">#5AC8FA</Color>
-    <Color x:Key="SystemPinkColor">#FF2D55</Color>
-    
-    <!-- Background Colors (Apple Dark Mode) -->
-    <Color x:Key="BackgroundPrimaryColor">#000000</Color>
-    <Color x:Key="BackgroundSecondaryColor">#1C1C1E</Color>
-    <Color x:Key="BackgroundTertiaryColor">#2C2C2E</Color>
-    <Color x:Key="BackgroundElevatedColor">#3A3A3C</Color>
-    
+    <Color x:Key="SystemAccentColor">#0078D4</Color>
+    <Color x:Key="SystemAccentLightColor">#4CC2FF</Color>
+    <Color x:Key="SystemAccentDarkColor">#005A9E</Color>
+    <Color x:Key="SystemSuccessColor">#107C10</Color>
+    <Color x:Key="SystemWarningColor">#FF8C00</Color>
+    <Color x:Key="SystemErrorColor">#D13438</Color>
+
+    <!-- Background Colors (Windows 11 Mica-like) -->
+    <Color x:Key="BackgroundPrimaryColor">#FFFFFF</Color>
+    <Color x:Key="BackgroundSecondaryColor">#F3F3F3</Color>
+    <Color x:Key="BackgroundTertiaryColor">#EBEBEB</Color>
+    <Color x:Key="BackgroundElevatedColor">#FFFFFF</Color>
+    <Color x:Key="BackgroundMicaColor">#F5F5F5</Color>
+
     <!-- Label Colors -->
-    <Color x:Key="LabelPrimaryColor">#FFFFFF</Color>
-    <Color x:Key="LabelSecondaryColor">#EBEBF5</Color>
-    <Color x:Key="LabelTertiaryColor">#EBEBF5</Color>
-    <Color x:Key="LabelQuaternaryColor">#EBEBF5</Color>
-    
-    <!-- Separator -->
-    <Color x:Key="SeparatorColor">#38383A</Color>
-    <Color x:Key="SeparatorOpaqueColor">#545458</Color>
-    
+    <Color x:Key="LabelPrimaryColor">#1A1A1A</Color>
+    <Color x:Key="LabelSecondaryColor">#616161</Color>
+    <Color x:Key="LabelTertiaryColor">#8A8A8A</Color>
+    <Color x:Key="LabelDisabledColor">#ACACAC</Color>
+
+    <!-- Border Colors -->
+    <Color x:Key="BorderColor">#E0E0E0</Color>
+    <Color x:Key="BorderLightColor">#F0F0F0</Color>
+    <Color x:Key="BorderFocusColor">#0078D4</Color>
+
     <!-- Fill Colors -->
-    <Color x:Key="FillPrimaryColor">#787880</Color>
-    <Color x:Key="FillSecondaryColor">#787880</Color>
-    <Color x:Key="FillTertiaryColor">#767680</Color>
-    <Color x:Key="FillQuaternaryColor">#787880</Color>
-    
+    <Color x:Key="FillColor">#F5F5F5</Color>
+    <Color x:Key="FillSecondaryColor">#E8E8E8</Color>
+    <Color x:Key="FillTertiaryColor">#DBDBDB</Color>
+
     <!-- Brushes - System -->
-    <SolidColorBrush x:Key="SystemBlueBrush" Color="{StaticResource SystemBlueColor}"/>
-    <SolidColorBrush x:Key="SystemGreenBrush" Color="{StaticResource SystemGreenColor}"/>
-    <SolidColorBrush x:Key="SystemOrangeBrush" Color="{StaticResource SystemOrangeColor}"/>
-    <SolidColorBrush x:Key="SystemRedBrush" Color="{StaticResource SystemRedColor}"/>
-    <SolidColorBrush x:Key="SystemPurpleBrush" Color="{StaticResource SystemPurpleColor}"/>
-    
+    <SolidColorBrush x:Key="SystemAccentBrush" Color="{StaticResource SystemAccentColor}"/>
+    <SolidColorBrush x:Key="SystemAccentLightBrush" Color="{StaticResource SystemAccentLightColor}"/>
+    <SolidColorBrush x:Key="SystemAccentDarkBrush" Color="{StaticResource SystemAccentDarkColor}"/>
+    <SolidColorBrush x:Key="SystemSuccessBrush" Color="{StaticResource SystemSuccessColor}"/>
+    <SolidColorBrush x:Key="SystemWarningBrush" Color="{StaticResource SystemWarningColor}"/>
+    <SolidColorBrush x:Key="SystemErrorBrush" Color="{StaticResource SystemErrorColor}"/>
+
     <!-- Brushes - Background -->
     <SolidColorBrush x:Key="BackgroundPrimaryBrush" Color="{StaticResource BackgroundPrimaryColor}"/>
     <SolidColorBrush x:Key="BackgroundSecondaryBrush" Color="{StaticResource BackgroundSecondaryColor}"/>
     <SolidColorBrush x:Key="BackgroundTertiaryBrush" Color="{StaticResource BackgroundTertiaryColor}"/>
     <SolidColorBrush x:Key="BackgroundElevatedBrush" Color="{StaticResource BackgroundElevatedColor}"/>
-    
+    <SolidColorBrush x:Key="BackgroundMicaBrush" Color="{StaticResource BackgroundMicaColor}"/>
+
     <!-- Brushes - Label -->
     <SolidColorBrush x:Key="LabelPrimaryBrush" Color="{StaticResource LabelPrimaryColor}"/>
     <SolidColorBrush x:Key="LabelSecondaryBrush" Color="{StaticResource LabelSecondaryColor}"/>
     <SolidColorBrush x:Key="LabelTertiaryBrush" Color="{StaticResource LabelTertiaryColor}"/>
-    
-    <!-- Brushes - Separator -->
-    <SolidColorBrush x:Key="SeparatorBrush" Color="{StaticResource SeparatorColor}"/>
-    
+    <SolidColorBrush x:Key="LabelDisabledBrush" Color="{StaticResource LabelDisabledColor}"/>
+
+    <!-- Brushes - Border -->
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+    <SolidColorBrush x:Key="BorderLightBrush" Color="{StaticResource BorderLightColor}"/>
+    <SolidColorBrush x:Key="BorderFocusBrush" Color="{StaticResource BorderFocusColor}"/>
+
     <!-- Brushes - Fill -->
-    <SolidColorBrush x:Key="FillPrimaryBrush" Color="{StaticResource FillPrimaryColor}"/>
-    
+    <SolidColorBrush x:Key="FillBrush" Color="{StaticResource FillColor}"/>
+    <SolidColorBrush x:Key="FillSecondaryBrush" Color="{StaticResource FillSecondaryColor}"/>
+    <SolidColorBrush x:Key="FillTertiaryBrush" Color="{StaticResource FillTertiaryColor}"/>
+
     <!-- ============================================
-         Apple Typography
+         Windows 11 Typography (Segoe UI Variable)
          ============================================ -->
-    
-    <!-- Title - 34px Bold -->
-    <FontFamily x:Key="AppleFont">Segoe UI</FontFamily>
-    
+
+    <FontFamily x:Key="SegoeUIFont">Segoe UI Variable, Segoe UI</FontFamily>
+
     <Style x:Key="TitleLargeStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="34</Setter>
-        <Setter Property="FontWeight" Value="Bold</Setter>
+        <Setter Property="FontFamily" Value="{StaticResource SegoeUIFont}"/>
+        <Setter Property="FontSize" Value="28"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
     </Style>
-    
-    <!-- Title 2 - 28px Bold -->
+
     <Style x:Key="TitleMediumStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="28</Setter>
-        <Setter Property="FontWeight" Value="Bold</Setter>
+        <Setter Property="FontFamily" Value="{StaticResource SegoeUIFont}"/>
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
     </Style>
-    
-    <!-- Title 3 - 22px Semibold -->
+
     <Style x:Key="TitleSmallStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="22</Setter>
-        <Setter Property="FontWeight" Value="SemiBold</Setter>
+        <Setter Property="FontFamily" Value="{StaticResource SegoeUIFont}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
     </Style>
-    
-    <!-- Headline - 17px Semibold -->
+
     <Style x:Key="HeadlineStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="17</Setter>
-        <Setter Property="FontWeight" Value="SemiBold</Setter>
+        <Setter Property="FontFamily" Value="{StaticResource SegoeUIFont}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
     </Style>
-    
-    <!-- Body - 17px Regular -->
+
     <Style x:Key="BodyStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="17</Setter>
-        <Setter Property="FontWeight" Value="Normal</Setter>
+        <Setter Property="FontFamily" Value="{StaticResource SegoeUIFont}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
     </Style>
-    
-    <!-- Callout - 16px Regular -->
+
     <Style x:Key="CalloutStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="16</Setter>
-        <Setter Property="FontWeight" Value="Normal</Setter>
+        <Setter Property="FontFamily" Value="{StaticResource SegoeUIFont}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Foreground" Value="{StaticResource LabelSecondaryBrush}"/>
     </Style>
-    
-    <!-- Subhead - 15px Regular -->
+
     <Style x:Key="SubheadStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="15</Setter>
-        <Setter Property="FontWeight" Value="Normal</Setter>
+        <Setter Property="FontFamily" Value="{StaticResource SegoeUIFont}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Foreground" Value="{StaticResource LabelSecondaryBrush}"/>
     </Style>
-    
-    <!-- Footnote - 13px Regular -->
+
     <Style x:Key="FootnoteStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="13</Setter>
-        <Setter Property="FontWeight" Value="Normal</Setter>
+        <Setter Property="FontFamily" Value="{StaticResource SegoeUIFont}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Foreground" Value="{StaticResource LabelTertiaryBrush}"/>
     </Style>
-    
-    <!-- Caption 1 - 12px Regular -->
+
     <Style x:Key="CaptionStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="12</Setter>
-        <Setter Property="FontWeight" Value="Normal</Setter>
+        <Setter Property="FontFamily" Value="{StaticResource SegoeUIFont}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Foreground" Value="{StaticResource LabelTertiaryBrush}"/>
     </Style>
-    
-    <!-- Caption 2 - 11px Regular -->
-    <Style x:Key="CaptionSmallStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource AppleFont}"/>
-        <Setter Property="FontSize" Value="11</Setter>
-        <Setter Property="FontWeight" Value="Normal</Setter>
-        <Setter Property="Foreground" Value="{StaticResource LabelTertiaryBrush}"/>
-    </Style>
-    
+
     <!-- ============================================
-         Apple Spacing System (8pt Grid)
+         Spacing System (4pt Grid)
          ============================================ -->
-    <Thickness x:Key="SpacingXS">4</Thickness>
-    <Thickness x:Key="SpacingSM">8</Thickness>
-    <Thickness x:Key="SpacingMD">16</Thickness>
-    <Thickness x:Key="SpacingLG">24</Thickness>
-    <Thickness x:Key="SpacingXL">32</Thickness>
-    <Thickness x:Key="SpacingXXL">48</Thickness>
-    
+    <Thickness x:Key="SpacingXS">2</Thickness>
+    <Thickness x:Key="SpacingSM">4</Thickness>
+    <Thickness x:Key="SpacingMD">8</Thickness>
+    <Thickness x:Key="SpacingLG">12</Thickness>
+    <Thickness x:Key="SpacingXL">16</Thickness>
+    <Thickness x:Key="SpacingXXL">24</Thickness>
+
     <!-- ============================================
-         Corner Radius
+         Windows 11 Corner Radius
          ============================================ -->
-    <CornerRadius x:Key="RadiusSmall">8</CornerRadius>
-    <CornerRadius x:Key="RadiusMedium">12</CornerRadius>
-    <CornerRadius x:Key="RadiusLarge">16</CornerRadius>
-    <CornerRadius x:Key="RadiusXLarge">20</CornerRadius>
-    
+    <CornerRadius x:Key="RadiusSmall">4</CornerRadius>
+    <CornerRadius x:Key="RadiusMedium">8</CornerRadius>
+    <CornerRadius x:Key="RadiusLarge">12</CornerRadius>
+
     <!-- ============================================
-         Apple Icon Paths (SF Symbols Style)
+         Icon Paths (Windows 11 Segoe Fluent Icons style)
          ============================================ -->
-    
-    <!-- Mic Icon -->
-    <PathGeometry x:Key="MicIcon">M12,14c1.66,0,3-1.34,3-3V5c0-1.66-1.34-3-3-3S9,3.34,9,5v6C9,12.66,10.34,14,12,14z M17.3,11c0,2.97-2.16,5.43-5,5.91V19h1c0.55,0,1,0.45,1,1v1h2v-1c0-0.55,0.45-1,1-1h1v-2.09C16.16,16.43,17.3,13.97,17.3,11z</PathGeometry>
-    
-    <!-- MicSlash Icon -->
-    <PathGeometry x:Key="MicSlashIcon">M1,1v22h22v-2H3V3H1V1z M12,14c1.66,0,3-1.34,3-3V5c0-0.76-0.27-1.45-0.72-2h1.37c0.97,0.95,1.58,2.24,1.58,3.69c0,3.09-2.51,5.59-5.59,5.59H9v2.18c1.2,0.31,2.35,0.82,3.35,1.51L11,14H9V11c0-0.76-0.27-1.45-0.72-2H9.63C10.08,9.55,11.01,10.72,11.01,12H12z</PathGeometry>
-    
-    <!-- Pause Icon -->
-    <PathGeometry x:Key="PauseIcon">M9,16h2V8H9V16z M13,16h2V8h-2V16z</PathGeometry>
-    
-    <!-- Play Icon -->
-    <PathGeometry x:Key="PlayIcon">M8,5v14l11-7L8,5z</PathGeometry>
-    
-    <!-- Stop Icon -->
-    <PathGeometry x:Key="StopIcon">M6,6h12v12H6V6z</PathGeometry>
-    
-    <!-- Document Icon -->
-    <PathGeometry x:Key="DocumentIcon">M14,2H6C4.9,2,4,2.9,4,4v16c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V8L14,2z M16,18H8v-2h8V18z M16,14H8v-2h8V14z M13,9V3.5L18.5,9H13z</PathGeometry>
-    
-    <!-- DocText Icon -->
-    <PathGeometry x:Key="DocTextIcon">M14,2H6C4.9,2,4,2.9,4,4v16c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V8L14,2z M13,9V3.5L18.5,9H13z M7,11h2v2H7V11z M7,15h2v2H7V15z M11,11h2v2h-2V11z M11,15h2v2h-2V15z</PathGeometry>
-    
-    <!-- Copy Icon -->
-    <PathGeometry x:Key="CopyIcon">M16,1H4C2.9,1,2,1.9,2,3v14h2V3h12V1z M19,5H8C6.9,5,6,5.9,6,7v14c0,1.1,0.9,2,2,2h11c1.1,0,2-0.9,2-2V7C21,5.9,20.1,5,19,5z M19,21H8V7h11V21z</PathGeometry>
-    
-    <!-- Settings Icon -->
-    <PathGeometry x:Key="SettingsIcon">M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z</PathGeometry>
-    
-    <!-- Checkmark Icon -->
-    <PathGeometry x:Key="CheckmarkIcon">M9,16.17L4.83,12l-1.42,1.41L9,19L21,7l-1.41-1.41L9,16.17z</PathGeometry>
-    
-    <!-- ChevronRight Icon -->
-    <PathGeometry x:Key="ChevronRightIcon">M10,6L8.59,7.41,13.17,12l-4.58,4.59L10,18l6-6L10,6z</PathGeometry>
-    
-    <!-- Brain Icon (AI) -->
-    <PathGeometry x:Key="BrainIcon">M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,5c1.66,0,3,1.34,3,3s-1.34,3-3,3s-3-1.34-3-3S10.34,5,12,5z M12,19.2c-2.5,0-4.71-1.28-6-3.22c0.03-1.99,4-3.08,6-3.08c1.99,0,5.97,1.09,6,3.08C16.71,17.92,14.5,19.2,12,19.2z</PathGeometry>
-    
-    <!-- Waveform Icon -->
-    <PathGeometry x:Key="WaveformIcon">M3,9v6h4l5,5V4L7,9H3z M16.5,12c0-1.77-1.02-3.29-2.5-4.03v8.05C15.48,15.29,16.5,13.77,16.5,12z M14,3.23v2.06c2.89,0.86,5,3.54,5,6.71s-2.11,5.85-5,6.71v2.06c4.01-0.91,7-4.49,7-8.77S18.01,4.14,14,3.23z</PathGeometry>
-    
-    <!-- Plus Icon -->
-    <PathGeometry x:Key="PlusIcon">M19,13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z</PathGeometry>
-    
-    <!-- Trash Icon -->
-    <PathGeometry x:Key="TrashIcon">M6,19c0,1.1,0.9,2,2,2h8c1.1,0,2-0.9,2-2V7H6V19z M19,4h-3.5l-1-1h-5l-1,1H5v2h14V4z</PathGeometry>
-    
-    <!-- Info Icon -->
-    <PathGeometry x:Key="InfoIcon">M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M13,17h-2v-6h2V17z M13,9h-2V7h2V9z</PathGeometry>
-    
-    <!-- Warning Icon -->
-    <PathGeometry x:Key="WarningIcon">M1,21h22L12,2L1,21z M13,18h-2v-2h2V18z M13,14h-2v-4h2V14z</PathGeometry>
-    
+
+    <PathGeometry x:Key="MicIcon">M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M12,26A9,9 0 0,0 21,17H15V19H21A7,7 0 0,1 14,26</PathGeometry>
+
+    <PathGeometry x:Key="MicSlashIcon">M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M1,1V23H23V1H1M12,26A9,9 0 0,0 21,17H15V19H21A7,7 0 0,1 14,26V20H10V22H12V26M17,8L19.5,10.5L17,13L15.5,11.5L17,8Z</PathGeometry>
+
+    <PathGeometry x:Key="PauseIcon">M6,19H10V5H6V19M14,5V19H18V5H14Z</PathGeometry>
+
+    <PathGeometry x:Key="PlayIcon">M8,5.14V19.14L19,12.14L8,5.14Z</PathGeometry>
+
+    <PathGeometry x:Key="StopIcon">M6,6H18V18H6V6Z</PathGeometry>
+
+    <PathGeometry x:Key="DocumentIcon">M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z</PathGeometry>
+
+    <PathGeometry x:Key="DocTextIcon">M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M13,9H15V13H18V15H13V9M11,9H9V15H11V12H13V15H11V9Z</PathGeometry>
+
+    <PathGeometry x:Key="CopyIcon">M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z</PathGeometry>
+
+    <PathGeometry x:Key="SettingsIcon">M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.35 19.43,11.03L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11.03C4.53,11.35 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z</PathGeometry>
+
+    <PathGeometry x:Key="CheckmarkIcon">M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z</PathGeometry>
+
+    <PathGeometry x:Key="ChevronRightIcon">M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z</PathGeometry>
+
+    <PathGeometry x:Key="BrainIcon">M12,2A9,9 0 0,0 3,11C3,14.03 4.53,16.82 7,18.47V22H9V19H11V22H13V19H15V22H17V18.46C19.47,16.81 21,14 21,11A9,9 0 0,0 12,2M8,11A2,2 0 0,1 10,13A2,2 0 0,1 8,15A2,2 0 0,1 6,13A2,2 0 0,1 8,11M16,11A2,2 0 0,1 18,13A2,2 0 0,1 16,15A2,2 0 0,1 14,13A2,2 0 0,1 16,11M12,14L13.5,17H10.5L12,14Z</PathGeometry>
+
+    <PathGeometry x:Key="WaveformIcon">M3,9H7L12,4V20L7,15H3V9M14,11H22V13H14V11Z</PathGeometry>
+
+    <PathGeometry x:Key="PlusIcon">M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z</PathGeometry>
+
+    <PathGeometry x:Key="TrashIcon">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z</PathGeometry>
+
+    <PathGeometry x:Key="InfoIcon">M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z</PathGeometry>
+
+    <PathGeometry x:Key="WarningIcon">M13,14H11V10H13M13,18H11V12H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z</PathGeometry>
+
     <!-- Converters -->
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
