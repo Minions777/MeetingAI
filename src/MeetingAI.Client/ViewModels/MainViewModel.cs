@@ -26,6 +26,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _statusText = "";
     [ObservableProperty] private string _transcriptText = "";
     [ObservableProperty] private string _summaryText = "";
+    [ObservableProperty] private bool _hasSummary;
     [ObservableProperty] private MeetingRecord? _currentRecord;
     [ObservableProperty] private ProviderConfig? _selectedProvider;
     [ObservableProperty] private ObservableCollection<ProviderConfig> _providers = new();
@@ -203,6 +204,7 @@ public partial class MainViewModel : ObservableObject
                 SelectedProvider?.Id);
             
             SummaryText = FormatSummary(summary);
+            HasSummary = !string.IsNullOrWhiteSpace(SummaryText);
             
             if (CurrentRecord != null)
             {
@@ -264,8 +266,10 @@ public partial class MainViewModel : ObservableObject
         DurationText = duration.ToString(@"hh\:mm\:ss");
     }
     
-    private string FormatSummary(Summary summary)
+    private string FormatSummary(Summary? summary)
     {
+        if (summary == null) return string.Empty;
+        
         var sb = new System.Text.StringBuilder();
         
         if (!string.IsNullOrEmpty(summary.Overview))
