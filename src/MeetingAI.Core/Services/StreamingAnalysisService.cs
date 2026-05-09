@@ -15,7 +15,7 @@ namespace MeetingAI.Core.Services
         private readonly Dictionary<string, List<string>> _streamChunks = new();
         private readonly object _lock = new();
 
-        public event EventHandler<StreamProgressEventArgs> ProgressChanged;
+        public event EventHandler<StreamProgressEventArgs>? ProgressChanged;
 
         public StreamingAnalysisService(MeetingStateManager stateManager)
         {
@@ -96,7 +96,7 @@ namespace MeetingAI.Core.Services
             }
         }
 
-        public string GetCurrentContent(string streamId)
+        public string? GetCurrentContent(string streamId)
         {
             lock (_lock)
             {
@@ -122,8 +122,8 @@ namespace MeetingAI.Core.Services
 
     public class StreamProgressEventArgs : EventArgs
     {
-        public string StreamId { get; set; }
-        public string MeetingId { get; set; }
+        public string StreamId { get; set; } = string.Empty;
+        public string MeetingId { get; set; } = string.Empty;
         public int ChunksProcessed { get; set; }
         public int CurrentLength { get; set; }
     }

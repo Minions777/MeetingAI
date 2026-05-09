@@ -23,4 +23,5 @@ public class ChatResponse
     public string Model { get; set; } = string.Empty;
     public int TokensUsed { get; set; }
     public string FinishReason { get; set; } = string.Empty;
+    public bool IsSuccess { get; set; } = true;
 }

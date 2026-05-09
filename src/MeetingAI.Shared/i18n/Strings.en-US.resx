@@ -188,6 +188,12 @@
   <data name="History_NoRecords" xml:space="preserve">
     <value>No meeting records</value>
   </data>
+  <data name="RecordingHistory" xml:space="preserve">
+    <value>Recording History</value>
+  </data>
+  <data name="NoRecordingHistory" xml:space="preserve">
+    <value>No recording history</value>
+  </data>
   <data name="History_DeleteConfirm" xml:space="preserve">
     <value>Are you sure you want to delete this meeting record?</value>
   </data>

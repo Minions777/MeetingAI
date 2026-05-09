@@ -3,6 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <AssemblyName>MeetingAI</AssemblyName>
     <RootNamespace>MeetingAI</RootNamespace>
@@ -10,6 +11,12 @@
     <AssemblyTitle>会议纪要助手</AssemblyTitle>
     <Product>MeetingAI</Product>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="src\**;tests\**;docs\**;.claude\**;.nezha\**" />
+    <Page Remove="src\**;tests\**;docs\**;.claude\**;.nezha\**" />
+    <None Remove="src\**;tests\**;docs\**;.claude\**;.nezha\**" />
+    <EmbeddedResource Remove="src\**;tests\**;docs\**;.claude\**;.nezha\**" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />

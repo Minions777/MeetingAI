@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace MeetingAI.Services;
 
 public static class LoggerService

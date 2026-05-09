@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using MeetingAI.Core.Models;
 using MeetingAI.Core.Providers;
 using MeetingAI.Core.Providers.Abstractions;
@@ -7,12 +8,14 @@ using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Services;
 
-public class SummaryService : ISummaryService
+public class SummaryService : ISummaryService, IDisposable
 {
-    private readonly ConfigurationService _configService;
-    private readonly Dictionary<string, IAIProvider> _providers = new();
-    
-    private const string DefaultSummaryPrompt = @"你是一个专业的会议助手。请根据以下会议记录，生成结构化的会议摘要：
+    private readonly IConfigurationService _configService;
+    private readonly ConcurrentDictionary<string, IAIProvider> _providers = new();
+    private readonly Lazy<Task> _initialization;
+    private bool _disposed;
+
+    public const string DefaultSummaryPrompt = @"你是一个专业的会议助手。请根据以下会议记录，生成结构化的会议摘要：
 
 1. **会议概要** (50字以内)：简要描述会议主题
 2. **关键要点** (3-5条)：列出会议的主要讨论内容
@@ -21,10 +24,34 @@ public class SummaryService : ISummaryService
 5. **待解决问题** (如有)：列出悬而未决的问题
 
 请用中文回复，格式清晰，便于阅读。";
-    
-    public SummaryService(ConfigurationService configService)
+
+    public SummaryService(IConfigurationService configService)
     {
         _configService = configService;
+        _configService.SettingsChanged += OnSettingsChanged;
+        _initialization = new Lazy<Task>(() => Task.Run(InitializeProviders));
+    }
+
+    private void OnSettingsChanged(object? sender, EventArgs e)
+    {
+        LoggerService.Info("Configuration changed, refreshing chat providers...");
+        // 使用 Task.Run 避免阻塞 UI 线程
+        _ = Task.Run(RefreshProviders);
+    }
+
+    private void RefreshProviders()
+    {
+        // 清理旧的 Provider
+        foreach (var provider in _providers.Values)
+        {
+            if (provider is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+        _providers.Clear();
+        
+        // 重新初始化
         InitializeProviders();
     }
     
@@ -52,6 +79,9 @@ public class SummaryService : ISummaryService
         string? systemPrompt = null,
         CancellationToken ct = default)
     {
+        // 确保 Provider 已初始化
+        await _initialization.Value;
+        
         var settings = _configService.Load();
         providerId ??= settings.DefaultProviderId;
         
@@ -233,5 +263,31 @@ public class SummaryService : ISummaryService
         }
         
         return summary;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _configService.SettingsChanged -= OnSettingsChanged;
+                foreach (var provider in _providers.Values)
+                {
+                    if (provider is IDisposable disposable)
+                    {
+                        disposable.Dispose();
+                    }
+                }
+                _providers.Clear();
+            }
+            _disposed = true;
+        }
     }
 }

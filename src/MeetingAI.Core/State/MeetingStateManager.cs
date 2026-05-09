@@ -11,7 +11,7 @@ namespace MeetingAI.Core.State
         private readonly Dictionary<string, MeetingState> _meetings = new();
         private readonly object _lock = new();
 
-        public event EventHandler<MeetingStateChangedEventArgs> StateChanged;
+        public event EventHandler<MeetingStateChangedEventArgs>? StateChanged;
 
         public MeetingState CreateMeeting(string title)
         {
@@ -30,7 +30,7 @@ namespace MeetingAI.Core.State
             }
         }
 
-        public MeetingState GetMeeting(string meetingId)
+        public MeetingState? GetMeeting(string meetingId)
         {
             lock (_lock)
             {

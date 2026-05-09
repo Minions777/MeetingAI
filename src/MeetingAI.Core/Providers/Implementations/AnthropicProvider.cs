@@ -22,13 +22,9 @@ public class AnthropicProvider : BaseAIProvider
     public override bool SupportsTranscription => false;
     public override bool SupportsChat => true;
     
-    protected override HttpClient CreateHttpClient()
+    protected override void ConfigureHttpClient(HttpClient client)
     {
-        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(_config?.TimeoutSeconds ?? 120) };
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _config?.ApiKey);
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
-        return client;
     }
     
     public override async Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken ct = default)
@@ -69,9 +65,10 @@ public class AnthropicProvider : BaseAIProvider
         {
             Content = responseContent,
             Model = request.Model ?? _config.Model,
-            TokensUsed = root.GetProperty("usage").GetProperty("input_tokens").GetInt32() + 
+            TokensUsed = root.GetProperty("usage").GetProperty("input_tokens").GetInt32() +
                         root.GetProperty("usage").GetProperty("output_tokens").GetInt32(),
-            FinishReason = root.GetProperty("stop_reason").GetString() ?? ""
+            FinishReason = root.GetProperty("stop_reason").GetString() ?? "",
+            IsSuccess = true
         };
     }
 }

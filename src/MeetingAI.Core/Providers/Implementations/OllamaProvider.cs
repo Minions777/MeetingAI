@@ -25,11 +25,10 @@ public class OllamaProvider : BaseAIProvider
     public override bool SupportsTranscription => true;
     public override bool SupportsChat => true;
     
-    protected override HttpClient CreateHttpClient()
+    protected override void ConfigureHttpClient(HttpClient client)
     {
-        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(_config?.TimeoutSeconds ?? 300) };
+        client.Timeout = TimeSpan.FromSeconds(_config?.TimeoutSeconds ?? 300);
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        return client;
     }
     
     public override async Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken ct = default)
@@ -59,10 +58,11 @@ public class OllamaProvider : BaseAIProvider
         {
             Content = content,
             Model = request.Model ?? _config.Model,
-            TokensUsed = 0
+            TokensUsed = 0,
+            IsSuccess = true
         };
     }
-    
+
     public override async Task<bool> TestConnectionAsync(CancellationToken ct = default)
     {
         if (_httpClient == null || _config == null)

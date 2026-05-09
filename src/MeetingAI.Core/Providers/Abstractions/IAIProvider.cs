@@ -13,9 +13,10 @@ public interface IAIProvider
     bool IsConfigured { get; }
     bool SupportsTranscription { get; }
     bool SupportsChat { get; }
-    
+
     void Configure(ProviderConfig config);
     Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken ct = default);
+    IAsyncEnumerable<string> StreamChatAsync(ChatRequest request, CancellationToken ct = default);
     Task<Transcript> TranscribeAsync(AudioData audio, TranscriptionOptions? options = null, CancellationToken ct = default);
     Task<bool> TestConnectionAsync(CancellationToken ct = default);
 }

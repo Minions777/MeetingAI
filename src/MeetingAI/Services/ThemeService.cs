@@ -8,7 +8,7 @@ namespace MeetingAI.Services
     public class ThemeService : INotifyPropertyChanged
     {
         private readonly string _themesPath = "pack://application:,,,/MeetingAI;component/Themes/";
-        private string _currentThemeName;
+        private string _currentThemeName = "ModernDark";
         
         public string CurrentThemeName
         {

@@ -188,6 +188,12 @@
   <data name="History_NoRecords" xml:space="preserve">
     <value>暂无会议记录</value>
   </data>
+  <data name="RecordingHistory" xml:space="preserve">
+    <value>录音历史</value>
+  </data>
+  <data name="NoRecordingHistory" xml:space="preserve">
+    <value>暂无录音记录</value>
+  </data>
   <data name="History_DeleteConfirm" xml:space="preserve">
     <value>确定要删除这条会议记录吗？</value>
   </data>

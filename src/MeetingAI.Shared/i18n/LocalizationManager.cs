@@ -33,6 +33,18 @@ public class LocalizationManager
             ["CopySuccess"] = "已复制到剪贴板",
             ["ConnectionSuccess"] = "连接成功",
             ["ConnectionFailed"] = "连接失败",
+            ["SetAsDefault"] = "设为默认",
+            ["RefreshProviders"] = "刷新列表",
+            ["Pause"] = "暂停",
+            ["Resume"] = "继续",
+            ["Transcript"] = "转录内容",
+            ["GenerateSummary"] = "生成摘要",
+            ["MeetingSummary"] = "会议摘要",
+            ["NoSummaryYet"] = "暂无摘要",
+            ["RecordAndTranscribeHint"] = "录制并转录会议后，点击生成摘要",
+            ["CopySummary"] = "复制摘要",
+            ["RecordingHistory"] = "录音历史",
+            ["NoRecordingHistory"] = "暂无录音记录",
         },
         ["en-US"] = new Dictionary<string, string>
         {
@@ -61,6 +73,18 @@ public class LocalizationManager
             ["CopySuccess"] = "Copied to clipboard",
             ["ConnectionSuccess"] = "Connection successful",
             ["ConnectionFailed"] = "Connection failed",
+            ["SetAsDefault"] = "Set Default",
+            ["RefreshProviders"] = "Refresh",
+            ["Pause"] = "Pause",
+            ["Resume"] = "Resume",
+            ["Transcript"] = "Transcript",
+            ["GenerateSummary"] = "Generate Summary",
+            ["MeetingSummary"] = "Meeting Summary",
+            ["NoSummaryYet"] = "No summary yet",
+            ["RecordAndTranscribeHint"] = "Record and transcribe a meeting, then click Generate Summary",
+            ["CopySummary"] = "Copy Summary",
+            ["RecordingHistory"] = "Recording History",
+            ["NoRecordingHistory"] = "No recording history",
         }
     };
     

@@ -13,6 +13,9 @@ obj/
 [Rr]elease/
 x64/
 x86/
+TestResults/
+legacy_obj_root/
+legacy_obj_src/
 
 # NuGet
 *.nupkg
@@ -31,6 +34,8 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+.claude/
+.nezha/
 
 # Backup
 backup/

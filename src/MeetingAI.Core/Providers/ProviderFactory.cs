@@ -16,6 +16,8 @@ public static class ProviderFactory
         [AIProviderType.Zhipu] = () => new ZhipuProvider(),
     };
     
+    private static IReadOnlyList<AIProviderType>? _cachedSupportedTypes;
+    
     public static IAIProvider Create(AIProviderType type)
     {
         if (_providers.TryGetValue(type, out var factory))
@@ -31,5 +33,6 @@ public static class ProviderFactory
         return provider;
     }
     
-    public static IReadOnlyList<AIProviderType> SupportedTypes => _providers.Keys.ToList();
+    public static IReadOnlyList<AIProviderType> SupportedTypes => 
+        _cachedSupportedTypes ??= _providers.Keys.ToList();
 }

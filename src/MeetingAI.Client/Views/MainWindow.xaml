@@ -3,361 +3,418 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:local="clr-namespace:MeetingAI.Client.Views"
+        xmlns:i18n="clr-namespace:MeetingAI.Shared.i18n;assembly=MeetingAI.Shared"
         mc:Ignorable="d"
-        Title="MeetingAI" 
-        Height="700" Width="1100"
-        MinHeight="600" MinWidth="900"
+        Title="MeetingAI - 智能会议助手"
+        Height="800" Width="1200"
+        MinHeight="700" MinWidth="1000"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundSecondaryBrush}"
         WindowStyle="None"
-        AllowsTransparency="True"
-        ResizeMode="CanResizeWithGrip">
-    
+        AllowsTransparency="True">
+
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="32"
-                      ResizeBorderThickness="8"
-                      CornerRadius="0"
-                      GlassFrameThickness="0"/>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="8"/>
     </WindowChrome.WindowChrome>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="32"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Title Bar (Windows 11 style) -->
-        <Grid Grid.Row="0" Background="{StaticResource BackgroundPrimaryBrush}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            
-            <!-- Drag Area -->
-            <TextBlock Grid.Column="0" Text="MeetingAI"
-                       Style="{StaticResource SubheadStyle}"
-                       Foreground="{StaticResource LabelSecondaryBrush}"
-                       VerticalAlignment="Center"
-                       Margin="12,0,0,0"/>
-            
-            <!-- Window Controls -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                <Button x:Name="MinimizeButton" 
-                        Width="46" Height="32"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Click="MinimizeButton_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}">
-                                <Path Data="M4,12H20" Stroke="{StaticResource LabelSecondaryBrush}" StrokeThickness="1" Width="12" Height="12" Stretch="Uniform"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <Button x:Name="MaximizeButton" 
-                        Width="46" Height="32"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Click="MaximizeButton_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}">
-                                <Path Data="M4,4H16V16H4V4M6,8V14H14V8H6M8,2H18V18H2V8" Stroke="{StaticResource LabelSecondaryBrush}" StrokeThickness="1" Width="12" Height="12" Stretch="Uniform"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <Button x:Name="CloseButton" 
-                        Width="46" Height="32"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Click="CloseButton_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="border" Background="{TemplateBinding Background}">
-                                <Path Data="M6,6L18,18M6,18L18,6" Stroke="{StaticResource LabelSecondaryBrush}" StrokeThickness="1" Width="12" Height="12" Stretch="Uniform"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{StaticResource SystemErrorBrush}"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-            </StackPanel>
-        </Grid>
-        
-        <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="16">
+    <Border Background="{StaticResource BackgroundBrush}"
+            CornerRadius="12"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            Effect="{StaticResource ShadowLevel4}">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            
-            <!-- Provider Selector Bar -->
-            <Border Grid.Row="0" 
-                    Background="{StaticResource BackgroundPrimaryBrush}" 
-                    CornerRadius="{StaticResource RadiusMedium}"
-                    Padding="16,12"
-                    Margin="0,0,0,16">
+
+            <!-- Title Bar -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource BackgroundBrush}"
+                    CornerRadius="12,12,0,0"
+                    Padding="16,8"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    
-                    <!-- Provider Label -->
+
+                    <!-- App Icon and Title -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Path Data="{StaticResource BrainIcon}" 
-                              Fill="{StaticResource SystemAccentBrush}"
-                              Width="20" Height="20" Stretch="Uniform"
-                              Margin="0,0,10,0"/>
-                        <TextBlock Text="AI Provider" 
+                        <Path Data="{StaticResource BrainIcon}"
+                              Fill="{StaticResource PrimaryBrush}"
+                              Width="24" Height="24" Stretch="Uniform"
+                              Margin="0,0,12,0"/>
+                        <TextBlock Text="MeetingAI"
                                    Style="{StaticResource HeadlineStyle}"
                                    VerticalAlignment="Center"/>
+                        <TextBlock Text=" v2.0"
+                                   Style="{StaticResource CaptionStyle}"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0,0,0"/>
                     </StackPanel>
-                    
-                    <!-- Provider Dropdown -->
-                    <ComboBox Grid.Column="1" 
-                              ItemsSource="{Binding Providers}"
-                              SelectedItem="{Binding SelectedProvider}"
-                              DisplayMemberPath="Name"
-                              Style="{StaticResource AppleComboBoxStyle}"
-                              Margin="16,0"
-                              MaxWidth="280"
-                              HorizontalAlignment="Left"/>
-                    
-                    <!-- Status Indicator -->
+
+                    <!-- Provider Selector -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,0">
+                        <Path Data="{StaticResource BrainIcon}"
+                              Fill="{StaticResource InfoBrush}"
+                              Width="16" Height="16" Stretch="Uniform"
+                              Margin="0,0,8,0"/>
+                        <ComboBox ItemsSource="{Binding Providers}"
+                                  SelectedItem="{Binding SelectedProvider}"
+                                  DisplayMemberPath="Name"
+                                  Style="{StaticResource ModernComboBoxStyle}"
+                                  MinWidth="180"
+                                  HorizontalAlignment="Center"/>
+                        <Button Command="{Binding ReloadProvidersCommand}"
+                                Style="{StaticResource ModernIconButtonStyle}"
+                                ToolTip="{i18n:Localize RefreshProviders}"
+                                Margin="8,0,0,0">
+                            <Path Data="{StaticResource RefreshIcon}"
+                                  Fill="{StaticResource TextSecondaryBrush}"
+                                  Width="16" Height="16" Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Window Controls -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Ellipse Width="8" Height="8" 
-                                 Fill="{Binding IsRecording, Converter={StaticResource RecordingStatusColorConverter}, FallbackValue={StaticResource SystemSuccessBrush}}"
-                                 Margin="0,0,8,0"/>
-                        <TextBlock Text="{Binding StatusText}" 
-                                   Style="{StaticResource SubheadStyle}"
-                                   Foreground="{StaticResource LabelSecondaryBrush}"/>
+                        <!-- Status Indicator -->
+                        <Ellipse Width="10" Height="10"
+                                 Fill="{Binding IsRecording, Converter={StaticResource RecordingStatusColorConverter}, FallbackValue={StaticResource SuccessBrush}}"
+                                 Margin="0,0,12,0"/>
+                        <TextBlock Text="{Binding StatusText}"
+                                   Style="{StaticResource BodySmallStyle}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,16,0"/>
+
+                        <!-- Settings Button -->
+                        <Button Command="{Binding OpenSettingsCommand}"
+                                Style="{StaticResource ModernIconButtonStyle}"
+                                ToolTip="{i18n:Localize Settings}">
+                            <Path Data="{StaticResource SettingsIcon}"
+                                  Fill="{StaticResource TextSecondaryBrush}"
+                                  Width="18" Height="18" Stretch="Uniform"/>
+                        </Button>
+
+                        <!-- Window Control Buttons -->
+                        <Button x:Name="MinimizeButton"
+                                Style="{StaticResource ModernIconButtonStyle}"
+                                Click="MinimizeButton_Click"
+                                Width="32" Height="32"
+                                Margin="4,0,0,0">
+                            <Path Data="M0,10 L10,10"
+                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  StrokeThickness="1.5"
+                                  Width="10" Height="1.5"/>
+                        </Button>
+                        <Button x:Name="MaximizeButton"
+                                Style="{StaticResource ModernIconButtonStyle}"
+                                Click="MaximizeButton_Click"
+                                Width="32" Height="32">
+                            <Path Data="M0,0 L10,0 L10,10 L0,10 Z"
+                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  StrokeThickness="1.5"
+                                  Width="10" Height="10"/>
+                        </Button>
+                        <Button x:Name="CloseButton"
+                                Style="{StaticResource ModernIconButtonStyle}"
+                                Click="CloseButton_Click"
+                                Width="32" Height="32">
+                            <Path Data="M0,0 L10,10 M10,0 L0,10"
+                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  StrokeThickness="1.5"
+                                  Width="10" Height="10"/>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>
-            
-            <!-- Content Area -->
-            <Grid Grid.Row="1">
+
+            <!-- Main Content Area -->
+            <Grid Grid.Row="1" Margin="16,8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="16"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                
-                <!-- Left Panel - Recording -->
-                <Border Grid.Column="0" 
-                        Background="{StaticResource BackgroundPrimaryBrush}" 
-                        CornerRadius="{StaticResource RadiusLarge}"
-                        Padding="24">
+
+                <!-- Left Panel - Recording & Transcript -->
+                <Border Grid.Column="0"
+                        Style="{StaticResource ModernCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        
-                        <!-- Recording Controls -->
-                        <StackPanel Grid.Row="0" HorizontalAlignment="Center">
-                            <!-- Duration Display -->
-                            <TextBlock Text="{Binding DurationText}"
-                                       FontSize="56" FontWeight="300"
-                                       FontFamily="{StaticResource SegoeUIFont}"
-                                       Foreground="{StaticResource LabelPrimaryBrush}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,20"/>
-                            
-                            <!-- Volume Indicator -->
-                            <Grid Height="6" Margin="0,0,0,24">
-                                <ProgressBar Value="{Binding VolumeLevel}" 
-                                             Maximum="1"
-                                             Style="{StaticResource AppleProgressBarStyle}"
-                                             Height="6"
-                                             VerticalAlignment="Center"/>
-                            </Grid>
-                            
-                            <!-- Control Buttons -->
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <!-- Record/Stop Button -->
-                                <Button Command="{Binding ToggleRecordingCommand}"
-                                        Style="{StaticResource AppleRecordButtonStyle}"
-                                        Margin="0,0,24,0"/>
-                                
-                                <!-- Pause/Resume Button -->
-                                <Button Command="{Binding PauseResumeCommand}"
-                                        Style="{StaticResource AppleSecondaryButtonStyle}"
-                                        IsEnabled="{Binding IsRecording}"
-                                        Margin="0,0,12,0"
-                                        Padding="16,10">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Path Data="{StaticResource PauseIcon}" 
-                                              Fill="{StaticResource LabelPrimaryBrush}"
-                                              Width="14" Height="14" Stretch="Uniform"
-                                              Margin="0,0,8,0"/>
-                                        <TextBlock Text="Pause"
-                                                   Foreground="{StaticResource LabelPrimaryBrush}"/>
-                                    </StackPanel>
-                                </Button>
-                                
-                                <!-- Transcribe Button -->
-                                <Button Command="{Binding TranscribeCommand}"
-                                        Style="{StaticResource AppleSecondaryButtonStyle}"
-                                        Padding="16,10">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Path Data="{StaticResource DocTextIcon}" 
-                                              Fill="{StaticResource LabelPrimaryBrush}"
-                                              Width="14" Height="14" Stretch="Uniform"
-                                              Margin="0,0,8,0"/>
-                                        <TextBlock Text="Transcribe"
-                                                   Foreground="{StaticResource LabelPrimaryBrush}"/>
-                                    </StackPanel>
-                                </Button>
-                            </StackPanel>
+
+                        <!-- Recording Section Header -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                            <Path Data="{StaticResource MicIcon}"
+                                  Fill="{StaticResource PrimaryBrush}"
+                                  Width="24" Height="24" Stretch="Uniform"
+                                  Margin="0,0,12,0"/>
+                            <TextBlock Text="{i18n:Localize Recording}"
+                                       Style="{StaticResource TitleSmallStyle}"/>
                         </StackPanel>
-                        
+
+                        <!-- Duration and Volume -->
+                        <Border Grid.Row="1"
+                                Background="{StaticResource FillBrush}"
+                                CornerRadius="{StaticResource RadiusMedium}"
+                                Padding="24"
+                                Margin="0,0,0,20">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding DurationText}"
+                                           FontSize="56" FontWeight="200"
+                                           FontFamily="{StaticResource PrimaryFont}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,16"/>
+
+                                <!-- Volume Indicator -->
+                                <Grid Height="8" Margin="0,0,0,0">
+                                    <ProgressBar Value="{Binding VolumeLevel}"
+                                                 Maximum="1"
+                                                 Style="{StaticResource ModernProgressBarStyle}"
+                                                 Height="8"
+                                                 VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Recording Status -->
+                                <StackPanel Orientation="Horizontal" 
+                                            HorizontalAlignment="Center"
+                                            Margin="0,12,0,0"
+                                            Visibility="{Binding IsRecording, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <Ellipse Width="8" Height="8"
+                                             Fill="{StaticResource ErrorBrush}"
+                                             Margin="0,0,8,0"/>
+                                    <TextBlock Text="录音中..."
+                                               Style="{StaticResource CaptionStyle}"
+                                               Foreground="{StaticResource ErrorBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Transcript Section -->
-                        <Grid Grid.Row="1" Margin="0,24,0,0">
-                            <Border Background="{StaticResource FillBrush}" 
-                                    CornerRadius="{StaticResource RadiusMedium}" 
-                                    Padding="16">
+                        <Grid Grid.Row="2">
+                            <Border Background="{StaticResource FillBrush}"
+                                    CornerRadius="{StaticResource RadiusMedium}"
+                                    Padding="20">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
-                                    
+
                                     <!-- Transcript Header -->
-                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-                                        <Path Data="{StaticResource DocTextIcon}" 
-                                              Fill="{StaticResource LabelTertiaryBrush}"
-                                              Width="16" Height="16" Stretch="Uniform"
-                                              Margin="0,0,8,0"/>
-                                        <TextBlock Text="Transcript" 
-                                                   Style="{StaticResource SubheadStyle}"
-                                                   Foreground="{StaticResource LabelTertiaryBrush}"/>
+                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                                        <Path Data="{StaticResource DocTextIcon}"
+                                              Fill="{StaticResource TextTertiaryBrush}"
+                                              Width="18" Height="18" Stretch="Uniform"
+                                              Margin="0,0,10,0"/>
+                                        <TextBlock Text="{i18n:Localize Transcript}"
+                                                   Style="{StaticResource BodyStyle}"
+                                                   Foreground="{StaticResource TextTertiaryBrush}"/>
                                     </StackPanel>
-                                    
+
                                     <!-- Transcript Content -->
-                                    <ScrollViewer Grid.Row="1" 
-                                                  Style="{StaticResource AppleScrollViewerStyle}"
+                                    <ScrollViewer Grid.Row="1"
+                                                  Style="{StaticResource ModernScrollViewerStyle}"
                                                   VerticalScrollBarVisibility="Auto">
                                         <TextBlock Text="{Binding TranscriptText}"
                                                    Style="{StaticResource BodyStyle}"
-                                                   Foreground="{StaticResource LabelSecondaryBrush}"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
                                                    TextWrapping="Wrap"
-                                                   LineHeight="24"/>
+                                                   LineHeight="26"/>
                                     </ScrollViewer>
                                 </Grid>
                             </Border>
                         </Grid>
-                        
-                        <!-- Generate Summary Button -->
-                        <Button Grid.Row="2"
-                                Command="{Binding SummarizeCommand}"
-                                Style="{StaticResource ApplePrimaryButtonStyle}"
-                                HorizontalAlignment="Stretch"
-                                Margin="0,20,0,0"
-                                Padding="0,14">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Path Data="{StaticResource BrainIcon}" 
-                                      Fill="White"
-                                      Width="18" Height="18" Stretch="Uniform"
-                                      Margin="0,0,8,0"/>
-                                <TextBlock Text="Generate Summary" 
-                                           FontSize="14" FontWeight="SemiBold"
-                                           Foreground="White"/>
-                            </StackPanel>
-                        </Button>
+
+                        <!-- Meeting History Section -->
+                        <local:MeetingHistoryControl Grid.Row="3" Margin="0,20,0,0"/>
                     </Grid>
                 </Border>
-                
+
                 <!-- Right Panel - Summary -->
-                <Border Grid.Column="2" 
-                        Background="{StaticResource BackgroundPrimaryBrush}" 
-                        CornerRadius="{StaticResource RadiusLarge}"
-                        Padding="24">
+                <Border Grid.Column="2"
+                        Style="{StaticResource ModernCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        
+
                         <!-- Summary Header -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                            <Path Data="{StaticResource BrainIcon}" 
-                                  Fill="{StaticResource SystemAccentBrush}"
-                                  Width="22" Height="22" Stretch="Uniform"
-                                  Margin="0,0,10,0"/>
-                            <TextBlock Text="Meeting Summary" 
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                            <Path Data="{StaticResource BrainIcon}"
+                                  Fill="{StaticResource InfoBrush}"
+                                  Width="24" Height="24" Stretch="Uniform"
+                                  Margin="0,0,12,0"/>
+                            <TextBlock Text="{i18n:Localize MeetingSummary}"
                                        Style="{StaticResource TitleSmallStyle}"/>
                         </StackPanel>
-                        
+
                         <!-- Summary Content -->
-                        <ScrollViewer Grid.Row="1" 
-                                      Style="{StaticResource AppleScrollViewerStyle}"
+                        <ScrollViewer Grid.Row="1"
+                                      Style="{StaticResource ModernScrollViewerStyle}"
                                       VerticalScrollBarVisibility="Auto">
                             <Grid>
-                                <Border Background="{StaticResource FillBrush}" 
-                                        CornerRadius="{StaticResource RadiusMedium}" 
-                                        Padding="20">
+                                <!-- Summary Text (shown when summary exists) -->
+                                <Border Background="{StaticResource FillBrush}"
+                                        CornerRadius="{StaticResource RadiusMedium}"
+                                        Padding="24"
+                                        Visibility="{Binding HasSummary, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
                                     <TextBlock Text="{Binding SummaryText}"
-                                               Style="{StaticResource BodyStyle}"
+                                               Style="{StaticResource BodyLargeStyle}"
                                                TextWrapping="Wrap"
-                                               LineHeight="26"/>
+                                               LineHeight="28"/>
                                 </Border>
-                                
-                                <!-- Empty State -->
-                                <StackPanel HorizontalAlignment="Center" 
+
+                                <!-- Empty State (shown when no summary) -->
+                                <StackPanel HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
+                                            MinHeight="200"
                                             Visibility="{Binding HasSummary, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Visible}">
-                                    <Path Data="{StaticResource DocTextIcon}" 
-                                          Fill="{StaticResource LabelTertiaryBrush}"
-                                          Width="56" Height="56" Stretch="Uniform"
+                                    <Path Data="{StaticResource DocTextIcon}"
+                                          Fill="{StaticResource TextTertiaryBrush}"
+                                          Width="64" Height="64" Stretch="Uniform"
                                           HorizontalAlignment="Center"
-                                          Opacity="0.5"/>
-                                    <TextBlock Text="No summary yet" 
+                                          Opacity="0.4"/>
+                                    <TextBlock Text="{i18n:Localize NoSummaryYet}"
                                                Style="{StaticResource HeadlineStyle}"
-                                               Foreground="{StaticResource LabelTertiaryBrush}"
+                                               Foreground="{StaticResource TextTertiaryBrush}"
                                                HorizontalAlignment="Center"
-                                               Margin="0,16,0,8"/>
-                                    <TextBlock Text="Record and transcribe a meeting, then click Generate Summary"
-                                               Style="{StaticResource SubheadStyle}"
-                                               Foreground="{StaticResource LabelTertiaryBrush}"
+                                               Margin="0,20,0,12"/>
+                                    <TextBlock Text="{i18n:Localize RecordAndTranscribeHint}"
+                                               Style="{StaticResource BodySmallStyle}"
+                                               Foreground="{StaticResource TextTertiaryBrush}"
                                                HorizontalAlignment="Center"
                                                TextAlignment="Center"
-                                               MaxWidth="260"
+                                               MaxWidth="280"
                                                TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Grid>
                         </ScrollViewer>
-                        
+
                         <!-- Copy Button -->
                         <Button Grid.Row="2"
                                 Command="{Binding CopySummaryCommand}"
-                                Style="{StaticResource AppleSecondaryButtonStyle}"
+                                Style="{StaticResource ModernSecondaryButtonStyle}"
                                 HorizontalAlignment="Right"
-                                Margin="0,16,0,0"
-                                Padding="16,10">
+                                Margin="0,20,0,0"
+                                Padding="20,12">
                             <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource CopyIcon}" 
-                                      Fill="{StaticResource LabelPrimaryBrush}"
-                                      Width="14" Height="14" Stretch="Uniform"
-                                      Margin="0,0,8,0"/>
-                                <TextBlock Text="Copy"
-                                           Foreground="{StaticResource LabelPrimaryBrush}"/>
+                                <Path Data="{StaticResource CopyIcon}"
+                                      Fill="{StaticResource TextPrimaryBrush}"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,10,0"/>
+                                <TextBlock Text="{i18n:Localize CopySummary}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
                             </StackPanel>
                         </Button>
                     </Grid>
                 </Border>
             </Grid>
+
+            <!-- Bottom Control Bar -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource BackgroundBrush}"
+                    CornerRadius="0,0,12,12"
+                    Padding="24,16"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1,0,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Record/Stop Button -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Record Button (shown when not recording) -->
+                        <Button Command="{Binding ToggleRecordingCommand}"
+                                Style="{StaticResource ModernRecordButtonStyle}"
+                                Visibility="{Binding IsRecording, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                            <Path Data="{StaticResource MicIcon}"
+                                  Fill="White"
+                                  Width="28" Height="28" Stretch="Uniform"/>
+                        </Button>
+
+                        <!-- Stop Button (shown when recording) -->
+                        <Button Command="{Binding ToggleRecordingCommand}"
+                                Style="{StaticResource ModernStopButtonStyle}"
+                                Visibility="{Binding IsRecording, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Path Data="{StaticResource StopIcon}"
+                                  Fill="White"
+                                  Width="28" Height="28" Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Center: Other Controls -->
+                    <WrapPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <!-- Pause/Resume Button -->
+                        <Button Command="{Binding PauseResumeCommand}"
+                                Style="{StaticResource ModernSecondaryButtonStyle}"
+                                IsEnabled="{Binding IsRecording}"
+                                Margin="0,0,16,0"
+                                Padding="20,12">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource PauseIcon}"
+                                      Fill="{StaticResource TextPrimaryBrush}"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,10,0"/>
+                                <TextBlock Text="{i18n:Localize Pause}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Transcribe Button -->
+                        <Button Command="{Binding TranscribeCommand}"
+                                Style="{StaticResource ModernSecondaryButtonStyle}"
+                                Padding="20,12"
+                                Margin="0,0,16,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource DocTextIcon}"
+                                      Fill="{StaticResource TextPrimaryBrush}"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,10,0"/>
+                                <TextBlock Text="{i18n:Localize Transcribe}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Generate Summary Button -->
+                        <Button Command="{Binding SummarizeCommand}"
+                                Style="{StaticResource ModernPrimaryButtonStyle}"
+                                Padding="20,12">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource BrainIcon}"
+                                      Fill="White"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,10,0"/>
+                                <TextBlock Text="{i18n:Localize GenerateSummary}"
+                                           Foreground="White"/>
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+
+                    <!-- Right: Status -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding DurationText}"
+                                   Style="{StaticResource BodySmallStyle}"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Grid>
-    </Grid>
+    </Border>
 </Window>

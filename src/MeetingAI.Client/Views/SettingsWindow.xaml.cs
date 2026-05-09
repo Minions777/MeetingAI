@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using MeetingAI.Client.ViewModels;
 using MeetingAI.Shared.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MeetingAI.Client.Views;
 
@@ -10,6 +11,16 @@ public partial class SettingsWindow : Window
     public SettingsWindow()
     {
         InitializeComponent();
+        DataContext = App.Services.GetRequiredService<SettingsViewModel>();
+
+        if (DataContext is ViewModels.SettingsViewModel vm)
+        {
+            vm.RequestClose = () =>
+            {
+                DialogResult = true;
+                Close();
+            };
+        }
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -18,21 +29,12 @@ public partial class SettingsWindow : Window
         Close();
     }
 
-    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
-    {
-        // No minimize for modal dialog
-    }
-
-    private void MaximizeButton_Click(object sender, RoutedEventArgs e)
-    {
-        // No maximize for modal dialog
-    }
-
     private void ProviderList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DataContext is SettingsViewModel vm && sender is ListBox listBox && listBox.SelectedItem is ProviderConfig config)
         {
             vm.EditProviderCommand.Execute(config);
+            ApiKeyBox.Password = vm.EditApiKey;
         }
     }
 

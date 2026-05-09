@@ -83,72 +83,70 @@
     </Style>
 
     <!-- ============================================
-         Record Button (Red, Circular, Flat)
+         Record Button (Red, Circular)
          ============================================ -->
     <Style x:Key="AppleRecordButtonStyle" TargetType="Button">
         <Setter Property="Width" Value="64"/>
         <Setter Property="Height" Value="64"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Background" Value="Red"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Grid>
-                        <Ellipse x:Name="outerCircle"
-                                 Fill="Transparent"
-                                 Stroke="{StaticResource SystemErrorBrush}"
-                                 StrokeThickness="2"
-                                 Width="64" Height="64"/>
-                        <Ellipse x:Name="innerCircle"
-                                 Fill="{StaticResource SystemErrorBrush}"
-                                 Width="48" Height="48"/>
+                        <Ellipse Fill="{TemplateBinding Background}" Width="64" Height="64"/>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="innerCircle" Property="Fill" Value="#E81123"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="innerCircle" Property="Width" Value="44"/>
-                            <Setter TargetName="innerCircle" Property="Height" Value="44"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="outerCircle" Property="Stroke" Value="{StaticResource FillTertiaryBrush}"/>
-                            <Setter TargetName="innerCircle" Property="Fill" Value="{StaticResource FillTertiaryBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
     <!-- ============================================
-         Stop Button (Red, Rounded Square, Flat)
+         Stop Button (Red, Rounded Square)
          ============================================ -->
     <Style x:Key="AppleStopButtonStyle" TargetType="Button">
         <Setter Property="Width" Value="64"/>
         <Setter Property="Height" Value="64"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Background" Value="DarkRed"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Grid>
-                        <Border x:Name="outerBorder"
-                                Background="Transparent"
-                                CornerRadius="{StaticResource RadiusMedium}"
-                                BorderBrush="{StaticResource SystemErrorBrush}"
-                                BorderThickness="2"
-                                Width="64" Height="64"/>
-                        <Border x:Name="innerBorder"
-                                Background="{StaticResource SystemErrorBrush}"
-                                CornerRadius="{StaticResource RadiusSmall}"
-                                Width="36" Height="36"/>
-                    </Grid>
+                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Width="64" Height="64">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================
+         Icon Button Style (for small icon buttons)
+         ============================================ -->
+    <Style x:Key="AppleIconButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource FillBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="8"/>
+        <Setter Property="Width" Value="36"/>
+        <Setter Property="Height" Value="36"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{StaticResource RadiusSmall}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="innerBorder" Property="Background" Value="#E81123"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillSecondaryBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="innerBorder" Property="Width" Value="32"/>
-                            <Setter TargetName="innerBorder" Property="Height" Value="32"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillTertiaryBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -395,39 +393,6 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="{StaticResource RadiusMedium}"/>
         <Setter Property="Padding" Value="16"/>
-    </Style>
-
-    <!-- ============================================
-         Windows 11 Icon Button Style
-         ============================================ -->
-    <Style x:Key="AppleIconButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource LabelPrimaryBrush}"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="8"/>
-        <Setter Property="Width" Value="36"/>
-        <Setter Property="Height" Value="36"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="{StaticResource RadiusSmall}"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource FillTertiaryBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
 </ResourceDictionary>

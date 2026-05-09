@@ -5,8 +5,10 @@ using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Shared.Configuration;
 
-public class ConfigurationService
+public class ConfigurationService : IConfigurationService
 {
+    public event EventHandler? SettingsChanged;
+
     private readonly string _configPath;
     private readonly JsonSerializerOptions _jsonOptions;
     private AppSettings? _cachedSettings;
@@ -36,7 +38,8 @@ public class ConfigurationService
             {
                 LoggerService.Info("配置文件不存在，创建默认配置");
                 _cachedSettings = AppSettings.CreateDefault();
-                Save(_cachedSettings);
+                // 延迟保存，避免在加载时触发事件链
+                Task.Run(() => SaveInternal(_cachedSettings, raiseEvent: false));
                 return _cachedSettings;
             }
             
@@ -47,7 +50,59 @@ public class ConfigurationService
             {
                 LoggerService.Warning("配置文件为空，创建默认配置");
                 _cachedSettings = AppSettings.CreateDefault();
-                Save(_cachedSettings);
+                Task.Run(() => SaveInternal(_cachedSettings, raiseEvent: false));
+                return _cachedSettings;
+            }
+            
+            // Migrate if needed
+            if (settings.Providers.Any())
+            {
+                foreach (var provider in settings.Providers)
+                {
+                    SecureStorage.DecryptConfig(provider);
+                }
+            }
+            
+            LoggerService.Info($"加载了 {settings.Providers.Count} 个Provider配置");
+            _cachedSettings = settings;
+            _lastLoadTime = DateTime.UtcNow;
+            return settings;
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("加载配置失败", ex);
+            _cachedSettings = AppSettings.CreateDefault();
+            return _cachedSettings;
+        }
+    }
+
+    /// <summary>
+    /// 异步加载配置
+    /// </summary>
+    public async Task<AppSettings> LoadAsync()
+    {
+        // 检查缓存是否有效
+        if (_cachedSettings != null && !IsCacheExpired())
+            return _cachedSettings;
+            
+        try
+        {
+            if (!File.Exists(_configPath))
+            {
+                LoggerService.Info("配置文件不存在，创建默认配置");
+                _cachedSettings = AppSettings.CreateDefault();
+                await SaveAsync(_cachedSettings);
+                return _cachedSettings;
+            }
+            
+            var json = await File.ReadAllTextAsync(_configPath);
+            var settings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions);
+            
+            if (settings == null)
+            {
+                LoggerService.Warning("配置文件为空，创建默认配置");
+                _cachedSettings = AppSettings.CreateDefault();
+                await SaveAsync(_cachedSettings);
                 return _cachedSettings;
             }
             
@@ -75,6 +130,11 @@ public class ConfigurationService
     
     public void Save(AppSettings settings)
     {
+        SaveInternal(settings, raiseEvent: true);
+    }
+    
+    private void SaveInternal(AppSettings settings, bool raiseEvent)
+    {
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
@@ -98,6 +158,48 @@ public class ConfigurationService
             _cachedSettings = settings;
             _lastLoadTime = DateTime.UtcNow;
             LoggerService.Info("配置已保存并更新缓存");
+            
+            if (raiseEvent)
+            {
+                SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("保存配置失败", ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 异步保存配置
+    /// </summary>
+    public async Task SaveAsync(AppSettings settings)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
+            
+            // Encrypt sensitive data before saving
+            foreach (var provider in settings.Providers)
+            {
+                SecureStorage.EncryptConfig(provider);
+            }
+            
+            settings.UpdatedAt = DateTime.UtcNow;
+            var json = JsonSerializer.Serialize(settings, _jsonOptions);
+            await File.WriteAllTextAsync(_configPath, json);
+            
+            // Decrypt after saving for in-memory use
+            foreach (var provider in settings.Providers)
+            {
+                SecureStorage.DecryptConfig(provider);
+            }
+            
+            _cachedSettings = settings;
+            _lastLoadTime = DateTime.UtcNow;
+            LoggerService.Info("配置已保存并更新缓存");
+            SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex)
         {

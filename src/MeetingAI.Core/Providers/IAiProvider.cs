@@ -15,10 +15,10 @@ namespace MeetingAI.Core.Providers
     public class AnalysisRequest
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Text { get; set; }
+        public string Text { get; set; } = string.Empty;
         public AnalysisType AnalysisType { get; set; }
-        public string SystemPrompt { get; set; }
-        public string UserPrompt { get; set; }
+        public string SystemPrompt { get; set; } = string.Empty;
+        public string UserPrompt { get; set; } = string.Empty;
         public Dictionary<string, object> Parameters { get; set; } = new();
     }
 
@@ -26,10 +26,10 @@ namespace MeetingAI.Core.Providers
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public bool IsSuccess { get; set; }
-        public string Content { get; set; }
-        public string Provider { get; set; }
-        public string Model { get; set; }
-        public string ErrorMessage { get; set; }
+        public string Content { get; set; } = string.Empty;
+        public string Provider { get; set; } = string.Empty;
+        public string Model { get; set; } = string.Empty;
+        public string ErrorMessage { get; set; } = string.Empty;
         public TimeSpan? ProcessingDuration { get; set; }
         public Dictionary<string, object> Metadata { get; set; } = new();
     }

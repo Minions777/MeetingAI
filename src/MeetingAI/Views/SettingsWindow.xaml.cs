@@ -9,8 +9,8 @@ public partial class SettingsWindow : Window
     private readonly Dictionary<int, AIProvider> _providerMap = new()
     {
         [0] = AIProvider.OpenAI,
-        [1] = AIProvider.Claude,
-        [2] = AIProvider.Gemini,
+        [1] = AIProvider.Anthropic,
+        [2] = AIProvider.Zhipu,
         [3] = AIProvider.DeepSeek,
         [4] = AIProvider.Ollama
     };
@@ -38,7 +38,7 @@ public partial class SettingsWindow : Window
         {
             var provider = _providerMap[ProviderComboBox.SelectedIndex];
             config.Provider = provider;
-            config.ApplyProviderDefaults();
+            config.ApplyDefaultsForProvider();
             BaseUrlTextBox.Text = config.BaseUrl;
             ModelTextBox.Text = config.Model;
         }

@@ -5,8 +5,8 @@ namespace MeetingAI.Core.Models
 {
     public class MeetingState
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? RecordingStartedAt { get; set; }
         public DateTime? RecordingStoppedAt { get; set; }

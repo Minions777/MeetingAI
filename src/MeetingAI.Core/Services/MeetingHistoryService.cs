@@ -44,61 +44,58 @@ public class MeetingHistoryService
         
         var filePath = GetRecordPath(record.Id);
         
-        lock (_lock)
+        var json = JsonSerializer.Serialize(record, _jsonOptions);
+        
+        await Task.Run(() =>
         {
-            var json = JsonSerializer.Serialize(record, _jsonOptions);
-            File.WriteAllText(filePath, json);
-        }
+            lock (_lock)
+            {
+                File.WriteAllText(filePath, json);
+            }
+        });
         
         LoggerService.Info($"会议记录已保存: {record.Id}");
-        await Task.CompletedTask;
     }
     
     /// <summary>
     /// 加载会议记录
     /// </summary>
-    public Task<MeetingRecord?> LoadAsync(string id)
+    public async Task<MeetingRecord?> LoadAsync(string id)
     {
         var filePath = GetRecordPath(id);
         
         if (!File.Exists(filePath))
         {
             LoggerService.Warning($"会议记录不存在: {id}");
-            return Task.FromResult<MeetingRecord?>(null);
+            return null;
         }
         
-        lock (_lock)
-        {
-            var json = File.ReadAllText(filePath);
-            var record = JsonSerializer.Deserialize<MeetingRecord>(json, _jsonOptions);
-            return Task.FromResult(record);
-        }
+        var json = await File.ReadAllTextAsync(filePath);
+        var record = JsonSerializer.Deserialize<MeetingRecord>(json, _jsonOptions);
+        return record;
     }
     
     /// <summary>
     /// 获取所有会议记录（按时间倒序）
     /// </summary>
-    public Task<IReadOnlyList<MeetingRecord>> GetAllAsync()
+    public async Task<IReadOnlyList<MeetingRecord>> GetAllAsync()
     {
         var records = new List<MeetingRecord>();
         
-        lock (_lock)
+        var files = Directory.GetFiles(_historyDirectory, "*.json");
+        
+        foreach (var file in files)
         {
-            var files = Directory.GetFiles(_historyDirectory, "*.json");
-            
-            foreach (var file in files)
+            try
             {
-                try
-                {
-                    var json = File.ReadAllText(file);
-                    var record = JsonSerializer.Deserialize<MeetingRecord>(json, _jsonOptions);
-                    if (record != null)
-                        records.Add(record);
-                }
-                catch (Exception ex)
-                {
-                    LoggerService.Error($"加载会议记录失败: {file}", ex);
-                }
+                var json = await File.ReadAllTextAsync(file);
+                var record = JsonSerializer.Deserialize<MeetingRecord>(json, _jsonOptions);
+                if (record != null)
+                    records.Add(record);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.Error($"加载会议记录失败: {file}", ex);
             }
         }
         
@@ -106,7 +103,7 @@ public class MeetingHistoryService
             .OrderByDescending(r => r.StartedAt)
             .ToList();
             
-        return Task.FromResult<IReadOnlyList<MeetingRecord>>(sortedRecords);
+        return sortedRecords;
     }
     
     /// <summary>
@@ -116,14 +113,14 @@ public class MeetingHistoryService
     {
         var filePath = GetRecordPath(id);
         
-        if (!File.Exists(filePath))
-        {
-            LoggerService.Warning($"会议记录不存在，无法删除: {id}");
-            return Task.FromResult(false);
-        }
-        
         lock (_lock)
         {
+            if (!File.Exists(filePath))
+            {
+                LoggerService.Warning($"会议记录不存在，无法删除: {id}");
+                return Task.FromResult(false);
+            }
+            
             File.Delete(filePath);
         }
         

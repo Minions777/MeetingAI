@@ -12,7 +12,7 @@ namespace MeetingAI.Core.Repositories
         private readonly string _storagePath;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-        public MeetingRepository(string storagePath = null)
+        public MeetingRepository(string? storagePath = null)
         {
             _storagePath = storagePath ?? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -36,7 +36,7 @@ namespace MeetingAI.Core.Repositories
             }
         }
 
-        public async Task<MeetingState> LoadMeetingAsync(string meetingId)
+        public async Task<MeetingState?> LoadMeetingAsync(string meetingId)
         {
             await _semaphore.WaitAsync();
             try

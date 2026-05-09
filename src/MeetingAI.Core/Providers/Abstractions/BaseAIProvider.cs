@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using MeetingAI.Core.Models;
 using MeetingAI.Shared.Configuration;
@@ -41,6 +42,16 @@ public abstract class BaseAIProvider : IAIProvider
     }
     
     public abstract Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken ct = default);
+
+    public virtual async IAsyncEnumerable<string> StreamChatAsync(
+        ChatRequest request,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        // Fallback to non-streaming
+        var response = await ChatAsync(request, ct);
+        yield return response.Content;
+    }
+
     public abstract Task<Transcript> TranscribeAsync(AudioData audio, TranscriptionOptions? options = null, CancellationToken ct = default);
     
     /// <summary>

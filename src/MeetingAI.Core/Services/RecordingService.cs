@@ -17,6 +17,10 @@ public class RecordingService : IRecordingService, IDisposable
     private readonly object _lock = new();
     private bool _disposed;
     
+    // Volume 节流相关
+    private DateTime _lastVolumeUpdate = DateTime.MinValue;
+    private readonly TimeSpan _volumeUpdateInterval = TimeSpan.FromMilliseconds(100); // 100ms 节流
+    
     public bool IsRecording => _capture != null && !_isPaused;
     public bool IsPaused => _isPaused;
     
@@ -128,26 +132,44 @@ public class RecordingService : IRecordingService, IDisposable
     
     private void OnDataAvailable(object? sender, WaveInEventArgs e)
     {
+        // 快速检查，避免不必要的锁竞争
         if (_writer == null || _isPaused) return;
         
-        try
+        lock (_lock)
         {
-            _writer.Write(e.Buffer, 0, e.BytesRecorded);
+            // 双重检查，防止在等待锁期间状态变化
+            if (_writer == null || _isPaused) return;
             
-            // Calculate volume level
-            float max = 0;
-            for (int i = 0; i < e.BytesRecorded; i += 4)
+            try
             {
-                var sample = BitConverter.ToSingle(e.Buffer, i);
-                if (sample > max) max = sample;
+                _writer.Write(e.Buffer, 0, e.BytesRecorded);
+                
+                // Calculate volume level (只在有足够数据时计算)
+                float max = 0;
+                if (e.BytesRecorded >= 4)
+                {
+                    for (int i = 0; i <= e.BytesRecorded - 4; i += 4)
+                    {
+                        var sample = BitConverter.ToSingle(e.Buffer, i);
+                        if (sample > max) max = sample;
+                    }
+                }
+                
+                CurrentVolume = max;
+                
+                // 节流：限制 VolumeChanged 事件触发频率
+                var now = DateTime.UtcNow;
+                if (now - _lastVolumeUpdate >= _volumeUpdateInterval)
+                {
+                    _lastVolumeUpdate = now;
+                    // 使用 BeginInvoke 避免阻塞音频回调线程
+                    VolumeChanged?.BeginInvoke(this, max, null, null);
+                }
             }
-            
-            CurrentVolume = max;
-            VolumeChanged?.Invoke(this, max);
-        }
-        catch (Exception ex)
-        {
-            RecordingError?.Invoke(this, ex);
+            catch (Exception ex)
+            {
+                RecordingError?.BeginInvoke(this, ex, null, null);
+            }
         }
     }
     
