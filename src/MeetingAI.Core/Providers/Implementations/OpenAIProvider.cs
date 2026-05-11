@@ -41,9 +41,9 @@ public class OpenAIProvider : OpenAICompatibleProvider
         var endpoint = $"{_config.BaseUrl.TrimEnd('/')}/audio/transcriptions";
 
         using var content = new MultipartFormDataContent();
-        var audioContent = new ByteArrayContent(audio.Bytes);
-        audioContent.Headers.ContentType = new MediaTypeHeaderValue("audio/wav");
-        content.Add(audioContent, "file", "recording.wav");
+        var audioContent = CreateAudioContent(audio);
+        audioContent.Headers.ContentType = new MediaTypeHeaderValue(GetAudioContentType(audio));
+        content.Add(audioContent, "file", GetAudioFileName(audio));
         content.Add(new StringContent(_config.WhisperModel), "model");
 
         if (options?.Language != null)
@@ -54,7 +54,7 @@ public class OpenAIProvider : OpenAICompatibleProvider
 
         LoggerService.Info($"OpenAIProvider.TranscribeAsync: Sending request to {endpoint}");
 
-        var response = await _httpClient.PostAsync(endpoint, content, ct);
+        using var response = await _httpClient.PostAsync(endpoint, content, ct);
         var json = await response.Content.ReadAsStringAsync(ct);
 
         if (!response.IsSuccessStatusCode)
@@ -90,5 +90,46 @@ public class OpenAIProvider : OpenAICompatibleProvider
         }
 
         return transcript;
+    }
+
+    private static HttpContent CreateAudioContent(AudioData audio)
+    {
+        if (!string.IsNullOrWhiteSpace(audio.FilePath))
+        {
+            var stream = new FileStream(
+                audio.FilePath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 64 * 1024,
+                useAsync: true);
+
+            return new StreamContent(stream);
+        }
+
+        return new ByteArrayContent(audio.Bytes);
+    }
+
+    private static string GetAudioContentType(AudioData audio)
+    {
+        return audio.Format.ToLowerInvariant() switch
+        {
+            "mp3" => "audio/mpeg",
+            "m4a" => "audio/mp4",
+            "webm" => "audio/webm",
+            "ogg" => "audio/ogg",
+            _ => "audio/wav"
+        };
+    }
+
+    private static string GetAudioFileName(AudioData audio)
+    {
+        if (!string.IsNullOrWhiteSpace(audio.FilePath))
+        {
+            return Path.GetFileName(audio.FilePath);
+        }
+
+        var extension = string.IsNullOrWhiteSpace(audio.Format) ? "wav" : audio.Format;
+        return $"recording.{extension.TrimStart('.')}";
     }
 }

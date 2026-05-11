@@ -398,9 +398,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         try
         {
-            var history = await _historyService.GetAllAsync();
+            var history = await _historyService.GetRecentAsync(10);
             MeetingHistory.Clear();
-            foreach (var record in history.OrderByDescending(r => r.SavedAt).Take(10))
+            foreach (var record in history)
             {
                 MeetingHistory.Add(record);
             }

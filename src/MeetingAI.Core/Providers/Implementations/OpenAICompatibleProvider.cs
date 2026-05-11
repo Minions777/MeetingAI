@@ -58,7 +58,7 @@ public abstract class OpenAICompatibleProvider : BaseAIProvider
             max_tokens = request.MaxTokens
         };
         
-        var json = await SendRequestAsync(_httpClient, endpoint, CreateJsonContent(body), ct);
+        var json = await SendRequestAsync(_httpClient, endpoint, () => CreateJsonContent(body), ct);
         return ParseChatResponse(json, request);
     }
 

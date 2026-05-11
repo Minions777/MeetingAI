@@ -1,9 +1,7 @@
-using System.Collections.Concurrent;
 using MeetingAI.Core.Models;
 using MeetingAI.Core.Providers;
 using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Shared.Configuration;
-using MeetingAI.Shared.Constants;
 using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Services;
@@ -11,17 +9,18 @@ namespace MeetingAI.Core.Services;
 public class SummaryService : ISummaryService, IDisposable
 {
     private readonly IConfigurationService _configService;
-    private readonly ConcurrentDictionary<string, IAIProvider> _providers = new();
+    private readonly object _providersLock = new();
+    private IReadOnlyDictionary<string, IAIProvider> _providers = new Dictionary<string, IAIProvider>();
     private readonly Lazy<Task> _initialization;
     private bool _disposed;
 
     public const string DefaultSummaryPrompt = @"你是一个专业的会议助手。请根据以下会议记录，生成结构化的会议摘要：
 
-1. **会议概要** (50字以内)：简要描述会议主题
-2. **关键要点** (3-5条)：列出会议的主要讨论内容
-3. **行动项** (如有)：列出需要跟进的任务和负责人
-4. **决议** (如有)：列出会议做出的决定
-5. **待解决问题** (如有)：列出悬而未决的问题
+1. **会议概要**：简要描述会议主题
+2. **关键要点**：列出会议主要讨论内容
+3. **行动项**：列出需要跟进的任务
+4. **决议**：列出会议做出的决定
+5. **待解决问题**：列出悬而未决的问题
 
 请用中文回复，格式清晰，便于阅读。";
 
@@ -29,41 +28,31 @@ public class SummaryService : ISummaryService, IDisposable
     {
         _configService = configService;
         _configService.SettingsChanged += OnSettingsChanged;
-        _initialization = new Lazy<Task>(() => Task.Run(InitializeProviders));
+        _initialization = new Lazy<Task>(() => Task.Run(RefreshProviders));
     }
 
     private void OnSettingsChanged(object? sender, EventArgs e)
     {
         LoggerService.Info("Configuration changed, refreshing chat providers...");
-        // 使用 Task.Run 避免阻塞 UI 线程
         _ = Task.Run(RefreshProviders);
     }
 
     private void RefreshProviders()
     {
-        // 清理旧的 Provider
-        foreach (var provider in _providers.Values)
-        {
-            if (provider is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
-        _providers.Clear();
-        
-        // 重新初始化
-        InitializeProviders();
+        ReplaceProviders(CreateProviders());
     }
-    
-    private void InitializeProviders()
+
+    private IReadOnlyDictionary<string, IAIProvider> CreateProviders()
     {
         var settings = _configService.Load();
+        var providers = new Dictionary<string, IAIProvider>();
+
         foreach (var providerConfig in settings.Providers.Where(p => p.IsEnabled && p.SupportsChat))
         {
             try
             {
                 var provider = ProviderFactory.Create(providerConfig);
-                _providers[providerConfig.Id] = provider;
+                providers[providerConfig.Id] = provider;
                 LoggerService.Info($"Loaded chat provider: {providerConfig.Name}");
             }
             catch (Exception ex)
@@ -71,197 +60,200 @@ public class SummaryService : ISummaryService, IDisposable
                 LoggerService.Error($"Failed to load provider {providerConfig.Name}", ex);
             }
         }
+
+        return providers;
     }
-    
+
     public async Task<Summary> SummarizeAsync(
         Transcript transcript,
         string? providerId = null,
         string? systemPrompt = null,
         CancellationToken ct = default)
     {
-        // 确保 Provider 已初始化
         await _initialization.Value;
-        
+
         var settings = _configService.Load();
-        providerId ??= settings.DefaultProviderId;
-        
-        if (!_providers.TryGetValue(providerId, out var provider))
+        var effectiveProviderId = providerId ?? settings.DefaultProviderId;
+        var providers = _providers;
+
+        if (!providers.TryGetValue(effectiveProviderId, out var provider))
         {
-            provider = _providers.Values.FirstOrDefault(p => p.SupportsChat);
-            if (provider == null)
+            var fallback = providers.FirstOrDefault(p => p.Value.SupportsChat);
+            if (fallback.Value == null)
                 throw new InvalidOperationException("No chat provider available");
+
+            effectiveProviderId = fallback.Key;
+            provider = fallback.Value;
         }
-        
-        var providerConfig = settings.Providers.First(p => p.Id == providerId);
-        
+
+        var providerConfig = settings.Providers.FirstOrDefault(p => p.Id == effectiveProviderId)
+            ?? throw new InvalidOperationException($"Provider configuration not found: {effectiveProviderId}");
+
         var request = new ChatRequest
         {
             Model = providerConfig.Model,
             SystemPrompt = systemPrompt ?? providerConfig.SystemPrompt ?? DefaultSummaryPrompt,
             Temperature = providerConfig.Temperature,
             MaxTokens = providerConfig.MaxTokens,
-            Messages = new List<ChatMessage>
-            {
-                new ChatMessage 
-                { 
-                    Role = "user", 
-                    Content = $"请总结以下会议记录：\n\n{transcript.Text}" 
+            Messages =
+            [
+                new ChatMessage
+                {
+                    Role = "user",
+                    Content = $"请总结以下会议记录：\n\n{transcript.Text}"
                 }
-            }
+            ]
         };
-        
+
         LoggerService.Info($"Generating summary with {provider.Name}");
         var response = await provider.ChatAsync(request, ct);
-        
         var summary = ParseSummaryResponse(response.Content);
-        
-        // 记录摘要生成统计
-        LoggerService.Info($"摘要生成完成: Overview={summary.Overview?.Length ?? 0}字符, " +
-            $"KeyPoints={summary.KeyPoints.Count}条, " +
-            $"ActionItems={summary.ActionItems.Count}条, " +
-            $"Decisions={summary.Decisions.Count}条");
-        
+
+        LoggerService.Info(
+            $"Summary generated: Overview={summary.Overview?.Length ?? 0}, " +
+            $"KeyPoints={summary.KeyPoints.Count}, " +
+            $"ActionItems={summary.ActionItems.Count}, " +
+            $"Decisions={summary.Decisions.Count}");
+
         return summary;
     }
-    
-    private Summary ParseSummaryResponse(string content)
+
+    private static Summary ParseSummaryResponse(string content)
     {
         var summary = new Summary();
-        
+
         if (string.IsNullOrWhiteSpace(content))
         {
-            LoggerService.Warning("AI 返回内容为空");
+            LoggerService.Warning("AI returned empty summary content.");
             summary.Overview = "[摘要生成失败：AI 返回内容为空]";
             return summary;
         }
-        
-        var lines = content.Split('\n');
+
+        var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         var currentSection = "";
-        var parseSuccess = false;
-        
+        var parsed = false;
+
         foreach (var line in lines)
         {
             var trimmed = line.Trim();
-            
-            if (trimmed.StartsWith("**会议概要**") || trimmed.Contains("会议概要"))
+            var section = DetectSection(trimmed);
+            if (!string.IsNullOrEmpty(section))
             {
-                currentSection = "overview";
+                currentSection = section;
+                var inlineText = ExtractInlineSectionText(trimmed);
+                if (!string.IsNullOrEmpty(inlineText))
+                    parsed |= AddToSection(summary, currentSection, inlineText);
+                continue;
             }
-            else if (trimmed.StartsWith("**关键要点**") || trimmed.Contains("关键要点"))
-            {
-                currentSection = "keypoints";
-            }
-            else if (trimmed.StartsWith("**行动项**") || trimmed.Contains("行动项"))
-            {
-                currentSection = "actionitems";
-            }
-            else if (trimmed.StartsWith("**决议**") || trimmed.Contains("决议"))
-            {
-                currentSection = "decisions";
-            }
-            else if (!string.IsNullOrWhiteSpace(trimmed) && !trimmed.StartsWith("#"))
-            {
-                var cleanLine = trimmed.TrimStart('-', '*', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '、');
-                
-                switch (currentSection)
-                {
-                    case "overview":
-                        if (string.IsNullOrEmpty(summary.Overview))
-                        {
-                            summary.Overview = cleanLine;
-                            parseSuccess = true;
-                        }
-                        break;
-                    case "keypoints":
-                        if (!string.IsNullOrEmpty(cleanLine))
-                        {
-                            summary.KeyPoints.Add(cleanLine);
-                            parseSuccess = true;
-                        }
-                        break;
-                    case "actionitems":
-                        if (!string.IsNullOrEmpty(cleanLine))
-                        {
-                            summary.ActionItems.Add(cleanLine);
-                            parseSuccess = true;
-                        }
-                        break;
-                    case "decisions":
-                        if (!string.IsNullOrEmpty(cleanLine))
-                        {
-                            summary.Decisions.Add(cleanLine);
-                            parseSuccess = true;
-                        }
-                        break;
-                }
-            }
+
+            var cleanLine = CleanSummaryLine(trimmed);
+            if (!string.IsNullOrEmpty(cleanLine))
+                parsed |= AddToSection(summary, currentSection, cleanLine);
         }
-        
-        // 如果没有成功解析到任何内容，添加警告并使用原始内容
-        if (!parseSuccess)
+
+        if (!parsed)
         {
-            LoggerService.Warning("摘要解析失败，AI 返回格式可能不规范");
-            
-            // 尝试更宽松的解析策略
+            LoggerService.Warning("Summary parsing failed; using fallback parsing.");
             summary = TryFallbackParsing(content);
-            
-            if (string.IsNullOrEmpty(summary.Overview))
-            {
-                // 最终 fallback：截取前200字符作为概览
-                summary.Overview = content.Length > 200 ? content.Substring(0, 200) + "..." : content;
-                LoggerService.Warning($"使用原始内容前200字符作为摘要: {summary.Overview.Length}字符");
-            }
         }
-        
+
+        if (string.IsNullOrWhiteSpace(summary.Overview))
+        {
+            summary.Overview = content.Length > 200 ? content[..200] + "..." : content;
+        }
+
         return summary;
     }
-    
-    /// <summary>
-    /// 备用解析策略：尝试更宽松的格式匹配
-    /// </summary>
-    private Summary TryFallbackParsing(string content)
+
+    private static string DetectSection(string line)
     {
-        var summary = new Summary();
-        
-        // 移除 Markdown 代码块
-        var cleanContent = content
+        if (line.Contains("会议概要") || line.Contains("概要") || line.Contains("Overview", StringComparison.OrdinalIgnoreCase))
+            return "overview";
+
+        if (line.Contains("关键要点") || line.Contains("要点") || line.Contains("Key Points", StringComparison.OrdinalIgnoreCase))
+            return "keypoints";
+
+        if (line.Contains("行动项") || line.Contains("Action Items", StringComparison.OrdinalIgnoreCase))
+            return "actionitems";
+
+        if (line.Contains("决议") || line.Contains("Decisions", StringComparison.OrdinalIgnoreCase))
+            return "decisions";
+
+        if (line.Contains("待解决") || line.Contains("Questions", StringComparison.OrdinalIgnoreCase))
+            return "questions";
+
+        return "";
+    }
+
+    private static string ExtractInlineSectionText(string line)
+    {
+        var separators = new[] { "：", ":", "-" };
+        foreach (var separator in separators)
+        {
+            var index = line.IndexOf(separator, StringComparison.Ordinal);
+            if (index >= 0 && index + separator.Length < line.Length)
+                return CleanSummaryLine(line[(index + separator.Length)..]);
+        }
+
+        return "";
+    }
+
+    private static string CleanSummaryLine(string line)
+    {
+        return line
+            .Trim()
+            .TrimStart('#', '-', '*', '>', ' ', '\t')
+            .TrimStart('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '、')
+            .Trim();
+    }
+
+    private static bool AddToSection(Summary summary, string section, string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        switch (section)
+        {
+            case "overview":
+                summary.Overview = string.IsNullOrWhiteSpace(summary.Overview)
+                    ? value
+                    : $"{summary.Overview} {value}";
+                return true;
+            case "keypoints":
+                summary.KeyPoints.Add(value);
+                return true;
+            case "actionitems":
+                summary.ActionItems.Add(value);
+                return true;
+            case "decisions":
+                summary.Decisions.Add(value);
+                return true;
+            case "questions":
+                summary.Questions.Add(value);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static Summary TryFallbackParsing(string content)
+    {
+        var lines = content
             .Replace("```", "")
-            .Replace("`", "");
-        
-        // 按行分割，尝试提取内容
-        var lines = cleanContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        
-        var collectedContent = new List<string>();
-        foreach (var line in lines)
-        {
-            var trimmed = line.Trim();
-            // 过滤掉标题符号但保留内容
-            if (trimmed.Length > 2)
-            {
-                var cleanLine = trimmed
-                    .TrimStart('#', '*', '-', '>', ' ')
-                    .Trim();
-                
-                if (!string.IsNullOrEmpty(cleanLine) && !cleanLine.StartsWith("请") && !cleanLine.StartsWith("根据"))
-                {
-                    collectedContent.Add(cleanLine);
-                }
-            }
-        }
-        
-        // 如果收集到内容，第一条作为概览，其余作为要点
-        if (collectedContent.Count > 0)
-        {
-            summary.Overview = collectedContent[0];
-            
-            for (int i = 1; i < collectedContent.Count && i <= 5; i++)
-            {
-                summary.KeyPoints.Add(collectedContent[i]);
-            }
-            
-            LoggerService.Info($"备用解析成功: {collectedContent.Count}条内容");
-        }
-        
+            .Replace("`", "")
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(CleanSummaryLine)
+            .Where(line => line.Length > 0)
+            .ToList();
+
+        var summary = new Summary();
+        if (lines.Count == 0)
+            return summary;
+
+        summary.Overview = lines[0];
+        foreach (var line in lines.Skip(1).Take(5))
+            summary.KeyPoints.Add(line);
+
         return summary;
     }
 
@@ -278,16 +270,30 @@ public class SummaryService : ISummaryService, IDisposable
             if (disposing)
             {
                 _configService.SettingsChanged -= OnSettingsChanged;
-                foreach (var provider in _providers.Values)
-                {
-                    if (provider is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                    }
-                }
-                _providers.Clear();
+                DisposeProviders(ReplaceProviders(new Dictionary<string, IAIProvider>()));
             }
             _disposed = true;
+        }
+    }
+
+    private IReadOnlyDictionary<string, IAIProvider> ReplaceProviders(IReadOnlyDictionary<string, IAIProvider> providers)
+    {
+        lock (_providersLock)
+        {
+            var oldProviders = _providers;
+            _providers = providers;
+            return oldProviders;
+        }
+    }
+
+    private static void DisposeProviders(IReadOnlyDictionary<string, IAIProvider> providers)
+    {
+        foreach (var provider in providers.Values)
+        {
+            if (provider is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
     }
 }

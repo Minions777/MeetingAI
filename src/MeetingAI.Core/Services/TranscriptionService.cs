@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using MeetingAI.Core.Models;
 using MeetingAI.Core.Providers;
 using MeetingAI.Core.Providers.Abstractions;
@@ -11,7 +10,8 @@ namespace MeetingAI.Core.Services;
 public class TranscriptionService : ITranscriptionService, IDisposable
 {
     private readonly IConfigurationService _configService;
-    private readonly ConcurrentDictionary<string, IAIProvider> _providers = new();
+    private readonly object _providersLock = new();
+    private IReadOnlyDictionary<string, IAIProvider> _providers = new Dictionary<string, IAIProvider>();
     private readonly Lazy<Task> _initialization;
     private bool _disposed;
 
@@ -19,35 +19,25 @@ public class TranscriptionService : ITranscriptionService, IDisposable
     {
         _configService = configService;
         _configService.SettingsChanged += OnSettingsChanged;
-        _initialization = new Lazy<Task>(() => Task.Run(InitializeProviders));
+        _initialization = new Lazy<Task>(() => Task.Run(RefreshProviders));
     }
 
     private void OnSettingsChanged(object? sender, EventArgs e)
     {
         LoggerService.Info("Configuration changed, refreshing transcription providers...");
-        // 使用 Task.Run 避免阻塞 UI 线程
         _ = Task.Run(RefreshProviders);
     }
 
     private void RefreshProviders()
     {
-        // 清理旧的 Provider
-        foreach (var provider in _providers.Values)
-        {
-            if (provider is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
-        _providers.Clear();
-        
-        // 重新初始化
-        InitializeProviders();
+        var providers = CreateProviders();
+        ReplaceProviders(providers);
     }
 
-    private void InitializeProviders()
+    private IReadOnlyDictionary<string, IAIProvider> CreateProviders()
     {
         var settings = _configService.Load();
+        var providers = new Dictionary<string, IAIProvider>();
         LoggerService.Info($"Initializing providers, found {settings.Providers.Count} providers");
 
         foreach (var providerConfig in settings.Providers.Where(p => p.IsEnabled && p.SupportsTranscription))
@@ -56,7 +46,7 @@ public class TranscriptionService : ITranscriptionService, IDisposable
             {
                 LoggerService.Info($"Creating provider: {providerConfig.Name}, API Key present: {!string.IsNullOrEmpty(providerConfig.ApiKey)}");
                 var provider = ProviderFactory.Create(providerConfig);
-                _providers[providerConfig.Id] = provider;
+                providers[providerConfig.Id] = provider;
                 LoggerService.Info($"Loaded transcription provider: {providerConfig.Name}, IsConfigured: {provider.IsConfigured}");
             }
             catch (Exception ex)
@@ -65,9 +55,10 @@ public class TranscriptionService : ITranscriptionService, IDisposable
             }
         }
 
-        LoggerService.Info($"Total transcription providers loaded: {_providers.Count}");
+        LoggerService.Info($"Total transcription providers loaded: {providers.Count}");
+        return providers;
     }
-    
+
     public async Task<Transcript> TranscribeAsync(
         string audioFilePath,
         string? providerId = null,
@@ -75,54 +66,46 @@ public class TranscriptionService : ITranscriptionService, IDisposable
         IProgress<float>? progress = null,
         CancellationToken ct = default)
     {
-        // 确保 Provider 已初始化
         await _initialization.Value;
-        
+
         var settings = _configService.Load();
         providerId ??= settings.DefaultProviderId;
-        
-        if (!_providers.TryGetValue(providerId, out var provider))
+
+        var providers = _providers;
+        if (!providers.TryGetValue(providerId, out var provider))
         {
-            // Try to find a provider that supports transcription
-            provider = _providers.Values.FirstOrDefault(p => p.SupportsTranscription);
+            provider = providers.Values.FirstOrDefault(p => p.SupportsTranscription);
             if (provider == null)
                 throw new InvalidOperationException("No transcription provider available");
         }
-        
+
         if (!File.Exists(audioFilePath))
             throw new FileNotFoundException("Audio file not found", audioFilePath);
-            
-        var audioData = await LoadAudioFileAsync(audioFilePath);
-        
+
+        var audioData = LoadAudioFile(audioFilePath);
+
         LoggerService.Info($"Transcribing with {provider.Name}: {audioFilePath}");
         progress?.Report(0.3f);
-        
+
         var transcript = await provider.TranscribeAsync(audioData, options, ct);
-        
+
         progress?.Report(1.0f);
         LoggerService.Info($"Transcription completed: {transcript.Text.Length} characters");
-        
+
         return transcript;
     }
-    
-    private async Task<AudioData> LoadAudioFileAsync(string path)
+
+    private static AudioData LoadAudioFile(string path)
     {
-        // 使用流式读取，避免大文件一次性加载到内存
-        byte[] bytes;
-        using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true))
-        {
-            bytes = new byte[fileStream.Length];
-            await fileStream.ReadAsync(bytes, 0, (int)fileStream.Length);
-        }
-        
-        // Get duration using NAudio
         using var reader = new WaveFileReader(path);
         var duration = reader.TotalTime;
-        
+        var fileInfo = new FileInfo(path);
+
         return new AudioData
         {
-            Bytes = bytes,
-            Format = "wav",
+            FilePath = path,
+            Length = fileInfo.Length,
+            Format = Path.GetExtension(path).TrimStart('.').ToLowerInvariant(),
             SampleRate = reader.WaveFormat.SampleRate,
             Channels = reader.WaveFormat.Channels,
             Duration = duration
@@ -142,16 +125,30 @@ public class TranscriptionService : ITranscriptionService, IDisposable
             if (disposing)
             {
                 _configService.SettingsChanged -= OnSettingsChanged;
-                foreach (var provider in _providers.Values)
-                {
-                    if (provider is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                    }
-                }
-                _providers.Clear();
+                DisposeProviders(ReplaceProviders(new Dictionary<string, IAIProvider>()));
             }
             _disposed = true;
+        }
+    }
+
+    private IReadOnlyDictionary<string, IAIProvider> ReplaceProviders(IReadOnlyDictionary<string, IAIProvider> providers)
+    {
+        lock (_providersLock)
+        {
+            var oldProviders = _providers;
+            _providers = providers;
+            return oldProviders;
+        }
+    }
+
+    private static void DisposeProviders(IReadOnlyDictionary<string, IAIProvider> providers)
+    {
+        foreach (var provider in providers.Values)
+        {
+            if (provider is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
     }
 }

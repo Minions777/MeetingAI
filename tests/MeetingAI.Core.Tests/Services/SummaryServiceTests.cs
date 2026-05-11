@@ -48,4 +48,24 @@ public class SummaryServiceTests
         // Assert
         sut.Should().NotBeNull();
     }
+
+    [Fact]
+    public async Task SummarizeAsync_WithMissingDefaultProvider_FallsBackWithoutConfigurationLookupFailure()
+    {
+        // Arrange
+        var settings = TestHelpers.CreateTestSettings();
+        settings.DefaultProviderId = "missing-provider";
+        var configService = TestHelpers.CreateMockConfigService(settings);
+        var sut = new SummaryService(configService);
+        var transcript = new Transcript { Text = "test transcript" };
+
+        // Act
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = () => sut.SummarizeAsync(transcript, ct: cts.Token);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
 }

@@ -75,13 +75,14 @@ public abstract class BaseAIProvider : IAIProvider, IDisposable
         return new StringContent(json, Encoding.UTF8, "application/json");
     }
 
-    protected async Task<string> SendRequestAsync(HttpClient client, string endpoint, HttpContent content, CancellationToken ct)
+    protected async Task<string> SendRequestAsync(HttpClient client, string endpoint, Func<HttpContent> createContent, CancellationToken ct)
     {
         var retryPolicy = CreateRetryPolicy();
         
         return await retryPolicy.ExecuteAsync(async () =>
         {
-            var response = await client.PostAsync(endpoint, content, ct);
+            using var content = createContent();
+            using var response = await client.PostAsync(endpoint, content, ct);
             var json = await response.Content.ReadAsStringAsync(ct);
 
             if (!response.IsSuccessStatusCode)
@@ -123,7 +124,6 @@ public abstract class BaseAIProvider : IAIProvider, IDisposable
         {
             if (disposing)
             {
-                _httpClient?.Dispose();
                 _httpClient = null;
             }
             _disposed = true;

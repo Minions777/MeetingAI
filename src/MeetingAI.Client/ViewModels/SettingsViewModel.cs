@@ -232,7 +232,13 @@ public partial class SettingsViewModel : ObservableObject
         ProviderConfig config;
         if (SelectedProvider != null)
         {
-            config = settings.Providers.First(p => p.Id == SelectedProvider.Id);
+            var existingConfig = settings.Providers.FirstOrDefault(p => p.Id == SelectedProvider.Id);
+            if (existingConfig == null)
+            {
+                StatusText = "当前 Provider 已不存在，请刷新后重试";
+                return;
+            }
+            config = existingConfig;
         }
         else
         {

@@ -48,7 +48,7 @@ public class OllamaProvider : BaseAIProvider
             stream = false
         };
         
-        var json = await SendRequestAsync(_httpClient, endpoint, CreateJsonContent(body), ct);
+        var json = await SendRequestAsync(_httpClient, endpoint, () => CreateJsonContent(body), ct);
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
         

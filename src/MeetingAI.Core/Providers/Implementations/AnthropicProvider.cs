@@ -47,14 +47,16 @@ public class AnthropicProvider : BaseAIProvider
             messages = request.Messages.Select(m => new { role = m.Role, content = m.Content }).ToArray()
         };
         
-        var content = CreateJsonContent(body);
-        content.Headers.Add("anthropic-dangerous-direct-browser-access", "true");
-        
-        var response = await _httpClient.PostAsync(endpoint, content, ct);
-        var json = await response.Content.ReadAsStringAsync(ct);
-        
-        if (!response.IsSuccessStatusCode)
-            throw new HttpRequestException($"Anthropic API Error: {response.StatusCode} - {json}");
+        var json = await SendRequestAsync(
+            _httpClient,
+            endpoint,
+            () =>
+            {
+                var content = CreateJsonContent(body);
+                content.Headers.Add("anthropic-dangerous-direct-browser-access", "true");
+                return content;
+            },
+            ct);
             
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
