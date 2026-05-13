@@ -272,7 +272,7 @@ public class SummaryService : ISummaryService, IDisposable
                 summary.KeyPoints.Add(value);
                 return true;
             case "actionitems":
-                summary.ActionItems.Add(value);
+                summary.ActionItems.Add(Core.Models.ActionItem.Create(value));
                 return true;
             case "decisions":
                 summary.Decisions.Add(value);
