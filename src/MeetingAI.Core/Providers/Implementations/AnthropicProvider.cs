@@ -52,12 +52,7 @@ public class AnthropicProvider : BaseAIProvider
         var json = await SendRequestAsync(
             _httpClient,
             endpoint,
-            () =>
-            {
-                var content = CreateJsonContent(body);
-                content.Headers.Add("anthropic-dangerous-direct-browser-access", "true");
-                return content;
-            },
+            () => CreateJsonContent(body),
             ct);
             
         using var doc = JsonDocument.Parse(json);

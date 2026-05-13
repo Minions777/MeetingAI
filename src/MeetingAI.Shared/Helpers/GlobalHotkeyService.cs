@@ -154,7 +154,4 @@ public class WindowsHotkeyService : IPlatformHotkeyService
         _wndProcDelegate = null;
     }
 }
-
-// Keep backward compatibility alias
-public class GlobalHotkeyService : WindowsHotkeyService { }
 #endif

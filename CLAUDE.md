@@ -1,10 +1,10 @@
 # MeetingAI
 
-智能会议助手 — 基于 .NET 8 + Avalonia 的实时语音转文字与 AI 会议摘要系统，支持 Windows 与 macOS。
+智能会议助手 — 基于 .NET 10 + Avalonia 的实时语音转文字与 AI 会议摘要系统，支持 Windows 与 macOS。
 
 ## 技术栈
 
-- **框架**: .NET 8, Avalonia 11.2（跨平台 UI）
+- **框架**: .NET 10, Avalonia 11.2（跨平台 UI）
 - **MVVM**: CommunityToolkit.Mvvm 8.2
 - **日志**: Serilog
 - **音频**: NAudio（Windows）、CoreAudio（macOS）
@@ -19,15 +19,14 @@
 src/
 ├── MeetingAI.Client/     # Avalonia 客户端（Views/, ViewModels/, Themes/）
 │   └── ViewModels/       # Recording/Provider/History/Summary/Main/Settings
-├── MeetingAI.Core/       # 业务逻辑（Services/, Providers/, Resilience/, State/）
+├── MeetingAI.Core/       # 业务逻辑（Services/, Providers/）
 │   ├── Services/         # RecordingService, TranscriptionService, SummaryService,
-│   │                     # MeetingHistoryService, StreamingAnalysisService,
+│   │                     # MeetingHistoryService, AIAssistantService,
 │   │                     # WindowsAudioCapture, MacAudioCapture
-│   ├── Providers/        # OpenAI/DeepSeek/Claude/Ollama/智谱/MiniMax 实现
-│   └── Resilience/       # ResilientAiProvider（Polly 包装）
+│   └── Providers/        # OpenAI/DeepSeek/Claude/Ollama/智谱/MiniMax 实现
 └── MeetingAI.Shared/     # 基础设施（Configuration/, Helpers/, Logging/, i18n/）
 tests/
-└── MeetingAI.Core.Tests/ # 单元测试（58 个测试）
+└── MeetingAI.Core.Tests/ # 单元测试
 docs/                     # 设计文档
 ```
 
@@ -42,7 +41,7 @@ dotnet run --project src/MeetingAI.Client/MeetingAI.Client.csproj
 dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r win-x64 --self-contained -p:Optimize=true
 
 # 发布（macOS）
-dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r osx-x64 --self-contained -p:Optimize=true
+dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r osx-arm64 --self-contained -p:Optimize=true
 ```
 
 ## 核心架构
@@ -53,7 +52,7 @@ dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r osx-x6
 IAIProvider（接口）
     └── 各 Provider 实现（OpenAI, DeepSeek, Anthropic, Ollama, Zhipu, MiniMax）
 ProviderFactory → 根据 AIProviderType 创建实例
-ResilientAiProvider → Polly 弹性包装
+BaseAIProvider → 内置 Polly 重试策略
 ```
 
 ### 平台适配

@@ -1,9 +1,10 @@
 using FluentAssertions;
 using MeetingAI.Core.Models;
+using MeetingAI.Core.Providers;
 using MeetingAI.Core.Services;
 using MeetingAI.Core.Tests.Helpers;
 using MeetingAI.Shared.Configuration;
-using NSubstitute;
+using Moq;
 using Xunit;
 
 namespace MeetingAI.Core.Tests.Services;
@@ -11,17 +12,19 @@ namespace MeetingAI.Core.Tests.Services;
 public class SummaryServiceTests
 {
     private readonly IConfigurationService _configService;
+    private readonly ProviderManager _providerManager;
 
     public SummaryServiceTests()
     {
         _configService = TestHelpers.CreateMockConfigService();
+        _providerManager = new ProviderManager(_configService);
     }
 
     [Fact]
     public void Constructor_WithValidConfig_DoesNotThrow()
     {
         // Act
-        var sut = new SummaryService(_configService);
+        var sut = new SummaryService(_configService, _providerManager);
 
         // Assert
         sut.Should().NotBeNull();
@@ -40,11 +43,12 @@ public class SummaryServiceTests
     public void Constructor_WithMockConfig_CreatesSuccessfully()
     {
         // Arrange
-        var mockConfig = Substitute.For<IConfigurationService>();
-        mockConfig.Load().Returns(TestHelpers.CreateTestSettings());
+        var mockConfig = new Mock<IConfigurationService>();
+        mockConfig.Setup(x => x.Load()).Returns(TestHelpers.CreateTestSettings());
+        var providerManager = new ProviderManager(mockConfig.Object);
 
         // Act
-        var sut = new SummaryService(mockConfig);
+        var sut = new SummaryService(mockConfig.Object, providerManager);
 
         // Assert
         sut.Should().NotBeNull();
@@ -57,7 +61,8 @@ public class SummaryServiceTests
         var settings = TestHelpers.CreateTestSettings();
         settings.DefaultProviderId = "missing-provider";
         var configService = TestHelpers.CreateMockConfigService(settings);
-        var sut = new SummaryService(configService);
+        var providerManager = new ProviderManager(configService);
+        var sut = new SummaryService(configService, providerManager);
         var transcript = new Transcript { Text = "test transcript" };
 
         // Act

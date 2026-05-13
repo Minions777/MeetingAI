@@ -99,6 +99,66 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task TranscribeAsync()
+    {
+        if (CurrentRecord == null || string.IsNullOrEmpty(CurrentRecord.FilePath))
+        {
+            StatusText = "请先录制会议";
+            return;
+        }
+
+        StatusText = "转录中...";
+        var transcript = await Summary.TranscribeAsync(CurrentRecord.FilePath, Providers.SelectedProvider?.Id);
+        if (transcript != null)
+        {
+            CurrentRecord.Transcript = transcript;
+            StatusText = "转录完成";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SummarizeAsync()
+    {
+        if (CurrentRecord?.Transcript == null)
+        {
+            StatusText = "请先转录会议";
+            return;
+        }
+
+        StatusText = "生成摘要中...";
+        var summary = await Summary.SummarizeAsync(CurrentRecord.Transcript, Providers.SelectedProvider?.Id);
+        if (summary != null)
+        {
+            CurrentRecord.Summary = summary;
+            SummaryText = Summary.FormatSummary(summary);
+            HasSummary = !string.IsNullOrWhiteSpace(SummaryText);
+            StatusText = "摘要生成完成";
+        }
+    }
+
+    [RelayCommand]
+    private async Task CopySummaryAsync()
+    {
+        if (string.IsNullOrWhiteSpace(SummaryText))
+            return;
+
+        try
+        {
+            var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(
+                (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow);
+            if (topLevel?.Clipboard != null)
+            {
+                await topLevel.Clipboard.SetTextAsync(SummaryText);
+                StatusText = "摘要已复制到剪贴板";
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("Failed to copy summary", ex);
+        }
+    }
+
+    [RelayCommand]
     private void OpenSettings()
     {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)

@@ -236,7 +236,7 @@ public class MeetingHistoryService
 
         foreach (var record in records)
         {
-            var ext = format switch { ExportFormat.Markdown => "md", ExportFormat.Text => "txt", _ => "md" };
+            var ext = format.Extension();
             var fileName = $"{record.StartedAt:yyyyMMdd_HHmmss}_{NormalizeRecordId(record.Id)[..8]}.{ext}";
             var filePath = Path.Combine(outputDirectory, fileName);
 

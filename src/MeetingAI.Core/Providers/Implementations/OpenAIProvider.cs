@@ -36,9 +36,6 @@ public class OpenAIProvider : OpenAICompatibleProvider
         if (_httpClient == null || _config == null)
             throw new InvalidOperationException("Provider not configured");
 
-        LoggerService.Info($"OpenAIProvider.TranscribeAsync: API Key present: {!string.IsNullOrEmpty(_config.ApiKey)}");
-        LoggerService.Info($"OpenAIProvider.TranscribeAsync: BaseUrl: {_config.BaseUrl}");
-
         var endpoint = $"{_config.BaseUrl.TrimEnd('/')}/audio/transcriptions";
 
         using var content = new MultipartFormDataContent();
@@ -52,8 +49,6 @@ public class OpenAIProvider : OpenAICompatibleProvider
 
         if (options?.Prompt != null)
             content.Add(new StringContent(options.Prompt), "prompt");
-
-        LoggerService.Info($"OpenAIProvider.TranscribeAsync: Sending request to {endpoint}");
 
         using var response = await _httpClient.PostAsync(endpoint, content, ct);
         var json = await response.Content.ReadAsStringAsync(ct);

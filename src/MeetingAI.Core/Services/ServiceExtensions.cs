@@ -1,8 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using MeetingAI.Core.Providers;
-using MeetingAI.Core.Providers.Abstractions;
-using MeetingAI.Core.Resilience;
-using MeetingAI.Core.State;
 using MeetingAI.Shared.Configuration;
 using MeetingAI.Shared.Helpers;
 
@@ -18,11 +15,9 @@ public static class ServiceExtensions
         // Core services
         services.AddSingleton<IConfigurationService, ConfigurationService>();
 
-        // State management
-        services.AddSingleton<MeetingStateManager>();
-
         // AI Provider Factory
         services.AddSingleton<IAIProviderFactory, AIProviderFactory>();
+        services.AddSingleton<ProviderManager>();
 
         // Services
         services.AddSingleton<IRecordingService, RecordingService>();
@@ -31,26 +26,20 @@ public static class ServiceExtensions
         services.AddSingleton<IAIAssistantService, AIAssistantService>();
         services.AddSingleton<MeetingHistoryService>();
 
-        // Resilience — factory-based registration that resolves default provider at construction
-        services.AddSingleton<IAIProviderWrapper>(sp =>
-        {
-            var factory = sp.GetRequiredService<IAIProviderFactory>();
-            var configService = sp.GetRequiredService<IConfigurationService>();
-            var settings = configService.Load();
+        // Additional services
+        services.AddSingleton<ILanguageDetectionService, LanguageDetectionService>();
+        services.AddSingleton<ITranslationService, TranslationService>();
+        services.AddSingleton<ITerminologyService, TerminologyService>();
+        services.AddSingleton<IActionItemExtractor, ActionItemExtractorService>();
+        services.AddSingleton<IMermaidRendererService, MermaidRendererService>();
 
-            ProviderConfig? providerConfig = null;
-            if (!string.IsNullOrEmpty(settings.DefaultProviderId))
-            {
-                providerConfig = settings.Providers.FirstOrDefault(p => p.Id == settings.DefaultProviderId && p.IsEnabled);
-            }
-            providerConfig ??= settings.Providers.FirstOrDefault(p => p.IsEnabled);
+        // Speaker diarization: inner implementation + facade
+        services.AddSingleton<OnnxSpeakerDiarizationService>();
+        services.AddSingleton<ISpeakerDiarizationService>(sp =>
+            new SpeakerDiarizationService(sp.GetRequiredService<OnnxSpeakerDiarizationService>()));
 
-            if (providerConfig == null)
-                throw new InvalidOperationException("No enabled AI provider found in configuration");
-
-            var provider = factory.Create(providerConfig);
-            return new ResilientAiProvider(provider);
-        });
+        // Combined transcription (Whisper + diarization)
+        services.AddSingleton<CombinedTranscriptionService>();
 
         return services;
     }

@@ -8,15 +8,15 @@ using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Services;
 
-public sealed class AIAssistantService : IAIAssistantService, IDisposable
+public sealed class AIAssistantService : IAIAssistantService
 {
     private readonly IConfigurationService _configService;
-    private readonly ProviderCollection _providerCollection;
+    private readonly ProviderManager _providerManager;
 
-    public AIAssistantService(IConfigurationService configService)
+    public AIAssistantService(IConfigurationService configService, ProviderManager providerManager)
     {
         _configService = configService;
-        _providerCollection = new ProviderCollection(configService, p => p.SupportsChat);
+        _providerManager = providerManager;
     }
 
     public async IAsyncEnumerable<string> AskAsync(
@@ -69,7 +69,7 @@ public sealed class AIAssistantService : IAIAssistantService, IDisposable
 
     private async Task<(IAIProvider Provider, ProviderConfig Config)> GetProviderWithConfigAsync(string? providerId)
     {
-        var providers = await _providerCollection.GetProvidersAsync();
+        var providers = await _providerManager.GetChatProvidersAsync();
         var settings = _configService.Load();
         var effectiveProviderId = providerId ?? settings.DefaultProviderId;
 
@@ -85,11 +85,5 @@ public sealed class AIAssistantService : IAIAssistantService, IDisposable
 
         var fallbackConfig = settings.Providers.FirstOrDefault(p => p.Id == fallback.Key)!;
         return (fallback.Value, fallbackConfig);
-    }
-
-    public void Dispose()
-    {
-        _providerCollection.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

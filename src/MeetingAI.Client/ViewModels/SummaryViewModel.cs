@@ -211,7 +211,7 @@ public partial class SummaryViewModel : ObservableObject
         {
             sb.AppendLine("\n**行动项**:");
             foreach (var item in summary.ActionItems)
-                sb.AppendLine($"  • {item}");
+                sb.AppendLine($"  • {item.Description}");
         }
 
         if (summary.Decisions.Any())

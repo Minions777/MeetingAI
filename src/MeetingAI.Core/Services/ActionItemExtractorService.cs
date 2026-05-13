@@ -8,20 +8,20 @@ using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Services;
 
-public sealed class ActionItemExtractorService : IActionItemExtractor, IDisposable
+public sealed class ActionItemExtractorService : IActionItemExtractor
 {
     private readonly IConfigurationService _configService;
-    private readonly ProviderCollection _providerCollection;
+    private readonly ProviderManager _providerManager;
 
-    public ActionItemExtractorService(IConfigurationService configService)
+    public ActionItemExtractorService(IConfigurationService configService, ProviderManager providerManager)
     {
         _configService = configService;
-        _providerCollection = new ProviderCollection(configService, p => p.SupportsChat);
+        _providerManager = providerManager;
     }
 
     public async Task<IReadOnlyList<ActionItem>> ExtractAsync(string summaryText, CancellationToken ct = default)
     {
-        var providers = await _providerCollection.GetProvidersAsync();
+        var providers = await _providerManager.GetChatProvidersAsync();
         var settings = _configService.Load();
 
         IAIProvider? provider = null;
@@ -198,10 +198,5 @@ public sealed class ActionItemExtractorService : IActionItemExtractor, IDisposab
                 : 7 - (int)today.DayOfWeek + (int)DayOfWeek.Saturday),
             _ => null
         };
-    }
-
-    public void Dispose()
-    {
-        _providerCollection.Dispose();
     }
 }

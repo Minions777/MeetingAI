@@ -37,7 +37,8 @@ public partial class ProviderViewModel : ObservableObject
         });
     }
 
-    public async Task ReloadAsync()
+    [RelayCommand]
+    public async Task ReloadProvidersAsync()
     {
         await LoadProvidersAsync();
         LoggerService.Info("Provider list refreshed");

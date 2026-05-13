@@ -42,10 +42,10 @@ public class MacAudioCapture : IAudioCapture
             FormatID = kAudioFormatLinearPCM,
             FormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked | kAudioFormatFlagsNativeEndian,
             BitsPerChannel = 16,
-            ChannelsPerFrame = Channels,
+            ChannelsPerFrame = (uint)Channels,
             FramesPerPacket = 1,
-            BytesPerFrame = 2 * Channels,
-            BytesPerPacket = 2 * Channels
+            BytesPerFrame = (uint)(2 * Channels),
+            BytesPerPacket = (uint)(2 * Channels)
         };
 
         var status = AudioQueueNewInput(ref format, AudioQueueCallback, GCHandle.ToIntPtr(_gcHandle),
@@ -98,7 +98,7 @@ public class MacAudioCapture : IAudioCapture
         if (buf.AudioDataBytes > 0)
         {
             var data = new byte[buf.AudioDataBytes];
-            Marshal.Copy(buf.AudioData, data, 0, buf.AudioDataBytes);
+            Marshal.Copy(buf.AudioData, data, 0, (int)buf.AudioDataBytes);
             capture.DataAvailable?.Invoke(capture, data);
         }
 
