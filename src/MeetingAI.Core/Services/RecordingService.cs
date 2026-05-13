@@ -166,12 +166,12 @@ public class RecordingService : IRecordingService, IDisposable
                 if (now - _lastVolumeUpdate >= _volumeUpdateInterval)
                 {
                     _lastVolumeUpdate = now;
-                    VolumeChanged?.BeginInvoke(this, max, null, null);
+                    VolumeChanged?.Invoke(this, max);
                 }
             }
             catch (Exception ex)
             {
-                RecordingError?.BeginInvoke(this, ex, null, null);
+                RecordingError?.Invoke(this, ex);
             }
         }
     }

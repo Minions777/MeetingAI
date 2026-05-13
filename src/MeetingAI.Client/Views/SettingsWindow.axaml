@@ -184,8 +184,13 @@
                                                Margin="0,0,0,8"/>
                                     <ComboBox ItemsSource="{Binding AvailablePresets}"
                                               SelectedItem="{Binding SelectedPreset}"
-                                              DisplayMemberPath="DisplayName"
-                                              Margin="0,0,0,8"/>
+                                              Margin="0,0,0,8">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DisplayName}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
 
                                     <!-- 预设描述 -->
                                     <TextBlock Text="{Binding SelectedPreset.Description}"
@@ -228,7 +233,7 @@
                                                 Margin="8,0,0,0">
                                             <Path Data="{StaticResource SettingsIcon}"
                                                   Width="14" Height="14" Stretch="Uniform"
-                                                  Fill="{Binding IsCustomUrl, Converter={x:Static BoolConverters.TrueIsTrue}}"/>
+                                                  Fill="{Binding IsCustomUrl, Converter={StaticResource BoolToBrushConverter}}"/>
                                         </Button>
                                     </Grid>
                                     <TextBox Text="{Binding EditBaseUrl}"

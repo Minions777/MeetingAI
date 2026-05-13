@@ -107,7 +107,7 @@ public class TranscriptionService : ITranscriptionService, IDisposable
         {
             try
             {
-                using var fs = File.OpenRead();
+                using var fs = File.OpenRead(path);
                 using var reader = new BinaryReader(fs);
                 var riff = new string(reader.ReadChars(4));
                 if (riff == "RIFF")

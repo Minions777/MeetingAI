@@ -11,6 +11,10 @@ public class MeetingHistoryService
     private readonly string _historyDirectoryRoot;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly SemaphoreSlim _ioLock = new(1, 1);
+    private readonly SemaphoreSlim _cacheLock = new(1, 1);
+    private List<MeetingRecord>? _cache;
+    private DateTime _cacheTime = DateTime.MinValue;
+    private readonly TimeSpan _cacheTtl = TimeSpan.FromMinutes(2);
 
     public MeetingHistoryService()
         : this(Path.Combine(
@@ -49,6 +53,7 @@ public class MeetingHistoryService
         try
         {
             await File.WriteAllTextAsync(filePath, json);
+            InvalidateCache();
         }
         finally
         {
@@ -74,11 +79,24 @@ public class MeetingHistoryService
 
     public async Task<IReadOnlyList<MeetingRecord>> GetAllAsync()
     {
-        var records = await LoadRecordsAsync(Directory.EnumerateFiles(_historyDirectory, "*.json"));
+        if (_cache != null && !IsCacheExpired())
+            return _cache;
 
-        return records
-            .OrderByDescending(r => r.StartedAt)
-            .ToList();
+        var records = await LoadRecordsAsync(Directory.EnumerateFiles(_historyDirectory, "*.json"));
+        var sorted = records.OrderByDescending(GetRecordSortTime).ToList();
+
+        await _cacheLock.WaitAsync();
+        try
+        {
+            _cache = sorted;
+            _cacheTime = DateTime.UtcNow;
+        }
+        finally
+        {
+            _cacheLock.Release();
+        }
+
+        return sorted;
     }
 
     public async Task<IReadOnlyList<MeetingRecord>> GetRecentAsync(int count)
@@ -86,12 +104,8 @@ public class MeetingHistoryService
         if (count <= 0)
             return Array.Empty<MeetingRecord>();
 
-        var records = await LoadRecordsAsync(Directory.EnumerateFiles(_historyDirectory, "*.json"));
-
-        return records
-            .OrderByDescending(GetRecordSortTime)
-            .Take(count)
-            .ToList();
+        var all = await GetAllAsync();
+        return all.Take(count).ToList();
     }
 
     public async Task<bool> DeleteAsync(string id)
@@ -108,6 +122,7 @@ public class MeetingHistoryService
             }
 
             File.Delete(filePath);
+            InvalidateCache();
         }
         finally
         {
@@ -296,6 +311,14 @@ public class MeetingHistoryService
             return record.SavedAt;
 
         return record.StartedAt;
+    }
+
+    private bool IsCacheExpired() => DateTime.UtcNow - _cacheTime > _cacheTtl;
+
+    private void InvalidateCache()
+    {
+        _cache = null;
+        _cacheTime = DateTime.MinValue;
     }
 
     private static string NormalizeRecordId(string id)
