@@ -12,6 +12,7 @@ public partial class SummaryViewModel : ObservableObject
     private readonly ISummaryService _summaryService;
     private readonly IConfigurationService _configService;
     private readonly ITranscriptionService _transcriptionService;
+    private readonly IAIAssistantService _aiAssistantService;
 
     [ObservableProperty] private string _transcriptText = "";
     [ObservableProperty] private string _summaryText = "";
@@ -20,14 +21,23 @@ public partial class SummaryViewModel : ObservableObject
     [ObservableProperty] private bool _isProcessing;
     [ObservableProperty] private string _statusText = "";
 
+    // Ask AI feature
+    [ObservableProperty] private string _selectedText = "";
+    [ObservableProperty] private string _aiResponseText = "";
+    [ObservableProperty] private bool _isAskingAI;
+    [ObservableProperty] private bool _showAIPanel;
+    [ObservableProperty] private string _aiErrorMessage = "";
+
     public SummaryViewModel(
         ISummaryService summaryService,
         IConfigurationService configService,
-        ITranscriptionService transcriptionService)
+        ITranscriptionService transcriptionService,
+        IAIAssistantService aiAssistantService)
     {
         _summaryService = summaryService;
         _configService = configService;
         _transcriptionService = transcriptionService;
+        _aiAssistantService = aiAssistantService;
     }
 
     public async Task<Transcript?> TranscribeAsync(string audioFilePath, string? providerId)
@@ -113,11 +123,72 @@ public partial class SummaryViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private async Task AskAIAsync(string? selectedText)
+    {
+        if (string.IsNullOrWhiteSpace(selectedText))
+        {
+            AiErrorMessage = "请先选中相关会议文本";
+            return;
+        }
+
+        SelectedText = selectedText;
+        AiResponseText = string.Empty;
+        IsAskingAI = true;
+        ShowAIPanel = true;
+        AiErrorMessage = string.Empty;
+
+        try
+        {
+            var context = GetRecentContext();
+            var sb = new System.Text.StringBuilder();
+
+            await foreach (var chunk in _aiAssistantService.AskAsync(selectedText, context, null))
+            {
+                sb.Append(chunk);
+                AiResponseText = sb.ToString();
+            }
+
+            LoggerService.Info("AI Assistant response completed");
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("AI Assistant failed", ex);
+            AiErrorMessage = $"错误: {ex.Message}";
+        }
+        finally
+        {
+            IsAskingAI = false;
+        }
+    }
+
+    [RelayCommand]
+    private void CloseAIPanel()
+    {
+        ShowAIPanel = false;
+        AiResponseText = string.Empty;
+        AiErrorMessage = string.Empty;
+    }
+
+    private string GetRecentContext()
+    {
+        // Get recent transcript context (last 60 seconds worth)
+        var text = TranscriptText;
+        if (string.IsNullOrEmpty(text))
+            return "（无完整转录内容）";
+
+        // Return the full transcript as context since we don't have fine-grained timestamps
+        return text.Length > 2000 ? text[..2000] + "..." : text;
+    }
+
     public void Clear()
     {
         TranscriptText = string.Empty;
         SummaryText = string.Empty;
         HasSummary = false;
+        ShowAIPanel = false;
+        AiResponseText = string.Empty;
+        AiErrorMessage = string.Empty;
     }
 
     public string FormatSummary(Summary? summary)

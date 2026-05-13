@@ -25,11 +25,26 @@ public class SummaryService : ISummaryService, IDisposable
 
 请用中文回复，格式清晰，便于阅读。";
 
+    private const string TerminologySectionPrompt = @"
+
+术语表（以下术语请保持不翻译）：
+{terminology_list}";
+
     public SummaryService(IConfigurationService configService)
     {
         _configService = configService;
         _configService.SettingsChanged += OnSettingsChanged;
         _initialization = new Lazy<Task>(() => Task.Run(RefreshProviders));
+    }
+
+    private static string BuildSystemPrompt(string? systemPrompt, string? terminologyList)
+    {
+        var basePrompt = systemPrompt ?? DefaultSummaryPrompt;
+        if (string.IsNullOrEmpty(terminologyList))
+            return basePrompt;
+
+        var terminologySection = TerminologySectionPrompt.Replace("{terminology_list}", terminologyList);
+        return basePrompt + terminologySection;
     }
 
     private void OnSettingsChanged(object? sender, EventArgs e)
@@ -69,6 +84,7 @@ public class SummaryService : ISummaryService, IDisposable
         Transcript transcript,
         string? providerId = null,
         string? systemPrompt = null,
+        string? terminologyList = null,
         CancellationToken ct = default)
     {
         await _initialization.Value;
@@ -90,10 +106,12 @@ public class SummaryService : ISummaryService, IDisposable
         var providerConfig = settings.Providers.FirstOrDefault(p => p.Id == effectiveProviderId)
             ?? throw new InvalidOperationException($"Provider configuration not found: {effectiveProviderId}");
 
+        var effectiveSystemPrompt = BuildSystemPrompt(systemPrompt, terminologyList);
+
         var request = new ChatRequest
         {
             Model = providerConfig.Model,
-            SystemPrompt = systemPrompt ?? providerConfig.SystemPrompt ?? DefaultSummaryPrompt,
+            SystemPrompt = effectiveSystemPrompt,
             Temperature = providerConfig.Temperature,
             MaxTokens = providerConfig.MaxTokens,
             Messages =
@@ -123,6 +141,7 @@ public class SummaryService : ISummaryService, IDisposable
         Transcript transcript,
         string? providerId = null,
         string? systemPrompt = null,
+        string? terminologyList = null,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         await _initialization.Value;
@@ -144,10 +163,12 @@ public class SummaryService : ISummaryService, IDisposable
         var providerConfig = settings.Providers.FirstOrDefault(p => p.Id == effectiveProviderId)
             ?? throw new InvalidOperationException($"Provider configuration not found: {effectiveProviderId}");
 
+        var effectiveSystemPrompt = BuildSystemPrompt(systemPrompt, terminologyList);
+
         var request = new ChatRequest
         {
             Model = providerConfig.Model,
-            SystemPrompt = systemPrompt ?? providerConfig.SystemPrompt ?? DefaultSummaryPrompt,
+            SystemPrompt = effectiveSystemPrompt,
             Temperature = providerConfig.Temperature,
             MaxTokens = providerConfig.MaxTokens,
             Messages =

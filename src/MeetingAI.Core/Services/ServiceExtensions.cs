@@ -28,6 +28,7 @@ public static class ServiceExtensions
         services.AddSingleton<IRecordingService, RecordingService>();
         services.AddSingleton<ITranscriptionService, TranscriptionService>();
         services.AddSingleton<ISummaryService, SummaryService>();
+        services.AddSingleton<IAIAssistantService, AIAssistantService>();
         services.AddSingleton<MeetingHistoryService>();
 
         // Resilience — factory-based registration that resolves default provider at construction

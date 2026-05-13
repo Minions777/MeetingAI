@@ -255,6 +255,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <!-- Summary Header -->
@@ -308,8 +309,88 @@
                             </Panel>
                         </ScrollViewer>
 
+                        <!-- Ask AI Panel -->
+                        <Border Grid.Row="2"
+                                Background="{StaticResource FillBrush}"
+                                CornerRadius="{StaticResource RadiusMedium}"
+                                Padding="16"
+                                Margin="0,16,0,0"
+                                IsVisible="{Binding ShowAIPanel}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Ask AI Header -->
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource BrainIcon}"
+                                              Fill="{StaticResource InfoBrush}"
+                                              Width="18" Height="18" Stretch="Uniform"
+                                              Margin="0,0,8,0"/>
+                                        <TextBlock Text="AI 问答"
+                                                   Classes="Body"
+                                                   FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                    <Button HorizontalAlignment="Right"
+                                            Classes="Icon"
+                                            Width="24" Height="24"
+                                            Command="{Binding Summary.CloseAIPanelCommand}">
+                                        <Path Data="{StaticResource CloseIcon}"
+                                              Fill="{StaticResource TextTertiaryBrush}"
+                                              Width="12" Height="12" Stretch="Uniform"/>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Selected Text -->
+                                <Border Grid.Row="1"
+                                        Background="{StaticResource BackgroundTertiaryBrush}"
+                                        CornerRadius="6"
+                                        Padding="12"
+                                        Margin="0,0,0,8">
+                                    <TextBlock Text="{Binding Summary.SelectedText}"
+                                               Classes="Caption"
+                                               TextWrapping="Wrap"
+                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                </Border>
+
+                                <!-- AI Response -->
+                                <Border Grid.Row="2"
+                                        Background="{StaticResource BackgroundBrush}"
+                                        CornerRadius="6"
+                                        Padding="12">
+                                    <StackPanel>
+                                        <!-- Loading indicator -->
+                                        <StackPanel Orientation="Horizontal"
+                                                    IsVisible="{Binding Summary.IsAskingAI}"
+                                                    Margin="0,0,0,8">
+                                            <TextBlock Text="思考中..."
+                                                       Classes="Caption"
+                                                       Foreground="{StaticResource TextTertiaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Response text -->
+                                        <TextBlock Text="{Binding Summary.AiResponseText}"
+                                                   Classes="Body"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   IsVisible="{Binding Summary.IsAskingAI, Converter={StaticResource InverseBoolConverter}}"/>
+
+                                        <!-- Error message -->
+                                        <TextBlock Text="{Binding Summary.AiErrorMessage}"
+                                                   Classes="Caption"
+                                                   Foreground="{StaticResource ErrorBrush}"
+                                                   TextWrapping="Wrap"
+                                                   IsVisible="{Binding Summary.AiErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+
                         <!-- Copy Button -->
-                        <Button Grid.Row="2"
+                        <Button Grid.Row="3"
                                 Command="{Binding CopySummaryCommand}"
                                 Classes="Secondary"
                                 HorizontalAlignment="Right"

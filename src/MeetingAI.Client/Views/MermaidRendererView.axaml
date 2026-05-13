@@ -1,0 +1,164 @@
+<UserControl x:Class="MeetingAI.Client.Views.MermaidRendererView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MeetingAI.Client.ViewModels"
+             xmlns:services="clr-namespace:MeetingAI.Core.Services"
+             MinHeight="400"
+             Background="{StaticResource BackgroundBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with chart type selector -->
+        <Border Grid.Row="0"
+                Background="{StaticResource FillBrush}"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Padding="16,12"
+                Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Path Data="{StaticResource BrainIcon}"
+                          Fill="{StaticResource PrimaryBrush}"
+                          Width="20" Height="20" Stretch="Uniform"
+                          Margin="0,0,12,0"/>
+                    <TextBlock Text="可视化摘要"
+                               Classes="TitleSmall"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text=" - "
+                               Classes="BodySmall"
+                               Foreground="{StaticResource TextTertiaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="8,0"/>
+                    <TextBlock Text="{Binding ChartTypeLabel}"
+                               Classes="Body"
+                               Foreground="{StaticResource PrimaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Chart type selector via ComboBox -->
+                <ComboBox Grid.Column="1"
+                          SelectedItem="{Binding SelectedChartTypeItem}"
+                          MinWidth="120">
+                    <ComboBoxItem Content="思维导图" Tag="MindMap"/>
+                    <ComboBoxItem Content="流程图" Tag="Flowchart"/>
+                    <ComboBoxItem Content="甘特图" Tag="Gantt"/>
+                    <ComboBoxItem Content="饼图" Tag="Pie"/>
+                </ComboBox>
+            </Grid>
+        </Border>
+
+        <!-- Main content area -->
+        <Border Grid.Row="1"
+                Background="{StaticResource FillBrush}"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Padding="24">
+            <Panel>
+                <!-- Empty state -->
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding HasContent, Converter={StaticResource InverseBoolConverter}}">
+                    <Path Data="{StaticResource DocTextIcon}"
+                          Fill="{StaticResource TextTertiaryBrush}"
+                          Width="56" Height="56" Stretch="Uniform"
+                          HorizontalAlignment="Center"
+                          Opacity="0.4"/>
+                    <TextBlock Text="暂无可视化内容"
+                               Classes="Headline"
+                               Foreground="{StaticResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,20,0,12"/>
+                    <TextBlock Text="先生成摘要，然后查看可视化"
+                               Classes="BodySmall"
+                               Foreground="{StaticResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Mermaid syntax display -->
+                <ScrollViewer IsVisible="{Binding HasContent}"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Mermaid 语法"
+                                   Classes="Caption"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Margin="0,0,0,8"/>
+                        <Border Background="{StaticResource BackgroundBrush}"
+                                CornerRadius="{StaticResource RadiusSmall}"
+                                Padding="16">
+                            <TextBlock Text="{Binding MermaidSyntax}"
+                                       Classes="BodySmall"
+                                       FontFamily="Cascadia Code, Consolas, monospace"
+                                       TextWrapping="Wrap"
+                                       LineHeight="22"/>
+                        </Border>
+
+                        <!-- Preview hint -->
+                        <Border Background="{StaticResource BackgroundSecondaryBrush}"
+                                CornerRadius="{StaticResource RadiusSmall}"
+                                Padding="16"
+                                Margin="0,16,0,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Path Data="{StaticResource InfoIcon}"
+                                          Fill="{StaticResource InfoBrush}"
+                                          Width="16" Height="16" Stretch="Uniform"
+                                          Margin="0,0,8,0"/>
+                                    <TextBlock Text="提示"
+                                               Classes="BodySmall"
+                                               Foreground="{StaticResource InfoBrush}"/>
+                                </StackPanel>
+                                <TextBlock Text="点击「导出 HTML」在浏览器中查看完整的图形渲染，或点击「导出 Mermaid」保存语法文件。"
+                                           Classes="BodySmall"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Panel>
+        </Border>
+
+        <!-- Export buttons -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0"
+                    IsVisible="{Binding HasContent}">
+            <Button Command="{Binding ExportToMermaidCommand}"
+                    Classes="Secondary"
+                    Padding="16,10"
+                    Margin="0,0,12,0">
+                <StackPanel Orientation="Horizontal">
+                    <Path Data="{StaticResource SaveIcon}"
+                          Fill="{StaticResource TextPrimaryBrush}"
+                          Width="14" Height="14" Stretch="Uniform"
+                          Margin="0,0,8,0"/>
+                    <TextBlock Text="导出 Mermaid"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                </StackPanel>
+            </Button>
+
+            <Button Command="{Binding ExportToPngCommand}"
+                    Classes="Primary"
+                    Padding="16,10">
+                <StackPanel Orientation="Horizontal">
+                    <Path Data="{StaticResource SaveIcon}"
+                          Fill="White"
+                          Width="14" Height="14" Stretch="Uniform"
+                          Margin="0,0,8,0"/>
+                    <TextBlock Text="导出 HTML"
+                               Foreground="White"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>
