@@ -46,7 +46,7 @@
 
                 <!-- Chart type selector via ComboBox -->
                 <ComboBox Grid.Column="1"
-                          SelectedItem="{Binding SelectedChartTypeItem}"
+                          SelectedIndex="{Binding SelectedChartTypeIndex}"
                           MinWidth="120">
                     <ComboBoxItem Content="思维导图" Tag="MindMap"/>
                     <ComboBoxItem Content="流程图" Tag="Flowchart"/>

@@ -93,10 +93,11 @@ public abstract class OpenAICompatibleProvider : BaseAIProvider
         using var stream = await response.Content.ReadAsStreamAsync(ct);
         using var reader = new StreamReader(stream);
 
-        while (!reader.EndOfStream && !ct.IsCancellationRequested)
+        while (!ct.IsCancellationRequested)
         {
             var line = await reader.ReadLineAsync(ct);
-            if (line?.StartsWith("data: ") == true)
+            if (line is null) break;
+            if (line.StartsWith("data: "))
             {
                 var data = line["data: ".Length..];
                 if (data == "[DONE]") yield break;

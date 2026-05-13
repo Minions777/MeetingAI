@@ -17,10 +17,17 @@ public partial class MermaidRendererViewModel : ObservableObject
     [ObservableProperty] private string _chartTypeLabel = "思维导图";
     [ObservableProperty] private bool _hasContent;
     [ObservableProperty] private bool _isRendering;
+    [ObservableProperty] private int _selectedChartTypeIndex;
 
     public MermaidRendererViewModel(IMermaidRendererService mermaidRenderer)
     {
         _mermaidRenderer = mermaidRenderer;
+    }
+
+    partial void OnSelectedChartTypeIndexChanged(int value)
+    {
+        if (value >= 0 && value <= 3)
+            CurrentChartType = (MermaidChartType)value;
     }
 
     [RelayCommand]

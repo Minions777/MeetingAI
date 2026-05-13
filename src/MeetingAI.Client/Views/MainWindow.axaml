@@ -57,8 +57,8 @@
                               Fill="{StaticResource InfoBrush}"
                               Width="16" Height="16" Stretch="Uniform"
                               Margin="0,0,8,0"/>
-                        <ComboBox ItemsSource="{Binding Providers}"
-                                  SelectedItem="{Binding SelectedProvider}"
+                        <ComboBox ItemsSource="{Binding Providers.Providers}"
+                                  SelectedItem="{Binding Providers.SelectedProvider}"
                                   MinWidth="180"
                                   HorizontalAlignment="Center">
                             <ComboBox.ItemTemplate>
@@ -67,7 +67,7 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <Button Command="{Binding ReloadProvidersCommand}"
+                        <Button Command="{Binding Providers.ReloadProvidersCommand}"
                                 Classes="Icon"
                                 ToolTip.Tip="刷新列表"
                                 Margin="8,0,0,0">
@@ -81,7 +81,7 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <!-- Status Indicator -->
                         <Ellipse Width="10" Height="10"
-                                 Fill="{Binding IsRecording, Converter={StaticResource RecordingStatusColorConverter}}"
+                                 Fill="{Binding Recording.IsRecording, Converter={StaticResource RecordingStatusColorConverter}}"
                                  Margin="0,0,12,0"/>
                         <TextBlock Text="{Binding StatusText}"
                                    Classes="BodySmall"
@@ -171,7 +171,7 @@
                                 Padding="24"
                                 Margin="0,0,0,20">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding DurationText}"
+                                <TextBlock Text="{Binding Recording.DurationText}"
                                            FontSize="56" FontWeight="Light"
                                            FontFamily="{StaticResource PrimaryFont}"
                                            Foreground="{StaticResource TextPrimaryBrush}"
@@ -179,7 +179,7 @@
                                            Margin="0,0,0,16"/>
 
                                 <!-- Volume Indicator -->
-                                <ProgressBar Value="{Binding VolumeLevel}"
+                                <ProgressBar Value="{Binding Recording.VolumeLevel}"
                                              Maximum="1"
                                              Height="8"
                                              CornerRadius="4"
@@ -191,7 +191,7 @@
                                 <StackPanel Orientation="Horizontal"
                                             HorizontalAlignment="Center"
                                             Margin="0,12,0,0"
-                                            IsVisible="{Binding IsRecording}">
+                                            IsVisible="{Binding Recording.IsRecording}">
                                     <Ellipse Width="8" Height="8"
                                              Fill="{StaticResource ErrorBrush}"
                                              Margin="0,0,8,0"/>
@@ -227,7 +227,7 @@
                                     <!-- Transcript Content -->
                                     <ScrollViewer Grid.Row="1"
                                                   VerticalScrollBarVisibility="Auto">
-                                        <TextBlock Text="{Binding TranscriptText}"
+                                        <TextBlock Text="{Binding Summary.TranscriptText}"
                                                    Classes="Body"
                                                    Foreground="{StaticResource TextSecondaryBrush}"
                                                    TextWrapping="Wrap"
@@ -276,8 +276,8 @@
                                 <Border Background="{StaticResource FillBrush}"
                                         CornerRadius="{StaticResource RadiusMedium}"
                                         Padding="24"
-                                        IsVisible="{Binding HasSummary}">
-                                    <TextBlock Text="{Binding SummaryText}"
+                                        IsVisible="{Binding Summary.HasSummary}">
+                                    <TextBlock Text="{Binding Summary.SummaryText}"
                                                Classes="BodyLarge"
                                                TextWrapping="Wrap"
                                                LineHeight="28"/>
@@ -287,7 +287,7 @@
                                 <StackPanel HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             MinHeight="200"
-                                            IsVisible="{Binding HasSummary, Converter={StaticResource InverseBoolConverter}}">
+                                            IsVisible="{Binding Summary.HasSummary, Converter={StaticResource InverseBoolConverter}}">
                                     <Path Data="{StaticResource DocTextIcon}"
                                           Fill="{StaticResource TextTertiaryBrush}"
                                           Width="64" Height="64" Stretch="Uniform"
@@ -315,7 +315,7 @@
                                 CornerRadius="{StaticResource RadiusMedium}"
                                 Padding="16"
                                 Margin="0,16,0,0"
-                                IsVisible="{Binding ShowAIPanel}">
+                                IsVisible="{Binding Summary.ShowAIPanel}">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -426,18 +426,18 @@
                     <!-- Left: Record/Stop Button -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <!-- Record Button (shown when not recording) -->
-                        <Button Command="{Binding ToggleRecordingCommand}"
+                        <Button Command="{Binding Recording.ToggleRecordingCommand}"
                                 Classes="Record"
-                                IsVisible="{Binding IsRecording, Converter={StaticResource InverseBoolConverter}}">
+                                IsVisible="{Binding Recording.IsRecording, Converter={StaticResource InverseBoolConverter}}">
                             <Path Data="{StaticResource MicIcon}"
                                   Fill="White"
                                   Width="28" Height="28" Stretch="Uniform"/>
                         </Button>
 
                         <!-- Stop Button (shown when recording) -->
-                        <Button Command="{Binding ToggleRecordingCommand}"
+                        <Button Command="{Binding Recording.ToggleRecordingCommand}"
                                 Classes="Stop"
-                                IsVisible="{Binding IsRecording}">
+                                IsVisible="{Binding Recording.IsRecording}">
                             <Path Data="{StaticResource StopIcon}"
                                   Fill="White"
                                   Width="28" Height="28" Stretch="Uniform"/>
@@ -447,9 +447,9 @@
                     <!-- Center: Other Controls -->
                     <WrapPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <!-- Pause/Resume Button -->
-                        <Button Command="{Binding PauseResumeCommand}"
+                        <Button Command="{Binding Recording.PauseResumeCommand}"
                                 Classes="Secondary"
-                                IsEnabled="{Binding IsRecording}"
+                                IsEnabled="{Binding Recording.IsRecording}"
                                 Margin="0,0,16,0"
                                 Padding="20,12">
                             <StackPanel Orientation="Horizontal">
@@ -494,7 +494,7 @@
 
                     <!-- Right: Status -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding DurationText}"
+                        <TextBlock Text="{Binding Recording.DurationText}"
                                    Classes="BodySmall"
                                    Foreground="{StaticResource TextTertiaryBrush}"
                                    VerticalAlignment="Center"/>

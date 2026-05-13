@@ -8,14 +8,14 @@ using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Services;
 
-public sealed class TranslationService : ITranslationService, IDisposable
+public sealed class TranslationService : ITranslationService
 {
     private readonly IConfigurationService _configService;
     private readonly ILanguageDetectionService _languageDetection;
-    private readonly ProviderCollection _providerCollection;
+    private readonly ProviderManager _providerManager;
 
     private const string TranslationPromptTemplate = @"你是一个专业的会议翻译。请将以下中文内容翻译为英文，或将英文翻译为中文。
-    
+
 术语表（这些术语不要翻译）：
 {terminology_list}
 
@@ -27,11 +27,11 @@ public sealed class TranslationService : ITranslationService, IDisposable
 2. 准确传达原意
 3. 返回JSON格式：{{""original"":""..."",""translation"":""...""}}";
 
-    public TranslationService(IConfigurationService configService, ILanguageDetectionService languageDetection)
+    public TranslationService(IConfigurationService configService, ILanguageDetectionService languageDetection, ProviderManager providerManager)
     {
         _configService = configService;
         _languageDetection = languageDetection;
-        _providerCollection = new ProviderCollection(configService, p => p.SupportsChat);
+        _providerManager = providerManager;
     }
 
     public async Task<TranslationResult> TranslateAsync(
@@ -41,7 +41,7 @@ public sealed class TranslationService : ITranslationService, IDisposable
         string? providerId = null,
         CancellationToken ct = default)
     {
-        var providers = await _providerCollection.GetProvidersAsync();
+        var providers = await _providerManager.GetChatProvidersAsync();
 
         if (string.IsNullOrWhiteSpace(text))
             return new TranslationResult(text, string.Empty);
@@ -112,11 +112,5 @@ public sealed class TranslationService : ITranslationService, IDisposable
             LoggerService.Error("Translation parsing failed", ex);
             return new TranslationResult(originalText, content.Trim());
         }
-    }
-
-    public void Dispose()
-    {
-        _providerCollection.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

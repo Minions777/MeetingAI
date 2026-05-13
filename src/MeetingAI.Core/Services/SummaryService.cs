@@ -7,10 +7,10 @@ using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Services;
 
-public class SummaryService : ISummaryService, IDisposable
+public class SummaryService : ISummaryService
 {
     private readonly IConfigurationService _configService;
-    private readonly ProviderCollection _providerCollection;
+    private readonly ProviderManager _providerManager;
 
     public const string DefaultSummaryPrompt = @"You are a professional meeting assistant. Based on the meeting transcript below, generate a structured meeting summary:
 
@@ -27,10 +27,10 @@ Respond in the same language as the transcript. Format clearly for readability."
 术语表（以下术语请保持不翻译）：
 {terminology_list}";
 
-    public SummaryService(IConfigurationService configService)
+    public SummaryService(IConfigurationService configService, ProviderManager providerManager)
     {
         _configService = configService;
-        _providerCollection = new ProviderCollection(configService, p => p.SupportsChat);
+        _providerManager = providerManager;
     }
 
     private static string BuildSystemPrompt(string? systemPrompt, string? terminologyList)
@@ -50,7 +50,7 @@ Respond in the same language as the transcript. Format clearly for readability."
         string? terminologyList = null,
         CancellationToken ct = default)
     {
-        var providers = await _providerCollection.GetProvidersAsync();
+        var providers = await _providerManager.GetChatProvidersAsync();
 
         var settings = _configService.Load();
         var effectiveProviderId = providerId ?? settings.DefaultProviderId;
@@ -106,7 +106,7 @@ Respond in the same language as the transcript. Format clearly for readability."
         string? terminologyList = null,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        var providers = await _providerCollection.GetProvidersAsync();
+        var providers = await _providerManager.GetChatProvidersAsync();
 
         var settings = _configService.Load();
         var effectiveProviderId = providerId ?? settings.DefaultProviderId;
@@ -207,7 +207,7 @@ Respond in the same language as the transcript. Format clearly for readability."
             return "keypoints";
 
         if (line.Contains("行动项") || line.Contains("Action Items", StringComparison.OrdinalIgnoreCase)
-            || line.Contains("Action Items", StringComparison.OrdinalIgnoreCase) || line.Contains("Todo", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Todo", StringComparison.OrdinalIgnoreCase)
             || line.Contains("To-Do", StringComparison.OrdinalIgnoreCase))
             return "actionitems";
 
@@ -292,11 +292,5 @@ Respond in the same language as the transcript. Format clearly for readability."
             summary.KeyPoints.Add(line);
 
         return summary;
-    }
-
-    public void Dispose()
-    {
-        _providerCollection.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

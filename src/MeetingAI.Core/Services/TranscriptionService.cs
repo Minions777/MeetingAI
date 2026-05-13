@@ -6,15 +6,15 @@ using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Services;
 
-public class TranscriptionService : ITranscriptionService, IDisposable
+public class TranscriptionService : ITranscriptionService
 {
     private readonly IConfigurationService _configService;
-    private readonly ProviderCollection _providerCollection;
+    private readonly ProviderManager _providerManager;
 
-    public TranscriptionService(IConfigurationService configService)
+    public TranscriptionService(IConfigurationService configService, ProviderManager providerManager)
     {
         _configService = configService;
-        _providerCollection = new ProviderCollection(configService, p => p.SupportsTranscription);
+        _providerManager = providerManager;
     }
 
     public async Task<Transcript> TranscribeAsync(
@@ -24,7 +24,7 @@ public class TranscriptionService : ITranscriptionService, IDisposable
         IProgress<float>? progress = null,
         CancellationToken ct = default)
     {
-        var providers = await _providerCollection.GetProvidersAsync();
+        var providers = await _providerManager.GetTranscriptionProvidersAsync();
 
         var settings = _configService.Load();
         providerId ??= settings.DefaultProviderId;
@@ -96,9 +96,9 @@ public class TranscriptionService : ITranscriptionService, IDisposable
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Fall back to defaults if parsing fails
+                LoggerService.Warning($"Failed to parse WAV header, using defaults: {ex.Message}");
             }
         }
 
@@ -111,11 +111,5 @@ public class TranscriptionService : ITranscriptionService, IDisposable
             Channels = channels,
             Duration = duration
         };
-    }
-
-    public void Dispose()
-    {
-        _providerCollection.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

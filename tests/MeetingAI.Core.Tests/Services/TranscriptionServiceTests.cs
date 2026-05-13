@@ -1,4 +1,5 @@
 using FluentAssertions;
+using MeetingAI.Core.Providers;
 using MeetingAI.Core.Services;
 using MeetingAI.Core.Tests.Helpers;
 using MeetingAI.Shared.Configuration;
@@ -9,17 +10,19 @@ namespace MeetingAI.Core.Tests.Services;
 public class TranscriptionServiceTests
 {
     private readonly IConfigurationService _configService;
+    private readonly ProviderManager _providerManager;
 
     public TranscriptionServiceTests()
     {
         _configService = TestHelpers.CreateMockConfigService();
+        _providerManager = new ProviderManager(_configService);
     }
 
     [Fact]
     public void Constructor_WithValidConfig_DoesNotThrow()
     {
         // Act
-        var sut = new TranscriptionService(_configService);
+        var sut = new TranscriptionService(_configService, _providerManager);
 
         // Assert
         sut.Should().NotBeNull();
@@ -29,7 +32,7 @@ public class TranscriptionServiceTests
     public async Task TranscribeAsync_FileNotFound_ThrowsFileNotFoundException()
     {
         // Arrange
-        var sut = new TranscriptionService(_configService);
+        var sut = new TranscriptionService(_configService, _providerManager);
 
         // Act & Assert
         await sut.Invoking(s => s.TranscribeAsync("nonexistent.wav"))
@@ -40,7 +43,7 @@ public class TranscriptionServiceTests
     public async Task TranscribeAsync_FileNotFound_ContainsFilePathInMessage()
     {
         // Arrange
-        var sut = new TranscriptionService(_configService);
+        var sut = new TranscriptionService(_configService, _providerManager);
         var nonexistentPath = "C:\\nonexistent\\audio.wav";
 
         // Act & Assert

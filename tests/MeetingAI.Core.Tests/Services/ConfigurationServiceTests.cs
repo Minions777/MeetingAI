@@ -57,12 +57,12 @@ public class ConfigurationServiceTests
     }
 
     [Fact]
-    public void ValidateConfiguration_WithDefaultProviders_Succeeds()
+    public void ValidateConfiguration_WithoutApiKeys_ReturnsInvalid()
     {
         var sut = new ConfigurationService(_secureStorageMock.Object);
         var (isValid, errors) = sut.ValidateConfiguration();
-        isValid.Should().BeTrue();
-        errors.Should().BeEmpty();
+        isValid.Should().BeFalse();
+        errors.Should().NotBeEmpty();
     }
 
     [Fact]

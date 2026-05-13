@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using MeetingAI.Client.ViewModels;
 using MeetingAI.Client.Views;
+using MeetingAI.Core.Providers;
 using MeetingAI.Core.Services;
 using MeetingAI.Shared.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +45,6 @@ public partial class App : Application
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<MermaidRendererViewModel>();
         services.AddTransient<SettingsWindow>();
-        services.AddSingleton<IMermaidRendererService, MermaidRendererService>();
         services.AddTransient<MainWindow>();
     }
 
@@ -52,8 +52,10 @@ public partial class App : Application
     {
         var mainViewModel = Services.GetService<MainViewModel>();
         mainViewModel?.Dispose();
+        var providerManager = Services.GetService<ProviderManager>();
+        providerManager?.Dispose();
         if (Services is IDisposable disposable)
             disposable.Dispose();
         LoggerService.Shutdown();
-}
+    }
 }
