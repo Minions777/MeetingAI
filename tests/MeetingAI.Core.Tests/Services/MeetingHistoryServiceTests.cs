@@ -72,6 +72,59 @@ public sealed class MeetingHistoryServiceTests : IDisposable
         File.Exists(Path.Combine(Directory.GetParent(_historyDirectory)!.FullName, "outside.json")).Should().BeFalse();
     }
 
+    [Fact]
+    public async Task GetAllAsync_PopulatesCache_OnFirstCall()
+    {
+        var record = CreateRecord("cached-record", DateTime.UtcNow);
+        await _sut.SaveAsync(record);
+
+        // First call loads from disk and caches
+        var first = await _sut.GetAllAsync();
+        first.Should().HaveCount(1);
+
+        // Add another record directly to disk (bypassing service)
+        var newRecord = CreateRecord("new-record", DateTime.UtcNow);
+        newRecord.Id = "new-id";
+        var json = System.Text.Json.JsonSerializer.Serialize(newRecord, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        await File.WriteAllTextAsync(Path.Combine(_historyDirectory, "new-id.json"), json);
+
+        // Second call should return cached result (still 1 record)
+        var second = await _sut.GetAllAsync();
+        second.Should().HaveCount(1); // Cache hit, new file not visible
+    }
+
+    [Fact]
+    public async Task SaveAsync_InvalidatesCache_NewRecordVisibleAfterNextCall()
+    {
+        var first = CreateRecord("first-record", DateTime.UtcNow);
+        await _sut.SaveAsync(first);
+
+        var initial = await _sut.GetAllAsync();
+        initial.Should().HaveCount(1);
+
+        // Save via service — this invalidates cache
+        var second = CreateRecord("second-record", DateTime.UtcNow);
+        await _sut.SaveAsync(second);
+
+        var after = await _sut.GetAllAsync();
+        after.Should().HaveCount(2);
+        after.Select(r => r.Id).Should().Contain("second-record");
+    }
+
+    [Fact]
+    public async Task DeleteAsync_InvalidatesCache_DeletedRecordGoneAfterNextCall()
+    {
+        var first = CreateRecord("to-delete", DateTime.UtcNow);
+        await _sut.SaveAsync(first);
+
+        await _sut.GetAllAsync(); // Populate cache
+
+        await _sut.DeleteAsync("to-delete");
+
+        var after = await _sut.GetAllAsync();
+        after.Should().BeEmpty();
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_historyDirectory))

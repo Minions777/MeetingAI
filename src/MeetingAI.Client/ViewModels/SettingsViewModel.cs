@@ -318,7 +318,15 @@ public partial class SettingsViewModel : ObservableObject
             StatusText = "请输入 API Key";
             return;
         }
-        
+
+        // Basic API key format validation
+        var validationError = ValidateApiKeyFormat(EditProviderType, EditApiKey);
+        if (validationError != null)
+        {
+            StatusText = validationError;
+            return;
+        }
+
         try
         {
             StatusText = "测试连接中...";
@@ -357,5 +365,23 @@ public partial class SettingsViewModel : ObservableObject
         _configService.ClearCache();
         
         StatusText = $"默认 Provider 已设置为: {provider.Name}";
+    }
+
+    private static string? ValidateApiKeyFormat(AIProviderType providerType, string apiKey)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            return "API Key 不能为空";
+
+        var trimmed = apiKey.Trim();
+
+        return providerType switch
+        {
+            AIProviderType.OpenAI when !trimmed.StartsWith("sk-") => "OpenAI API Key 应以 sk- 开头",
+            AIProviderType.Anthropic when !trimmed.StartsWith("sk-ant-") => "Anthropic API Key 应以 sk-ant- 开头",
+            AIProviderType.DeepSeek when trimmed.Length < 10 => "DeepSeek API Key 格式不正确（长度过短）",
+            AIProviderType.Zhipu when trimmed.Length < 10 => "智谱 API Key 格式不正确（长度过短）",
+            AIProviderType.MiniMax when trimmed.Length < 10 => "MiniMax API Key 格式不正确（长度过短）",
+            _ => null
+        };
     }
 }

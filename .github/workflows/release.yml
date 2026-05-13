@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v2.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish Windows x64
+        run: |
+          dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r win-x64 --self-contained -p:Optimize=true -o ./release/win-x64
+
+      - name: Publish macOS x64
+        run: |
+          dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r osx-x64 --self-contained -p:Optimize=true -o ./release/osx-x64
+        continue-on-error: true
+
+      - name: Publish macOS arm64
+        run: |
+          dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r osx-arm64 --self-contained -p:Optimize=true -o ./release/osx-arm64
+        continue-on-error: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.version }}
+          name: ${{ inputs.version }}
+          generate_release_notes: true
+          files: |
+            ./release/win-x64/MeetingAI.Client.exe
+            ./release/osx-x64/MeetingAI.Client
+            ./release/osx-arm64/MeetingAI.Client
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

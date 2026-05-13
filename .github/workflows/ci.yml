@@ -1,0 +1,68 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        dotnet-version: ['8.0.x']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Restore dependencies
+        run: dotnet restore MeetingAI.sln
+
+      - name: Build
+        run: dotnet build MeetingAI.sln -c Debug --no-restore
+
+      - name: Run tests
+        run: dotnet test MeetingAI.sln -c Debug --no-build --verbosity normal
+
+  build-release:
+    runs-on: windows-latest
+    needs: build-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish Windows
+        run: |
+          dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r win-x64 --self-contained -o ./publish/win-x64
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MeetingAI-win-x64
+          path: ./publish/win-x64/MeetingAI.Client.exe
+          retention-days: 30
+
+      - name: Publish macOS
+        run: |
+          dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r osx-x64 --self-contained -o ./publish/osx-x64
+        continue-on-error: true
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: MeetingAI-osx-x64
+          path: ./publish/osx-x64/MeetingAI.Client
+          retention-days: 30
