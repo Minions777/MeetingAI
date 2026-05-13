@@ -1,68 +1,68 @@
-# 🎙️ MeetingAI v2
+# MeetingAI
 
-重构后的 MeetingAI 会议助手，采用模块化架构，支持多 AI Provider。
+智能会议助手 — 基于 .NET 8 + Avalonia 的实时语音转文字与 AI 会议摘要系统，支持 Windows 与 macOS。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://avaloniaui.net/)
 
-## ✨ 功能特性
+## 功能特性
 
-- 🔴 **会议录音** - 系统音频 + 麦克风混合录制
-- 🔊 **语音转文字** - 支持 Whisper API / Ollama 本地转录
-- 🤖 **AI 摘要** - 支持 OpenAI / Claude / DeepSeek / Ollama / 智谱 / MiniMax
-- 📋 **一键复制** - 快速复制会议摘要
-- ⚙️ **多模型配置** - 可配置多个 AI Provider 并随时切换
-- ⌨️ **全局快捷键** - 支持 Ctrl+Shift+R 切换录音，Ctrl+Shift+S 停止录音
-- 📁 **会议历史** - 自动保存会议记录，支持搜索和导出
-- 🔒 **安全加密** - 使用 DPAPI 加密敏感信息
+- **会议录音** — 系统音频 + 麦克风混合录制（Windows/macOS 平台适配）
+- **语音转文字** — 支持 Whisper API / Ollama 本地转录
+- **AI 摘要** — 支持 OpenAI / Claude / DeepSeek / Ollama / 智谱 / MiniMax，流式输出
+- **一键复制** — 快速复制会议摘要
+- **多模型配置** — 可配置多个 AI Provider 并随时切换
+- **全局快捷键** — `Ctrl+Shift+R` 切换录音，`Ctrl+Shift+S` 停止录音
+- **会议历史** — 自动保存会议记录，支持搜索和导出（2 分钟内存缓存）
+- **安全加密** — 使用 DPAPI（Windows）加密敏感信息
+- **跨平台** — 从 WPF 迁移至 Avalonia UI，支持 macOS
 
-## 🚀 快速开始
+## 快速开始
 
 ### 环境要求
 
-- Windows 10/11 (64位)
-- .NET 8 SDK
-- API Key (根据使用的 AI 模型)
+| 平台 | 要求 |
+|------|------|
+| Windows | Windows 10/11 (64位)，.NET 8 SDK |
+| macOS | macOS 11+，.NET 8 SDK |
+| 其他 | API Key（根据使用的 AI 模型） |
 
-### 运行项目
+### 构建与运行
 
 ```bash
 # 克隆仓库
 git clone https://github.com/Minions777/MeetingAI.git
 cd MeetingAI
 
-# 进入客户端目录
-cd src/MeetingAI.Client
-
 # 恢复依赖
 dotnet restore
 
+# 构建
+dotnet build
+
 # 运行
-dotnet run
+dotnet run --project src/MeetingAI.Client/MeetingAI.Client.csproj
 ```
 
-### 构建独立可执行文件
+### 发布独立可执行文件
 
 ```bash
-cd src/MeetingAI.Client
+# Windows
+dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r win-x64 --self-contained -p:Optimize=true
 
-# 发布 Release 版本（单文件自包含）
-dotnet publish -c Release -p:Optimize=true
-
-# 可执行文件位置
-# bin/Release/net8.0-windows/win-x64/publish/MeetingAI.Client.exe
+# macOS
+dotnet publish src/MeetingAI.Client/MeetingAI.Client.csproj -c Release -r osx-x64 --self-contained -p:Optimize=true
 ```
 
-## 🎹 快捷键
+## 快捷键
 
 | 快捷键 | 功能 |
 |--------|------|
 | `Ctrl+Shift+R` | 切换录音（开始/暂停） |
 | `Ctrl+Shift+S` | 停止录音 |
 
-> 💡 快捷键支持全局捕获，即使应用窗口未聚焦也能响应。
-
-## ⚙️ AI Provider 配置
+## AI Provider
 
 | 厂商 | 支持功能 | 默认模型 |
 |------|---------|---------|
@@ -73,162 +73,114 @@ dotnet publish -c Release -p:Optimize=true
 | 智谱 | 摘要 | glm-4 |
 | MiniMax | 摘要 | MiniMax-Text-01 |
 
-## 🏗️ 架构设计
+## 项目结构
 
 ```
 MeetingAI/
 ├── src/
-│   ├── MeetingAI.Client/      # WPF 主客户端 (MVVM)
-│   │   ├── Views/           # 视图
-│   │   ├── ViewModels/      # 视图模型
-│   │   └── Themes/          # 主题样式
-│   ├── MeetingAI.Core/      # 核心业务逻辑
-│   │   ├── Services/        # 业务服务
-│   │   │   ├── RecordingService      # 录音服务
-│   │   │   ├── TranscriptionService   # 转录服务
-│   │   │   ├── SummaryService        # 摘要服务
-│   │   │   └── MeetingHistoryService # 历史管理
-│   │   ├── Providers/       # AI Provider 抽象层
-│   │   │   ├── Abstractions/        # 接口定义
-│   │   │   ├── BaseAIProvider.cs    # 基类
-│   │   │   └── Implementations/      # 具体实现
-│   │   └── Models/          # 数据模型
-│   └── MeetingAI.Shared/    # 共享基础设施
-│       ├── Configuration/    # 配置管理
-│       ├── Helpers/          # 辅助工具
-│       │   └── GlobalHotkeyService.cs # 全局快捷键
-│       ├── Logging/          # 日志服务
-│       └── i18n/            # 多语言支持
+│   ├── MeetingAI.Client/        # Avalonia 主客户端 (MVVM)
+│   │   ├── Views/               # .axaml 视图
+│   │   ├── ViewModels/          # 视图模型（按职责拆分）
+│   │   └── Themes/              # 主题样式
+│   ├── MeetingAI.Core/          # 核心业务逻辑
+│   │   ├── Services/
+│   │   │   ├── RecordingService.cs     # 音频录制（平台适配）
+│   │   │   ├── TranscriptionService.cs  # 语音转文字
+│   │   │   ├── SummaryService.cs        # AI 摘要（支持流式）
+│   │   │   ├── MeetingHistoryService.cs # 历史管理（含内存缓存）
+│   │   │   └── WindowsAudioCapture.cs / MacAudioCapture.cs
+│   │   ├── Providers/           # AI Provider 抽象层
+│   │   │   ├── Abstractions/     # 接口定义
+│   │   │   └── Implementations/  # OpenAI/DeepSeek/Claude/Ollama/智谱/MiniMax
+│   │   ├── Resilience/          # 弹性策略（Polly）
+│   │   └── Models/              # 数据模型
+│   └── MeetingAI.Shared/         # 跨平台共享基础设施
+│       ├── Configuration/        # 配置管理（加密存储、备份恢复）
+│       ├── Helpers/              # 全局热键（Windows/macOS 分平台实现）
+│       └── Logging/              # 结构化日志（Serilog）
 └── tests/
-    └── MeetingAI.Core.Tests/ # 单元测试
+    └── MeetingAI.Core.Tests/     # 单元测试（xUnit + Moq + FluentAssertions）
+        ├── Providers/            # Provider 工厂和配置测试
+        ├── Services/             # Service 层测试
+        └── Resilience/           # 弹性策略测试
 ```
 
-### 核心设计模式
+## 核心设计
 
-#### Provider 抽象层
+### Provider 架构
 
-参考 Cherry Studio 的 Provider 设计模式，便于扩展新的 AI 服务商：
+采用工厂模式，按 `AIProviderType` 枚举创建对应 Provider 实例：
 
 ```csharp
-// 定义接口
-public interface IAIProvider
-{
-    string Id { get; }
-    string Name { get; }
-    bool IsConfigured { get; }
-    Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken ct);
-    Task<Transcript> TranscribeAsync(AudioData audio, TranscriptionOptions? options, CancellationToken ct);
-    Task<bool> TestConnectionAsync(CancellationToken ct);  // 新增
-}
-
-// 使用工厂创建
-var provider = ProviderFactory.Create(AIProviderType.OpenAI);
+var provider = ProviderFactory.Create(AIProviderType.OpenAI, config);
+var response = await provider.ChatAsync(request, cancellationToken);
 ```
 
-#### 配置加密
+### 配置加密
 
-使用 DPAPI 加密敏感信息（API Key）：
+敏感信息（API Key）通过 DPAPI（Windows）加密存储，支持安全导出（Key 脱敏）：
 
 ```csharp
-// 加密存储
-SecureStorage.EncryptConfig(providerConfig);
-
-// 解密使用
-SecureStorage.DecryptConfig(providerConfig);
-
-// 验证加密
-SecureStorage.ValidateEncryption(apiKey);
+secureStorage.EncryptConfig(providerConfig);
+secureStorage.DecryptConfig(providerConfig);
 ```
 
-## 📊 会议历史管理
+### 历史服务缓存
+
+`MeetingHistoryService` 内置 2 分钟 TTL 内存缓存，写入/删除时自动失效，减少重复磁盘 I/O。
+
+### 弹性策略
+
+使用 Polly 实现重试与熔断，Provider 失败时自动切换：
 
 ```csharp
-var historyService = new MeetingHistoryService();
-
-// 保存会议记录
-await historyService.SaveAsync(meetingRecord);
-
-// 搜索会议
-var results = await historyService.SearchAsync("关键词");
-
-// 导出为 Markdown
-var markdown = historyService.ExportToMarkdown(record);
-
-// 获取统计信息
-var stats = await historyService.GetStatsAsync();
+var resilientProvider = new ResilientAiProvider(provider, retryCount: 3);
 ```
 
-## 🧪 测试
+## 测试
 
 ```bash
-# 运行所有测试
+# 运行全部测试
 dotnet test
 
-# 运行特定测试
-dotnet test --filter "FullyQualifiedName~SecureStorageTests"
+# 带覆盖率
+dotnet test --collect:"XPlat Code Coverage"
 ```
 
-## 📝 项目结构说明
+**当前测试覆盖**：58 个测试，涵盖 SecureStorage、Providers、Services、Resilience。
 
-### 核心服务
-
-| 服务 | 职责 |
-|------|------|
-| `RecordingService` | 音频录制，混合系统音频和麦克风 |
-| `TranscriptionService` | 语音转文字，调用 AI API |
-| `SummaryService` | AI 摘要生成，支持多 Provider |
-| `MeetingHistoryService` | 会议记录持久化和搜索 |
-| `ConfigurationService` | 配置管理，支持备份恢复 |
-
-### 新增特性
-
-- **全局快捷键** (`GlobalHotkeyService`)
-  - 使用 Win32 API 实现系统级热键
-  - 支持快捷键可用性检测
-  
-- **配置管理增强**
-  - 配置缓存过期机制
-  - 支持备份恢复
-  - 配置验证
-  - 安全导出
-
-- **摘要解析增强**
-  - 多级 fallback 解析
-  - 更强的容错能力
-
-## 🔧 开发指南
+## 开发指南
 
 ### 添加新的 AI Provider
 
-1. 在 `Providers/Implementations/` 创建新类，继承 `BaseAIProvider`
-2. 实现抽象方法：
-   ```csharp
-   public class MyProvider : BaseAIProvider
-   {
-       public override string Id => "my-provider";
-       public override string Name => "我的 Provider";
-       // ... 实现其他抽象成员
-   }
-   ```
-3. 在 `ProviderFactory` 中注册
+1. 在 `Providers/Implementations/` 继承 `BaseAIProvider`
+2. 在 `ProviderFactory.Create()` 中注册新类型
+3. 添加对应的单元测试
 
 ### 添加单元测试
 
-1. 在 `tests/MeetingAI.Core.Tests/` 添加测试类
-2. 继承 `IClassFixture<T>` 使用共享上下文
-3. 使用 Moq 模拟依赖
+1. 在 `tests/MeetingAI.Core.Tests/` 下按模块创建测试类
+2. 使用 `Moq` 模拟依赖，`FluentAssertions` 优化断言可读性
+3. 参考现有测试的 `IClassFixture` 模式
 
-## 📄 License
+## 技术栈
 
-MIT License - see [LICENSE](LICENSE) for details
+| 分类 | 技术 |
+|------|------|
+| 框架 | .NET 8，Avalonia 11.2（跨平台 UI） |
+| MVVM | CommunityToolkit.Mvvm 8.2 |
+| 日志 | Serilog |
+| 弹性 | Polly 8.3 |
+| 测试 | xUnit + Moq + FluentAssertions |
+| 加密 | System.Security.Cryptography（DPAPI） |
 
-## 🙏 致谢
+## License
 
-- [NAudio](https://github.com/naudio/NAudio) - 音频处理
-- [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet) - MVVM 框架
-- [Serilog](https://serilog.net/) - 结构化日志
-- 所有贡献者的努力 👏
+MIT License — see [LICENSE](LICENSE)
 
----
+## 致谢
 
-⭐ 如果这个项目对你有帮助，请给一个 Star！
+- [Avalonia](https://avaloniaui.net/) — 跨平台 UI 框架
+- [NAudio](https://github.com/naudio/NAudio) — 音频处理
+- [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet) — MVVM 工具包
+- [Serilog](https://serilog.net/) — 结构化日志
