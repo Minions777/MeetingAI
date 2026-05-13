@@ -12,13 +12,10 @@ public sealed class TranslationService : ITranslationService, IDisposable
 {
     private readonly IConfigurationService _configService;
     private readonly ILanguageDetectionService _languageDetection;
-    private readonly object _providersLock = new();
-    private IReadOnlyDictionary<string, IAIProvider> _providers = new Dictionary<string, IAIProvider>();
-    private readonly Lazy<Task> _initialization;
-    private bool _disposed;
+    private readonly ProviderCollection _providerCollection;
 
     private const string TranslationPromptTemplate = @"你是一个专业的会议翻译。请将以下中文内容翻译为英文，或将英文翻译为中文。
-
+    
 术语表（这些术语不要翻译）：
 {terminology_list}
 
@@ -34,41 +31,7 @@ public sealed class TranslationService : ITranslationService, IDisposable
     {
         _configService = configService;
         _languageDetection = languageDetection;
-        _configService.SettingsChanged += OnSettingsChanged;
-        _initialization = new Lazy<Task>(() => Task.Run(RefreshProviders));
-    }
-
-    private void OnSettingsChanged(object? sender, EventArgs e)
-    {
-        LoggerService.Info("Configuration changed, refreshing translation providers...");
-        _ = Task.Run(RefreshProviders);
-    }
-
-    private void RefreshProviders()
-    {
-        ReplaceProviders(CreateProviders());
-    }
-
-    private IReadOnlyDictionary<string, IAIProvider> CreateProviders()
-    {
-        var settings = _configService.Load();
-        var providers = new Dictionary<string, IAIProvider>();
-
-        foreach (var providerConfig in settings.Providers.Where(p => p.IsEnabled && p.SupportsChat))
-        {
-            try
-            {
-                var provider = ProviderFactory.Create(providerConfig);
-                providers[providerConfig.Id] = provider;
-                LoggerService.Info($"Loaded translation provider: {providerConfig.Name}");
-            }
-            catch (Exception ex)
-            {
-                LoggerService.Error($"Failed to load provider for translation {providerConfig.Name}", ex);
-            }
-        }
-
-        return providers;
+        _providerCollection = new ProviderCollection(configService, p => p.SupportsChat);
     }
 
     public async Task<TranslationResult> TranslateAsync(
@@ -78,7 +41,7 @@ public sealed class TranslationService : ITranslationService, IDisposable
         string? providerId = null,
         CancellationToken ct = default)
     {
-        await _initialization.Value;
+        var providers = await _providerCollection.GetProvidersAsync();
 
         if (string.IsNullOrWhiteSpace(text))
             return new TranslationResult(text, string.Empty);
@@ -91,9 +54,9 @@ public sealed class TranslationService : ITranslationService, IDisposable
         var settings = _configService.Load();
         var effectiveProviderId = providerId ?? settings.DefaultProviderId;
 
-        if (!_providers.TryGetValue(effectiveProviderId, out var provider))
+        if (!providers.TryGetValue(effectiveProviderId, out var provider))
         {
-            var fallback = _providers.FirstOrDefault(p => p.Value.SupportsChat);
+            var fallback = providers.FirstOrDefault(p => p.Value.SupportsChat);
             if (fallback.Value == null)
                 throw new InvalidOperationException("No translation provider available");
 
@@ -153,39 +116,7 @@ public sealed class TranslationService : ITranslationService, IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
+        _providerCollection.Dispose();
         GC.SuppressFinalize(this);
-    }
-
-    void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _configService.SettingsChanged -= OnSettingsChanged;
-                DisposeProviders(ReplaceProviders(new Dictionary<string, IAIProvider>()));
-            }
-            _disposed = true;
-        }
-    }
-
-    private IReadOnlyDictionary<string, IAIProvider> ReplaceProviders(IReadOnlyDictionary<string, IAIProvider> providers)
-    {
-        lock (_providersLock)
-        {
-            var oldProviders = _providers;
-            _providers = providers;
-            return oldProviders;
-        }
-    }
-
-    private static void DisposeProviders(IReadOnlyDictionary<string, IAIProvider> providers)
-    {
-        foreach (var provider in providers.Values)
-        {
-            if (provider is IDisposable disposable)
-                disposable.Dispose();
-        }
     }
 }

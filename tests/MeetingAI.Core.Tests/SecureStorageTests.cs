@@ -48,11 +48,10 @@ public class SecureStorageTests : IDisposable
     }
 
     [Fact]
-    public void Decrypt_InvalidBase64_ReturnsOriginalValue()
+    public void Decrypt_InvalidBase64_ThrowsInvalidOperationException()
     {
         var invalidText = "not-a-valid-base64!!";
-        var result = _storage.Decrypt(invalidText);
-        Assert.Equal(invalidText, result);
+        Assert.Throws<InvalidOperationException>(() => _storage.Decrypt(invalidText));
     }
 
     [Fact]

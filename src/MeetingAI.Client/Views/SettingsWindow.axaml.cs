@@ -9,17 +9,19 @@ namespace MeetingAI.Client.Views;
 public partial class SettingsWindow : Window
 {
     public SettingsWindow()
+        : this(App.Services.GetRequiredService<SettingsViewModel>())
+    {
+    }
+
+    public SettingsWindow(SettingsViewModel viewModel)
     {
         InitializeComponent();
-        DataContext = App.Services.GetRequiredService<SettingsViewModel>();
+        DataContext = viewModel;
 
-        if (DataContext is SettingsViewModel vm)
+        viewModel.RequestClose = () =>
         {
-            vm.RequestClose = () =>
-            {
-                Close(true);
-            };
-        }
+            Close(true);
+        };
     }
 
     private void CloseButton_Click(object? sender, RoutedEventArgs e)
@@ -31,9 +33,9 @@ public partial class SettingsWindow : Window
     {
         if (DataContext is SettingsViewModel vm && sender is ListBox listBox && listBox.SelectedItem is ProviderConfig config)
         {
-            vm.EditProviderCommand.Execute(config);
+            vm.Provider.EditProviderCommand.Execute(config);
             if (ApiKeyBox != null)
-                ApiKeyBox.Text = vm.EditApiKey;
+                ApiKeyBox.Text = vm.Provider.EditApiKey;
         }
     }
 }

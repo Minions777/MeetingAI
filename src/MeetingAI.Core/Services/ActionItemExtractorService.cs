@@ -8,41 +8,20 @@ using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Services;
 
-public sealed class ActionItemExtractorService : IActionItemExtractor
+public sealed class ActionItemExtractorService : IActionItemExtractor, IDisposable
 {
     private readonly IConfigurationService _configService;
-    private readonly Lazy<Task<IReadOnlyDictionary<string, IAIProvider>>> _providers;
+    private readonly ProviderCollection _providerCollection;
 
     public ActionItemExtractorService(IConfigurationService configService)
     {
         _configService = configService;
-        _providers = new Lazy<Task<IReadOnlyDictionary<string, IAIProvider>>>(LoadProvidersAsync);
-    }
-
-    private Task<IReadOnlyDictionary<string, IAIProvider>> LoadProvidersAsync()
-    {
-        return Task.Run(() =>
-        {
-            var settings = _configService.Load();
-            var providers = new Dictionary<string, IAIProvider>();
-            foreach (var config in settings.Providers.Where(p => p.IsEnabled && p.SupportsChat))
-            {
-                try
-                {
-                    providers[config.Id] = ProviderFactory.Create(config);
-                }
-                catch (Exception ex)
-                {
-                    LoggerService.Warning($"Failed to load provider {config.Name}: {ex.Message}");
-                }
-            }
-            return (IReadOnlyDictionary<string, IAIProvider>)providers;
-        });
+        _providerCollection = new ProviderCollection(configService, p => p.SupportsChat);
     }
 
     public async Task<IReadOnlyList<ActionItem>> ExtractAsync(string summaryText, CancellationToken ct = default)
     {
-        var providers = await _providers.Value;
+        var providers = await _providerCollection.GetProvidersAsync();
         var settings = _configService.Load();
 
         IAIProvider? provider = null;
@@ -58,7 +37,8 @@ public sealed class ActionItemExtractorService : IActionItemExtractor
 
         try
         {
-            var providerConfig = settings.Providers.FirstOrDefault(p => p.Id == provider.GetType().Name)
+            var providerConfig = settings.Providers.FirstOrDefault(p => p.Id == provider.Id)
+                ?? settings.Providers.FirstOrDefault(p => p.IsEnabled && p.SupportsChat)
                 ?? settings.Providers.First();
 
             var prompt = BuildExtractionPrompt(summaryText);
@@ -173,7 +153,8 @@ public sealed class ActionItemExtractorService : IActionItemExtractor
             foreach (Match match in matches)
             {
                 var groups = match.Groups;
-                string description, assignee = null;
+                string description;
+                string? assignee = null;
 
                 if (groups.Count >= 3 && !string.IsNullOrWhiteSpace(groups[2].Value))
                 {
@@ -217,5 +198,10 @@ public sealed class ActionItemExtractorService : IActionItemExtractor
                 : 7 - (int)today.DayOfWeek + (int)DayOfWeek.Saturday),
             _ => null
         };
+    }
+
+    public void Dispose()
+    {
+        _providerCollection.Dispose();
     }
 }

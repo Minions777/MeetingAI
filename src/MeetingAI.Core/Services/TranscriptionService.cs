@@ -9,53 +9,12 @@ namespace MeetingAI.Core.Services;
 public class TranscriptionService : ITranscriptionService, IDisposable
 {
     private readonly IConfigurationService _configService;
-    private readonly object _providersLock = new();
-    private IReadOnlyDictionary<string, IAIProvider> _providers = new Dictionary<string, IAIProvider>();
-    private readonly Lazy<Task> _initialization;
-    private bool _disposed;
+    private readonly ProviderCollection _providerCollection;
 
     public TranscriptionService(IConfigurationService configService)
     {
         _configService = configService;
-        _configService.SettingsChanged += OnSettingsChanged;
-        _initialization = new Lazy<Task>(() => Task.Run(RefreshProviders));
-    }
-
-    private void OnSettingsChanged(object? sender, EventArgs e)
-    {
-        LoggerService.Info("Configuration changed, refreshing transcription providers...");
-        _ = Task.Run(RefreshProviders);
-    }
-
-    private void RefreshProviders()
-    {
-        var providers = CreateProviders();
-        ReplaceProviders(providers);
-    }
-
-    private IReadOnlyDictionary<string, IAIProvider> CreateProviders()
-    {
-        var settings = _configService.Load();
-        var providers = new Dictionary<string, IAIProvider>();
-        LoggerService.Info($"Initializing providers, found {settings.Providers.Count} providers");
-
-        foreach (var providerConfig in settings.Providers.Where(p => p.IsEnabled && p.SupportsTranscription))
-        {
-            try
-            {
-                LoggerService.Info($"Creating provider: {providerConfig.Name}, API Key present: {!string.IsNullOrEmpty(providerConfig.ApiKey)}");
-                var provider = ProviderFactory.Create(providerConfig);
-                providers[providerConfig.Id] = provider;
-                LoggerService.Info($"Loaded transcription provider: {providerConfig.Name}, IsConfigured: {provider.IsConfigured}");
-            }
-            catch (Exception ex)
-            {
-                LoggerService.Error($"Failed to load provider {providerConfig.Name}", ex);
-            }
-        }
-
-        LoggerService.Info($"Total transcription providers loaded: {providers.Count}");
-        return providers;
+        _providerCollection = new ProviderCollection(configService, p => p.SupportsTranscription);
     }
 
     public async Task<Transcript> TranscribeAsync(
@@ -65,12 +24,11 @@ public class TranscriptionService : ITranscriptionService, IDisposable
         IProgress<float>? progress = null,
         CancellationToken ct = default)
     {
-        await _initialization.Value;
+        var providers = await _providerCollection.GetProvidersAsync();
 
         var settings = _configService.Load();
         providerId ??= settings.DefaultProviderId;
 
-        var providers = _providers;
         if (!providers.TryGetValue(providerId, out var provider))
         {
             provider = providers.Values.FirstOrDefault(p => p.SupportsTranscription);
@@ -157,41 +115,7 @@ public class TranscriptionService : ITranscriptionService, IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
+        _providerCollection.Dispose();
         GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _configService.SettingsChanged -= OnSettingsChanged;
-                DisposeProviders(ReplaceProviders(new Dictionary<string, IAIProvider>()));
-            }
-            _disposed = true;
-        }
-    }
-
-    private IReadOnlyDictionary<string, IAIProvider> ReplaceProviders(IReadOnlyDictionary<string, IAIProvider> providers)
-    {
-        lock (_providersLock)
-        {
-            var oldProviders = _providers;
-            _providers = providers;
-            return oldProviders;
-        }
-    }
-
-    private static void DisposeProviders(IReadOnlyDictionary<string, IAIProvider> providers)
-    {
-        foreach (var provider in providers.Values)
-        {
-            if (provider is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
     }
 }

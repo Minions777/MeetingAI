@@ -192,19 +192,18 @@ public static class MermaidTemplateGenerator
 
     public static MermaidChartType DetectFromContent(Summary summary)
     {
-        var text = $"{summary.Overview} {string.Join(" ", summary.KeyPoints)} {string.Join(" ", summary.Decisions)}".ToLower();
+        var text = $"{summary.Overview} {string.Join(" ", summary.KeyPoints)} {string.Join(" ", summary.Decisions)}".ToLowerInvariant();
 
-        // Decision-making keywords
-        var decisionKeywords = new[] { "决定", "决策", "方案", "选择", "结论", "最终", "投票", "通过", "批准" };
-        if (decisionKeywords.Any(k => text.Contains(k)))
+        var decisionKeywords = new[] { "决定", "决策", "方案", "选择", "结论", "最终", "投票", "通过", "批准",
+            "decision", "decided", "chosen", "selected", "approved", "resolved" };
+        if (decisionKeywords.Any(k => text.Contains(k, StringComparison.OrdinalIgnoreCase)))
             return MermaidChartType.Flowchart;
 
-        // Project planning keywords
-        var projectKeywords = new[] { "计划", "项目", "任务", "安排", "进度", "里程碑", "deadline", "截止" };
-        if (projectKeywords.Any(k => text.Contains(k)) && summary.ActionItems.Count > 2)
+        var projectKeywords = new[] { "计划", "项目", "任务", "安排", "进度", "里程碑", "deadline", "截止",
+            "project", "plan", "schedule", "milestone", "timeline", "roadmap" };
+        if (projectKeywords.Any(k => text.Contains(k, StringComparison.OrdinalIgnoreCase)) && summary.ActionItems.Count > 2)
             return MermaidChartType.Gantt;
 
-        // Discussion topics - default to mindmap
         return MermaidChartType.MindMap;
     }
 

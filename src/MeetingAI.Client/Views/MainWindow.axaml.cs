@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Threading;
 using MeetingAI.Client.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,9 +8,14 @@ namespace MeetingAI.Client.Views;
 public partial class MainWindow : Window
 {
     public MainWindow()
+        : this(App.Services.GetRequiredService<MainViewModel>())
+    {
+    }
+
+    public MainWindow(MainViewModel viewModel)
     {
         InitializeComponent();
-        DataContext = App.Services.GetRequiredService<MainViewModel>();
+        DataContext = viewModel;
     }
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)

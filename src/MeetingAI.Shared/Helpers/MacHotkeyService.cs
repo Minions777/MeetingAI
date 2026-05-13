@@ -27,6 +27,9 @@ public class MacHotkeyService : IPlatformHotkeyService
     };
 
     public bool IsAvailable => CheckAccessibility();
+    private int _hotkeyIdCounter;
+
+    public int GenerateHotkeyId() => ++_hotkeyIdCounter;
 
     public bool RegisterHotkey(int id, KeyModifiers modifiers, string key, Action action)
     {

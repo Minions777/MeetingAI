@@ -3,6 +3,8 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MeetingAI.Client.Views;
+using Microsoft.Extensions.DependencyInjection;
 using MeetingAI.Core.Models;
 using MeetingAI.Core.Services;
 using MeetingAI.Shared.Configuration;
@@ -44,10 +46,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         Recording.RecordingStoppedWithFile += OnRecordingStoppedWithFile;
         _recordingService.RecordingStopped += OnServiceRecordingStopped;
 
-        InitializeAsync();
+        _ = InitializeAsync();
     }
 
-    private async void InitializeAsync()
+    private async Task InitializeAsync()
     {
         await Providers.LoadProvidersAsync();
         await History.LoadRecentAsync();
@@ -94,6 +96,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
         await History.DeleteAsync(record);
         MeetingHistory = History.MeetingHistory;
         StatusText = "录音已删除";
+    }
+
+    [RelayCommand]
+    private void OpenSettings()
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
+        {
+            var settingsWindow = App.Services.GetRequiredService<SettingsWindow>();
+            settingsWindow.ShowDialog(desktop.MainWindow);
+        }
     }
 
     public void Dispose()

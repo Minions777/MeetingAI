@@ -10,20 +10,17 @@ namespace MeetingAI.Core.Services;
 public class SummaryService : ISummaryService, IDisposable
 {
     private readonly IConfigurationService _configService;
-    private readonly object _providersLock = new();
-    private IReadOnlyDictionary<string, IAIProvider> _providers = new Dictionary<string, IAIProvider>();
-    private readonly Lazy<Task> _initialization;
-    private bool _disposed;
+    private readonly ProviderCollection _providerCollection;
 
-    public const string DefaultSummaryPrompt = @"你是一个专业的会议助手。请根据以下会议记录，生成结构化的会议摘要：
+    public const string DefaultSummaryPrompt = @"You are a professional meeting assistant. Based on the meeting transcript below, generate a structured meeting summary:
 
-1. **会议概要**：简要描述会议主题
-2. **关键要点**：列出会议主要讨论内容
-3. **行动项**：列出需要跟进的任务
-4. **决议**：列出会议做出的决定
-5. **待解决问题**：列出悬而未决的问题
+1. **Overview / 会议概要**: Briefly describe the meeting topic
+2. **Key Points / 关键要点**: List main discussion items
+3. **Action Items / 行动项**: List follow-up tasks with assignees if mentioned
+4. **Decisions / 决议**: List decisions made
+5. **Open Issues / 待解决问题**: List unresolved questions
 
-请用中文回复，格式清晰，便于阅读。";
+Respond in the same language as the transcript. Format clearly for readability.";
 
     private const string TerminologySectionPrompt = @"
 
@@ -33,8 +30,7 @@ public class SummaryService : ISummaryService, IDisposable
     public SummaryService(IConfigurationService configService)
     {
         _configService = configService;
-        _configService.SettingsChanged += OnSettingsChanged;
-        _initialization = new Lazy<Task>(() => Task.Run(RefreshProviders));
+        _providerCollection = new ProviderCollection(configService, p => p.SupportsChat);
     }
 
     private static string BuildSystemPrompt(string? systemPrompt, string? terminologyList)
@@ -47,39 +43,6 @@ public class SummaryService : ISummaryService, IDisposable
         return basePrompt + terminologySection;
     }
 
-    private void OnSettingsChanged(object? sender, EventArgs e)
-    {
-        LoggerService.Info("Configuration changed, refreshing chat providers...");
-        _ = Task.Run(RefreshProviders);
-    }
-
-    private void RefreshProviders()
-    {
-        ReplaceProviders(CreateProviders());
-    }
-
-    private IReadOnlyDictionary<string, IAIProvider> CreateProviders()
-    {
-        var settings = _configService.Load();
-        var providers = new Dictionary<string, IAIProvider>();
-
-        foreach (var providerConfig in settings.Providers.Where(p => p.IsEnabled && p.SupportsChat))
-        {
-            try
-            {
-                var provider = ProviderFactory.Create(providerConfig);
-                providers[providerConfig.Id] = provider;
-                LoggerService.Info($"Loaded chat provider: {providerConfig.Name}");
-            }
-            catch (Exception ex)
-            {
-                LoggerService.Error($"Failed to load provider {providerConfig.Name}", ex);
-            }
-        }
-
-        return providers;
-    }
-
     public async Task<Summary> SummarizeAsync(
         Transcript transcript,
         string? providerId = null,
@@ -87,11 +50,10 @@ public class SummaryService : ISummaryService, IDisposable
         string? terminologyList = null,
         CancellationToken ct = default)
     {
-        await _initialization.Value;
+        var providers = await _providerCollection.GetProvidersAsync();
 
         var settings = _configService.Load();
         var effectiveProviderId = providerId ?? settings.DefaultProviderId;
-        var providers = _providers;
 
         if (!providers.TryGetValue(effectiveProviderId, out var provider))
         {
@@ -144,11 +106,10 @@ public class SummaryService : ISummaryService, IDisposable
         string? terminologyList = null,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        await _initialization.Value;
+        var providers = await _providerCollection.GetProvidersAsync();
 
         var settings = _configService.Load();
         var effectiveProviderId = providerId ?? settings.DefaultProviderId;
-        var providers = _providers;
 
         if (!providers.TryGetValue(effectiveProviderId, out var provider))
         {
@@ -237,19 +198,25 @@ public class SummaryService : ISummaryService, IDisposable
 
     private static string DetectSection(string line)
     {
-        if (line.Contains("会议概要") || line.Contains("概要") || line.Contains("Overview", StringComparison.OrdinalIgnoreCase))
+        if (line.Contains("会议概要") || line.Contains("概要") || line.Contains("Overview", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Meeting Overview", StringComparison.OrdinalIgnoreCase) || line.Contains("Summary", StringComparison.OrdinalIgnoreCase))
             return "overview";
 
-        if (line.Contains("关键要点") || line.Contains("要点") || line.Contains("Key Points", StringComparison.OrdinalIgnoreCase))
+        if (line.Contains("关键要点") || line.Contains("要点") || line.Contains("Key Points", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Key Discussion", StringComparison.OrdinalIgnoreCase) || line.Contains("Main Points", StringComparison.OrdinalIgnoreCase))
             return "keypoints";
 
-        if (line.Contains("行动项") || line.Contains("Action Items", StringComparison.OrdinalIgnoreCase))
+        if (line.Contains("行动项") || line.Contains("Action Items", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Action Items", StringComparison.OrdinalIgnoreCase) || line.Contains("Todo", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("To-Do", StringComparison.OrdinalIgnoreCase))
             return "actionitems";
 
-        if (line.Contains("决议") || line.Contains("Decisions", StringComparison.OrdinalIgnoreCase))
+        if (line.Contains("决议") || line.Contains("Decisions", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Decision", StringComparison.OrdinalIgnoreCase) || line.Contains("Resolution", StringComparison.OrdinalIgnoreCase))
             return "decisions";
 
-        if (line.Contains("待解决") || line.Contains("Questions", StringComparison.OrdinalIgnoreCase))
+        if (line.Contains("待解决") || line.Contains("Questions", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Open Issues", StringComparison.OrdinalIgnoreCase) || line.Contains("Pending", StringComparison.OrdinalIgnoreCase))
             return "questions";
 
         return "";
@@ -329,41 +296,7 @@ public class SummaryService : ISummaryService, IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
+        _providerCollection.Dispose();
         GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _configService.SettingsChanged -= OnSettingsChanged;
-                DisposeProviders(ReplaceProviders(new Dictionary<string, IAIProvider>()));
-            }
-            _disposed = true;
-        }
-    }
-
-    private IReadOnlyDictionary<string, IAIProvider> ReplaceProviders(IReadOnlyDictionary<string, IAIProvider> providers)
-    {
-        lock (_providersLock)
-        {
-            var oldProviders = _providers;
-            _providers = providers;
-            return oldProviders;
-        }
-    }
-
-    private static void DisposeProviders(IReadOnlyDictionary<string, IAIProvider> providers)
-    {
-        foreach (var provider in providers.Values)
-        {
-            if (provider is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
     }
 }

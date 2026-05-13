@@ -7,12 +7,12 @@ public class RecordingService : IRecordingService, IDisposable
 {
     private readonly IAudioCapture _audioCapture;
     private Stream? _outputStream;
-    private BinaryWriter? _writer;
+    private volatile BinaryWriter? _writer;
     private string _currentFilePath = string.Empty;
     private DateTime _recordingStartTime;
     private TimeSpan _pausedDuration;
     private DateTime? _pauseStartTime;
-    private bool _isPaused;
+    private volatile bool _isPaused;
     private readonly object _lock = new();
     private bool _disposed;
     private long _dataBytesWritten;

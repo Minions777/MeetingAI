@@ -46,14 +46,13 @@ public partial class RecordingViewModel : ObservableObject, IDisposable
         }
     }
 
-    public Task StartAsync()
+    public async Task StartAsync()
     {
-        _recordingService.StartRecordingAsync();
+        await _recordingService.StartRecordingAsync();
         IsRecording = true;
         IsPaused = false;
         _durationTimer.Start();
         LoggerService.Info("Recording started via UI");
-        return Task.CompletedTask;
     }
 
     public async Task StopAsync()

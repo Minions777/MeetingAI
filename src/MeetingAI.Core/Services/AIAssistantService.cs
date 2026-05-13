@@ -11,49 +11,12 @@ namespace MeetingAI.Core.Services;
 public sealed class AIAssistantService : IAIAssistantService, IDisposable
 {
     private readonly IConfigurationService _configService;
-    private readonly object _providersLock = new();
-    private IReadOnlyDictionary<string, IAIProvider> _providers = new Dictionary<string, IAIProvider>();
-    private readonly Lazy<Task> _initialization;
-    private bool _disposed;
+    private readonly ProviderCollection _providerCollection;
 
     public AIAssistantService(IConfigurationService configService)
     {
         _configService = configService;
-        _configService.SettingsChanged += OnSettingsChanged;
-        _initialization = new Lazy<Task>(() => Task.Run(RefreshProviders));
-    }
-
-    private void OnSettingsChanged(object? sender, EventArgs e)
-    {
-        LoggerService.Info("Configuration changed, refreshing AI assistant providers...");
-        _ = Task.Run(RefreshProviders);
-    }
-
-    private void RefreshProviders()
-    {
-        ReplaceProviders(CreateProviders());
-    }
-
-    private IReadOnlyDictionary<string, IAIProvider> CreateProviders()
-    {
-        var settings = _configService.Load();
-        var providers = new Dictionary<string, IAIProvider>();
-
-        foreach (var providerConfig in settings.Providers.Where(p => p.IsEnabled && p.SupportsChat))
-        {
-            try
-            {
-                var provider = ProviderFactory.Create(providerConfig);
-                providers[providerConfig.Id] = provider;
-                LoggerService.Info($"Loaded chat provider for AI assistant: {providerConfig.Name}");
-            }
-            catch (Exception ex)
-            {
-                LoggerService.Error($"Failed to load provider {providerConfig.Name}", ex);
-            }
-        }
-
-        return providers;
+        _providerCollection = new ProviderCollection(configService, p => p.SupportsChat);
     }
 
     public async IAsyncEnumerable<string> AskAsync(
@@ -63,9 +26,7 @@ public sealed class AIAssistantService : IAIAssistantService, IDisposable
         string? providerId = null,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        await _initialization.Value;
-
-        var (provider, providerConfig) = GetProviderWithConfig(providerId);
+        var (provider, providerConfig) = await GetProviderWithConfigAsync(providerId);
         var prompt = AIPromptTemplates.BuildAskAIPrompt(selectedText, context, timestamp);
 
         var request = new ChatRequest
@@ -106,11 +67,11 @@ public sealed class AIAssistantService : IAIAssistantService, IDisposable
         return sb.ToString();
     }
 
-    private (IAIProvider Provider, ProviderConfig Config) GetProviderWithConfig(string? providerId)
+    private async Task<(IAIProvider Provider, ProviderConfig Config)> GetProviderWithConfigAsync(string? providerId)
     {
+        var providers = await _providerCollection.GetProvidersAsync();
         var settings = _configService.Load();
         var effectiveProviderId = providerId ?? settings.DefaultProviderId;
-        var providers = _providers;
 
         if (!string.IsNullOrEmpty(effectiveProviderId) && providers.TryGetValue(effectiveProviderId, out var provider))
         {
@@ -128,41 +89,7 @@ public sealed class AIAssistantService : IAIAssistantService, IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
+        _providerCollection.Dispose();
         GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _configService.SettingsChanged -= OnSettingsChanged;
-                DisposeProviders(ReplaceProviders(new Dictionary<string, IAIProvider>()));
-            }
-            _disposed = true;
-        }
-    }
-
-    private IReadOnlyDictionary<string, IAIProvider> ReplaceProviders(IReadOnlyDictionary<string, IAIProvider> providers)
-    {
-        lock (_providersLock)
-        {
-            var oldProviders = _providers;
-            _providers = providers;
-            return oldProviders;
-        }
-    }
-
-    private static void DisposeProviders(IReadOnlyDictionary<string, IAIProvider> providers)
-    {
-        foreach (var provider in providers.Values)
-        {
-            if (provider is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
     }
 }
