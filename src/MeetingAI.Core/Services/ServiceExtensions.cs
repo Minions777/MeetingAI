@@ -73,6 +73,8 @@ public static class ServiceExtensions
         services.AddSingleton<IPlatformHotkeyService, WindowsHotkeyService>();
 #elif MACOS
         services.AddSingleton<IPlatformHotkeyService, MacHotkeyService>();
+#else
+        services.AddSingleton<IPlatformHotkeyService, UnsupportedPlatformHotkeyService>();
 #endif
 
         return services;
