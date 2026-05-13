@@ -5,6 +5,9 @@ namespace MeetingAI.Shared.Helpers;
 public sealed class UnsupportedPlatformHotkeyService : IPlatformHotkeyService
 {
     public bool IsAvailable => false;
+    private int _hotkeyIdCounter;
+
+    public int GenerateHotkeyId() => ++_hotkeyIdCounter;
 
     public bool RegisterHotkey(int id, KeyModifiers modifiers, string key, Action action)
     {

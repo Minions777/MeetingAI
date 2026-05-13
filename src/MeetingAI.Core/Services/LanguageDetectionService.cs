@@ -4,9 +4,7 @@ namespace MeetingAI.Core.Services;
 
 public sealed class LanguageDetectionService : ILanguageDetectionService
 {
-    // Chinese Unicode range: 一-鿿 (CJK Unified Ideographs)
-    private static readonly Regex ChineseCharsRegex = new(@"一-鿿", RegexOptions.Compiled);
-    // Latin alphabet range
+    private static readonly Regex ChineseCharsRegex = new(@"[\u4E00-\u9FFF]", RegexOptions.Compiled);
     private static readonly Regex LatinCharsRegex = new(@"[a-zA-Z]", RegexOptions.Compiled);
 
     private const double Threshold = 0.30;

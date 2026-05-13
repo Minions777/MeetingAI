@@ -1,5 +1,3 @@
-using System;
-
 namespace MeetingAI.Core.Models
 {
     public class AiAnalysisResult

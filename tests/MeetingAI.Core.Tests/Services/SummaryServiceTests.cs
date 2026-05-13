@@ -32,7 +32,8 @@ public class SummaryServiceTests
     {
         // Assert
         SummaryService.DefaultSummaryPrompt.Should().NotBeNullOrEmpty();
-        SummaryService.DefaultSummaryPrompt.Should().Contain("会议助手");
+        SummaryService.DefaultSummaryPrompt.Should().Contain("meeting");
+        SummaryService.DefaultSummaryPrompt.Should().Contain("Overview");
     }
 
     [Fact]

@@ -43,6 +43,7 @@ public partial class App : Application
         services.AddTransient<ProviderManagementViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<MermaidRendererViewModel>();
+        services.AddTransient<SettingsWindow>();
         services.AddSingleton<IMermaidRendererService, MermaidRendererService>();
         services.AddTransient<MainWindow>();
     }
@@ -54,5 +55,5 @@ public partial class App : Application
         if (Services is IDisposable disposable)
             disposable.Dispose();
         LoggerService.Shutdown();
-    }
+}
 }

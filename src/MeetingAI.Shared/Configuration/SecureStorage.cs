@@ -105,7 +105,7 @@ public class AesSecureStorage : ISecureStorage
         catch (Exception ex)
         {
             LoggerService.Error("Encryption failed", ex);
-            return plainText;
+            throw new InvalidOperationException("Encryption failed", ex);
         }
     }
 
@@ -132,10 +132,10 @@ public class AesSecureStorage : ISecureStorage
 
             return Encoding.UTF8.GetString(plainBytes);
         }
-        catch
+        catch (Exception ex)
         {
-            // If decryption fails, return as-is (might be plain text or different format)
-            return encryptedText;
+            LoggerService.Error("Decryption failed", ex);
+            throw new InvalidOperationException("Decryption failed", ex);
         }
     }
 

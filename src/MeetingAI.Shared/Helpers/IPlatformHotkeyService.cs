@@ -6,6 +6,7 @@ public interface IPlatformHotkeyService : IDisposable
     void UnregisterHotkey(int id);
     void UnregisterAllHotkeys();
     bool IsAvailable { get; }
+    int GenerateHotkeyId();
 }
 
 [Flags]
