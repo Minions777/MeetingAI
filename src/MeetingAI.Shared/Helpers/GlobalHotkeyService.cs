@@ -1,253 +1,160 @@
+#if WINDOWS
 using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Interop;
 using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Shared.Helpers;
 
 /// <summary>
-/// 全局快捷键服务
-/// 支持在应用未聚焦时捕获系统级快捷键
+/// Windows global hotkey service using Win32 RegisterHotKey API.
+/// Pure P/Invoke — no WPF dependency.
 /// </summary>
-public class GlobalHotkeyService : IDisposable
+public class WindowsHotkeyService : IPlatformHotkeyService
 {
     #region Win32 API
-    
-    [DllImport("user32.dll")]
+
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
-    
-    [DllImport("user32.dll")]
+
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
-    
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+    private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
     private const int WM_HOTKEY = 0x0312;
-    
-    // Modifiers
-    private const uint MOD_ALT = 0x0001;
-    private const uint MOD_CONTROL = 0x0002;
-    private const uint MOD_SHIFT = 0x0004;
-    private const uint MOD_WIN = 0x0008;
+    private const int GWL_WNDPROC = -4;
     private const uint MOD_NOREPEAT = 0x4000;
-    
-    // Virtual Key Codes
-    private const uint VK_R = 0x52;
-    private const uint VK_S = 0x53;
-    
+
     #endregion
-    
+
     private IntPtr _windowHandle;
-    private HwndSource? _source;
+    private IntPtr _oldWndProc;
+    private WndProcDelegate? _wndProcDelegate; // prevent GC collection
     private readonly Dictionary<int, Action> _hotkeyActions = new();
-    private int _currentId = 0;
-    private bool _isDisposed = false;
-    
+    private int _currentId;
+    private bool _disposed;
+
+    public bool IsAvailable => true;
+
     /// <summary>
-    /// 注册的热键定义
+    /// Initialize with a native window handle (HWND).
+    /// For Avalonia, pass the platform handle from the window.
     /// </summary>
-    public static class PredefinedHotkeys
+    public void Initialize(IntPtr windowHandle)
     {
-        public const int ToggleRecording = 1;  // Ctrl+Shift+R: 切换录音
-        public const int StopRecording = 2;    // Ctrl+Shift+S: 停止录音
+        _windowHandle = windowHandle;
+
+        // Subclass the window to receive WM_HOTKEY messages
+        _wndProcDelegate = WndProc;
+        _oldWndProc = SetWindowLongPtr(_windowHandle, GWL_WNDPROC, Marshal.GetFunctionPointerForDelegate(_wndProcDelegate));
+
+        LoggerService.Info("Windows hotkey service initialized");
     }
-    
-    /// <summary>
-    /// 初始化全局快捷键服务
-    /// </summary>
-    /// <param name="window">WPF Window 实例</param>
-    public void Initialize(Window window)
-    {
-        var helper = new WindowInteropHelper(window);
-        _windowHandle = helper.Handle;
-        _source = HwndSource.FromHwnd(_windowHandle);
-        _source?.AddHook(HwndHook);
-        
-        LoggerService.Info("全局快捷键服务已初始化");
-    }
-    
-    /// <summary>
-    /// 注册快捷键
-    /// </summary>
-    /// <param name="id">快捷键 ID</param>
-    /// <param name="modifiers">修饰键 (MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_WIN)</param>
-    /// <param name="key">虚拟键码</param>
-    /// <param name="action">快捷键触发时的回调</param>
-    /// <returns>是否注册成功</returns>
-    public bool RegisterHotkey(int id, uint modifiers, uint key, Action action)
+
+    public bool RegisterHotkey(int id, KeyModifiers modifiers, string key, Action action)
     {
         if (_windowHandle == IntPtr.Zero)
         {
-            LoggerService.Error("未初始化快捷键服务 (窗口句柄为空)");
+            LoggerService.Error("Hotkey service not initialized (no window handle)");
             return false;
         }
-        
-        var result = RegisterHotKey(_windowHandle, id, modifiers | MOD_NOREPEAT, key);
-        
+
+        var winModifiers = ConvertModifiers(modifiers);
+        var vk = ConvertKey(key);
+
+        var result = RegisterHotKey(_windowHandle, id, winModifiers | MOD_NOREPEAT, vk);
+
         if (result)
         {
             _hotkeyActions[id] = action;
-            var hotkeyName = GetHotkeyName(modifiers, key);
-            LoggerService.Info($"快捷键注册成功: {hotkeyName} (ID: {id})");
+            LoggerService.Info($"Hotkey registered: {modifiers}+{key} (ID: {id})");
         }
         else
         {
-            LoggerService.Warning($"快捷键注册失败 (ID: {id})，可能已被其他应用占用");
+            LoggerService.Warning($"Hotkey registration failed (ID: {id}), may be in use by another app");
         }
-        
+
         return result;
     }
-    
-    /// <summary>
-    /// 注册默认的录音快捷键
-    /// - Ctrl+Shift+R: 切换录音
-    /// - Ctrl+Shift+S: 停止录音
-    /// </summary>
-    public void RegisterDefaultHotkeys(Action toggleRecording, Action stopRecording)
-    {
-        // Ctrl+Shift+R: 切换录音
-        RegisterHotkey(PredefinedHotkeys.ToggleRecording, MOD_CONTROL | MOD_SHIFT, VK_R, toggleRecording);
-        
-        // Ctrl+Shift+S: 停止录音
-        RegisterHotkey(PredefinedHotkeys.StopRecording, MOD_CONTROL | MOD_SHIFT, VK_S, stopRecording);
-    }
-    
-    /// <summary>
-    /// 注销快捷键
-    /// </summary>
+
     public void UnregisterHotkey(int id)
     {
         if (_windowHandle != IntPtr.Zero)
         {
             UnregisterHotKey(_windowHandle, id);
             _hotkeyActions.Remove(id);
-            LoggerService.Debug($"快捷键已注销 (ID: {id})");
         }
     }
-    
-    /// <summary>
-    /// 注销所有快捷键
-    /// </summary>
+
     public void UnregisterAllHotkeys()
     {
         foreach (var id in _hotkeyActions.Keys.ToList())
-        {
             UnregisterHotkey(id);
-        }
     }
-    
-    /// <summary>
-    /// 检查快捷键是否可用
-    /// </summary>
-    public static bool IsHotkeyAvailable(uint modifiers, uint key)
+
+    public int GenerateHotkeyId() => ++_currentId;
+
+    private static uint ConvertModifiers(KeyModifiers modifiers)
     {
-        // 创建一个临时窗口来测试
-        var tempWindow = new Window();
-        var helper = new WindowInteropHelper(tempWindow);
-        helper.EnsureHandle();
-        
-        var result = RegisterHotKey(helper.Handle, 99999, modifiers | MOD_NOREPEAT, key);
-        
-        if (result)
-        {
-            UnregisterHotKey(helper.Handle, 99999);
-        }
-        
-        tempWindow.Close();
+        uint result = 0;
+        if (modifiers.HasFlag(KeyModifiers.Alt)) result |= 0x0001;
+        if (modifiers.HasFlag(KeyModifiers.Control)) result |= 0x0002;
+        if (modifiers.HasFlag(KeyModifiers.Shift)) result |= 0x0004;
+        if (modifiers.HasFlag(KeyModifiers.Win)) result |= 0x0008;
         return result;
     }
-    
-    /// <summary>
-    /// 获取快捷键的人类可读名称
-    /// </summary>
-    public static string GetHotkeyName(uint modifiers, uint key)
+
+    private static uint ConvertKey(string key) => key.ToUpperInvariant() switch
     {
-        var parts = new List<string>();
-        
-        if ((modifiers & MOD_CONTROL) != 0) parts.Add("Ctrl");
-        if ((modifiers & MOD_SHIFT) != 0) parts.Add("Shift");
-        if ((modifiers & MOD_ALT) != 0) parts.Add("Alt");
-        if ((modifiers & MOD_WIN) != 0) parts.Add("Win");
-        
-        parts.Add(((Key)key).ToString());
-        
-        return string.Join("+", parts);
-    }
-    
-    /// <summary>
-    /// WPF 消息处理
-    /// </summary>
-    private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        "R" => 0x52,
+        "S" => 0x53,
+        _ => throw new ArgumentException($"Unsupported key: {key}")
+    };
+
+    private IntPtr WndProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam)
     {
         if (msg == WM_HOTKEY)
         {
             var id = wParam.ToInt32();
-            
             if (_hotkeyActions.TryGetValue(id, out var action))
             {
                 try
                 {
-                    LoggerService.Debug($"快捷键触发 (ID: {id})");
                     action.Invoke();
-                    handled = true;
                 }
                 catch (Exception ex)
                 {
-                    LoggerService.Error("快捷键回调执行失败", ex);
+                    LoggerService.Error("Hotkey callback failed", ex);
                 }
             }
         }
-        
-        return IntPtr.Zero;
+        return CallWindowProc(_oldWndProc, hwnd, msg, wParam, lParam);
     }
-    
-    /// <summary>
-    /// 生成新的快捷键 ID
-    /// </summary>
-    public int GenerateHotkeyId()
-    {
-        return ++_currentId;
-    }
-    
-    /// <summary>
-    /// 释放资源
-    /// </summary>
+
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-    
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_isDisposed)
+        if (_disposed) return;
+        _disposed = true;
+        UnregisterAllHotkeys();
+
+        // Restore original WndProc
+        if (_windowHandle != IntPtr.Zero && _oldWndProc != IntPtr.Zero)
         {
-            if (disposing)
-            {
-                UnregisterAllHotkeys();
-                _source?.RemoveHook(HwndHook);
-                _source = null;
-                LoggerService.Info("全局快捷键服务已释放");
-            }
-            
-            _isDisposed = true;
+            SetWindowLongPtr(_windowHandle, GWL_WNDPROC, _oldWndProc);
+            _oldWndProc = IntPtr.Zero;
         }
-    }
-    
-    ~GlobalHotkeyService()
-    {
-        Dispose(false);
+        _wndProcDelegate = null;
     }
 }
 
-/// <summary>
-/// 快捷键修饰键枚举扩展
-/// </summary>
-[Flags]
-public enum HotkeyModifiers : uint
-{
-    None = 0,
-    Alt = 1,
-    Control = 2,
-    Shift = 4,
-    Win = 8,
-    NoRepeat = 16384
-}
+// Keep backward compatibility alias
+public class GlobalHotkeyService : WindowsHotkeyService { }
+#endif

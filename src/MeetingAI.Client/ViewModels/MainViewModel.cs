@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MeetingAI.Core.Models;
@@ -8,7 +9,6 @@ using MeetingAI.Core.Providers;
 using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Core.Services;
 using MeetingAI.Shared.Configuration;
-using MeetingAI.Shared.i18n;
 using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Client.ViewModels;
@@ -52,48 +52,45 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _configService = configService;
         _historyService = historyService;
 
-        // Subscribe to recording events
         _recordingService.VolumeChanged += OnVolumeChanged;
         _recordingService.RecordingStopped += OnRecordingStopped;
 
-        // Timer for duration updates
         _durationTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(500)
         };
         _durationTimer.Tick += OnDurationTimerTick;
-        
-        StatusText = LocalizationManager.Get("Ready");
-        
-        // 延迟加载 Provider 和历史记录，避免阻塞 UI 线程
-        Application.Current.Dispatcher.BeginInvoke(new Action(async () => 
+
+        StatusText = "就绪";
+
+        Dispatcher.UIThread.Post(async () =>
         {
             await LoadProvidersAsync();
             await LoadMeetingHistoryAsync();
-        }), DispatcherPriority.Background);
+        }, DispatcherPriority.Background);
     }
-    
+
     private async Task LoadProvidersAsync()
     {
         await Task.Run(() =>
         {
             var settings = _configService.Load();
-            
-            Application.Current.Dispatcher.Invoke(() =>
+
+            Dispatcher.UIThread.Post(() =>
             {
                 Providers.Clear();
-                
+
                 foreach (var provider in settings.Providers.Where(p => p.IsEnabled))
                 {
                     Providers.Add(provider);
                 }
-                
-                SelectedProvider = Providers.FirstOrDefault(p => p.Id == settings.DefaultProviderId) 
+
+                SelectedProvider = Providers.FirstOrDefault(p => p.Id == settings.DefaultProviderId)
                                   ?? Providers.FirstOrDefault();
             });
         });
     }
-    
+
     [RelayCommand]
     private async Task ToggleRecordingAsync()
     {
@@ -114,10 +111,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             LoggerService.Error("Recording toggle failed", ex);
-            StatusText = $"{LocalizationManager.Get("Error")}: {ex.Message}";
+            StatusText = $"错误: {ex.Message}";
         }
     }
-    
+
     private async Task StartRecordingAsync()
     {
         CurrentRecord = new MeetingRecord
@@ -125,17 +122,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
             Title = $"会议_{DateTime.Now:yyyyMMdd_HHmmss}",
             Status = RecordingStatus.Recording
         };
-        
+
         await _recordingService.StartRecordingAsync();
-        
+
         IsRecording = true;
         IsPaused = false;
         _durationTimer.Start();
-        StatusText = LocalizationManager.Get("Recording");
-        
+        StatusText = "录音中...";
+
         LoggerService.Info("Recording started via UI");
     }
-    
+
     private async Task StopRecordingAsync()
     {
         try
@@ -151,7 +148,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
             IsRecording = false;
             IsPaused = false;
-            StatusText = LocalizationManager.Get("Success");
+            StatusText = "成功";
 
             LoggerService.Info($"Recording stopped: {filePath}");
         }
@@ -164,7 +161,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             throw;
         }
     }
-    
+
     [RelayCommand]
     private void PauseResume()
     {
@@ -179,44 +176,44 @@ public partial class MainViewModel : ObservableObject, IDisposable
             IsPaused = true;
         }
     }
-    
+
     [RelayCommand]
     private async Task TranscribeAsync()
     {
         if (IsProcessing || CurrentRecord == null || string.IsNullOrEmpty(CurrentRecord.FilePath))
         {
             if (!IsProcessing)
-                StatusText = LocalizationManager.Get("NoRecording");
+                StatusText = "暂无录音";
             return;
         }
-        
+
         try
         {
             IsProcessing = true;
             if (CurrentRecord != null)
                 CurrentRecord.Status = RecordingStatus.Transcribing;
-            
-            StatusText = LocalizationManager.Get("Transcribing");
-            
+
+            StatusText = "转录中...";
+
             var transcript = await _transcriptionService.TranscribeAsync(
                 CurrentRecord!.FilePath,
                 SelectedProvider?.Id);
-            
+
             TranscriptText = transcript.Text;
-            
+
             if (CurrentRecord != null)
             {
                 CurrentRecord.Transcript = transcript;
                 CurrentRecord.Status = RecordingStatus.Completed;
             }
-            
-            StatusText = LocalizationManager.Get("Success");
+
+            StatusText = "成功";
             LoggerService.Info("Transcription completed");
         }
         catch (Exception ex)
         {
             LoggerService.Error("Transcription failed", ex);
-            StatusText = $"{LocalizationManager.Get("Error")}: {ex.Message}";
+            StatusText = $"错误: {ex.Message}";
             if (CurrentRecord != null)
                 CurrentRecord.Status = RecordingStatus.Failed;
         }
@@ -225,7 +222,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             IsProcessing = false;
         }
     }
-    
+
     [RelayCommand]
     private async Task SummarizeAsync()
     {
@@ -242,7 +239,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             if (CurrentRecord != null)
                 CurrentRecord.Status = RecordingStatus.Summarizing;
 
-            StatusText = LocalizationManager.Get("Summarizing");
+            StatusText = "生成摘要中...";
 
             var summary = await _summaryService.SummarizeAsync(
                 CurrentRecord!.Transcript!,
@@ -257,13 +254,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 CurrentRecord.Status = RecordingStatus.Completed;
             }
 
-            StatusText = LocalizationManager.Get("Success");
+            StatusText = "成功";
             LoggerService.Info("Summary generated");
         }
         catch (Exception ex)
         {
             LoggerService.Error("Summarization failed", ex);
-            StatusText = $"{LocalizationManager.Get("Error")}: {ex.Message}";
+            StatusText = $"错误: {ex.Message}";
             if (CurrentRecord != null)
                 CurrentRecord.Status = RecordingStatus.Failed;
         }
@@ -291,7 +288,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
             IsStreaming = true;
             SummaryText = string.Empty;
-            StatusText = LocalizationManager.Get("Summarizing");
+            StatusText = "生成摘要中...";
 
             var settings = _configService.Load();
             var providerId = SelectedProvider?.Id ?? settings.DefaultProviderId;
@@ -334,13 +331,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 CurrentRecord.Status = RecordingStatus.Completed;
             }
 
-            StatusText = LocalizationManager.Get("Success");
+            StatusText = "成功";
             LoggerService.Info("Streaming summary completed");
         }
         catch (Exception ex)
         {
             LoggerService.Error("Streaming summarization failed", ex);
-            StatusText = $"{LocalizationManager.Get("Error")}: {ex.Message}";
+            StatusText = $"错误: {ex.Message}";
             if (CurrentRecord != null)
                 CurrentRecord.Status = RecordingStatus.Failed;
         }
@@ -352,22 +349,30 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private void CopySummary()
+    private async Task CopySummaryAsync()
     {
         if (string.IsNullOrEmpty(SummaryText)) return;
-        
-        Clipboard.SetText(SummaryText);
-        StatusText = LocalizationManager.Get("CopySuccess");
-    }
-    
-    [RelayCommand]
-    private async Task OpenSettings()
-    {
-        var settingsWindow = new Views.SettingsWindow();
-        settingsWindow.Owner = Application.Current.MainWindow;
-        if (settingsWindow.ShowDialog() == true)
+
+        var topLevel = TopLevel.GetTopLevel(
+            (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow);
+        if (topLevel?.Clipboard != null)
         {
-            await LoadProvidersAsync(); // Reload after settings change
+            await topLevel.Clipboard.SetTextAsync(SummaryText);
+        }
+        StatusText = "已复制到剪贴板";
+    }
+
+    [RelayCommand]
+    private async Task OpenSettingsAsync()
+    {
+        var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (mainWindow == null) return;
+
+        var settingsWindow = new Views.SettingsWindow();
+        var result = await settingsWindow.ShowDialog<bool?>(mainWindow);
+        if (result == true)
+        {
+            await LoadProvidersAsync();
         }
     }
 
@@ -459,18 +464,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
             StatusText = "删除失败";
         }
     }
-    
+
     private void OnVolumeChanged(object? sender, float volume)
     {
-        Application.Current.Dispatcher.BeginInvoke(() =>
+        Dispatcher.UIThread.Post(() =>
         {
             VolumeLevel = volume;
         });
     }
-    
+
     private void OnRecordingStopped(object? sender, string filePath)
     {
-        Application.Current.Dispatcher.BeginInvoke(() =>
+        Dispatcher.UIThread.Post(() =>
         {
             if (CurrentRecord != null)
             {
@@ -480,7 +485,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
         });
     }
-    
+
     private void OnDurationTimerTick(object? sender, EventArgs e)
     {
         UpdateDuration();
@@ -491,37 +496,37 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var duration = _recordingService.Duration;
         DurationText = duration.ToString(@"hh\:mm\:ss");
     }
-    
+
     private string FormatSummary(Summary? summary)
     {
         if (summary == null) return string.Empty;
-        
+
         var sb = new System.Text.StringBuilder();
-        
+
         if (!string.IsNullOrEmpty(summary.Overview))
             sb.AppendLine($"**会议概要**: {summary.Overview}");
-        
+
         if (summary.KeyPoints.Any())
         {
             sb.AppendLine("\n**关键要点**:");
             foreach (var point in summary.KeyPoints)
                 sb.AppendLine($"  • {point}");
         }
-        
+
         if (summary.ActionItems.Any())
         {
             sb.AppendLine("\n**行动项**:");
             foreach (var item in summary.ActionItems)
                 sb.AppendLine($"  • {item}");
         }
-        
+
         if (summary.Decisions.Any())
         {
             sb.AppendLine("\n**决议**:");
             foreach (var decision in summary.Decisions)
                 sb.AppendLine($"  • {decision}");
         }
-        
+
         return sb.ToString();
     }
 
@@ -537,11 +542,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             if (disposing)
             {
-                // 取消事件订阅
                 _recordingService.VolumeChanged -= OnVolumeChanged;
                 _recordingService.RecordingStopped -= OnRecordingStopped;
-                
-                // 停止并清理定时器
+
                 _durationTimer.Stop();
                 _durationTimer.Tick -= OnDurationTimerTick;
             }

@@ -5,145 +5,156 @@ using MeetingAI.Shared.Logging;
 namespace MeetingAI.Shared.Configuration;
 
 /// <summary>
-/// 使用 Windows DPAPI 加密敏感配置
-/// 支持基于机器特征的动态 Entropy 生成
+/// Cross-platform secure storage using AES-256-GCM.
+/// Key is stored in a file with restricted permissions.
 /// </summary>
-public static class SecureStorage
+public class AesSecureStorage : ISecureStorage
 {
-    private static byte[]? _entropy;
-    private static readonly object _lock = new();
-    
-    /// <summary>
-    /// 获取或创建基于机器特征的动态 Entropy
-    /// </summary>
-    private static byte[] GetEntropy()
+    private byte[]? _key;
+    private readonly object _lock = new();
+
+    private static string KeyPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "MeetingAI", ".key");
+
+    private byte[] GetOrCreateKey()
     {
-        if (_entropy != null)
-            return _entropy;
-            
+        if (_key != null)
+            return _key;
+
         lock (_lock)
         {
-            if (_entropy != null)
-                return _entropy;
-                
-            // 尝试从文件加载已保存的 Entropy
-            var entropyFile = GetEntropyStoragePath();
-            if (File.Exists(entropyFile))
+            if (_key != null)
+                return _key;
+
+            var keyPath = KeyPath;
+            if (File.Exists(keyPath))
             {
                 try
                 {
-                    var entropyJson = File.ReadAllText(entropyFile);
-                    _entropy = Convert.FromBase64String(entropyJson);
-                    return _entropy;
+                    _key = File.ReadAllBytes(keyPath);
+                    if (_key.Length == 32)
+                        return _key;
                 }
                 catch
                 {
-                    // 如果读取失败，生成新的 Entropy
+                    // Regenerate if read fails
                 }
             }
-            
-            // 生成新的随机 Entropy
-            _entropy = new byte[32];
-            RandomNumberGenerator.Fill(_entropy);
-            
-            // 保存到文件
+
+            _key = new byte[32];
+            RandomNumberGenerator.Fill(_key);
+
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(entropyFile)!);
-                File.WriteAllText(entropyFile, Convert.ToBase64String(_entropy));
+                Directory.CreateDirectory(Path.GetDirectoryName(keyPath)!);
+                File.WriteAllBytes(keyPath, _key);
+                SetFilePermissions(keyPath);
             }
-            catch
+            catch (Exception ex)
             {
-                // 如果保存失败，使用基于机器特征的 fallback Entropy
-                _entropy = GenerateMachineBasedEntropy();
+                LoggerService.Warning($"Failed to save encryption key: {ex.Message}");
             }
-            
-            return _entropy;
+
+            return _key;
         }
     }
-    
-    /// <summary>
-    /// 获取 Entropy 存储路径
-    /// </summary>
-    private static string GetEntropyStoragePath()
+
+    private static void SetFilePermissions(string path)
     {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(appData, "MeetingAI", "entropy.dat");
+        if (OperatingSystem.IsWindows())
+            return; // Windows file ACLs are sufficient by default for user profile
+
+        // Unix: chmod 600 (owner read/write only)
+        try
+        {
+            System.Diagnostics.Process.Start("chmod", $"600 \"{path}\"")?.WaitForExit(1000);
+        }
+        catch
+        {
+            // Best effort
+        }
     }
-    
-    /// <summary>
-    /// 生成基于机器特征的 Fallback Entropy
-    /// </summary>
-    private static byte[] GenerateMachineBasedEntropy()
-    {
-        // 使用机器名 + 用户名 + 固定盐值生成 Entropy
-        var machineInfo = $"{Environment.MachineName}_{Environment.UserName}_MeetingAI_v2_SecureSalt";
-        return SHA256.HashData(Encoding.UTF8.GetBytes(machineInfo));
-    }
-    
-    public static string Encrypt(string plainText)
+
+    public string Encrypt(string plainText)
     {
         if (string.IsNullOrEmpty(plainText))
             return string.Empty;
-            
+
         try
         {
+            var key = GetOrCreateKey();
+            var nonce = new byte[12]; // AES-GCM nonce
+            RandomNumberGenerator.Fill(nonce);
+
             var plainBytes = Encoding.UTF8.GetBytes(plainText);
-            var entropy = GetEntropy();
-            var encryptedBytes = ProtectedData.Protect(
-                plainBytes, 
-                entropy, 
-                DataProtectionScope.CurrentUser);
-            return Convert.ToBase64String(encryptedBytes);
+            var cipherBytes = new byte[plainBytes.Length];
+            var tag = new byte[16];
+
+            using var aes = new AesGcm(key, 16);
+            aes.Encrypt(nonce, plainBytes, cipherBytes, tag);
+
+            // Format: base64(nonce + tag + ciphertext)
+            var result = new byte[nonce.Length + tag.Length + cipherBytes.Length];
+            Buffer.BlockCopy(nonce, 0, result, 0, nonce.Length);
+            Buffer.BlockCopy(tag, 0, result, nonce.Length, tag.Length);
+            Buffer.BlockCopy(cipherBytes, 0, result, nonce.Length + tag.Length, cipherBytes.Length);
+
+            return Convert.ToBase64String(result);
         }
         catch (Exception ex)
         {
-            LoggerService.Error("加密失败", ex);
-            return plainText; // Fallback to plain text (不推荐用于生产环境)
+            LoggerService.Error("Encryption failed", ex);
+            return plainText;
         }
     }
-    
-    public static string Decrypt(string encryptedText)
+
+    public string Decrypt(string encryptedText)
     {
         if (string.IsNullOrEmpty(encryptedText))
             return string.Empty;
-            
+
         try
         {
-            var encryptedBytes = Convert.FromBase64String(encryptedText);
-            var entropy = GetEntropy();
-            var plainBytes = ProtectedData.Unprotect(
-                encryptedBytes, 
-                entropy, 
-                DataProtectionScope.CurrentUser);
+            var key = GetOrCreateKey();
+            var data = Convert.FromBase64String(encryptedText);
+
+            if (data.Length < 28) // 12 nonce + 16 tag minimum
+                return encryptedText;
+
+            var nonce = data[..12];
+            var tag = data[12..28];
+            var cipherBytes = data[28..];
+
+            var plainBytes = new byte[cipherBytes.Length];
+            using var aes = new AesGcm(key, 16);
+            aes.Decrypt(nonce, cipherBytes, tag, plainBytes);
+
             return Encoding.UTF8.GetString(plainBytes);
         }
-        catch (Exception ex)
+        catch
         {
-            LoggerService.Error("解密失败", ex);
-            return encryptedText; // Return as-is if decryption fails
+            // If decryption fails, return as-is (might be plain text or different format)
+            return encryptedText;
         }
     }
-    
-    public static void EncryptConfig(ProviderConfig config)
+
+    public void EncryptConfig(ProviderConfig config)
     {
         config.ApiKey = Encrypt(config.ApiKey);
         config.UpdatedAt = DateTime.UtcNow;
     }
-    
-    public static void DecryptConfig(ProviderConfig config)
+
+    public void DecryptConfig(ProviderConfig config)
     {
         config.ApiKey = Decrypt(config.ApiKey);
     }
-    
-    /// <summary>
-    /// 验证加密后的配置是否可以正确解密
-    /// </summary>
-    public static bool ValidateEncryption(string originalText)
+
+    public bool ValidateEncryption(string originalText)
     {
         if (string.IsNullOrEmpty(originalText))
             return true;
-            
+
         try
         {
             var encrypted = Encrypt(originalText);
@@ -155,15 +166,140 @@ public static class SecureStorage
             return false;
         }
     }
-    
-    /// <summary>
-    /// 清除内存中的 Entropy 缓存（用于测试或重置）
-    /// </summary>
-    public static void ClearEntropyCache()
+
+    public void ClearEntropyCache()
     {
         lock (_lock)
         {
-            _entropy = null;
+            _key = null;
         }
     }
 }
+
+/// <summary>
+/// Windows DPAPI-based secure storage (Windows only).
+/// Kept for backward compatibility with existing encrypted data.
+/// </summary>
+#if WINDOWS
+public class WindowsSecureStorage : ISecureStorage
+{
+    private byte[]? _entropy;
+    private readonly object _lock = new();
+
+    private static string GetEntropyStoragePath()
+    {
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        return Path.Combine(appData, "MeetingAI", "entropy.dat");
+    }
+
+    private byte[] GetEntropy()
+    {
+        if (_entropy != null)
+            return _entropy;
+
+        lock (_lock)
+        {
+            if (_entropy != null)
+                return _entropy;
+
+            var entropyFile = GetEntropyStoragePath();
+            if (File.Exists(entropyFile))
+            {
+                try
+                {
+                    var entropyJson = File.ReadAllText(entropyFile);
+                    _entropy = Convert.FromBase64String(entropyJson);
+                    return _entropy;
+                }
+                catch { }
+            }
+
+            _entropy = new byte[32];
+            RandomNumberGenerator.Fill(_entropy);
+
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(entropyFile)!);
+                File.WriteAllText(entropyFile, Convert.ToBase64String(_entropy));
+            }
+            catch
+            {
+                var machineInfo = $"{Environment.MachineName}_{Environment.UserName}_MeetingAI_v2_SecureSalt";
+                _entropy = SHA256.HashData(Encoding.UTF8.GetBytes(machineInfo));
+            }
+
+            return _entropy;
+        }
+    }
+
+    public string Encrypt(string plainText)
+    {
+        if (string.IsNullOrEmpty(plainText))
+            return string.Empty;
+
+        try
+        {
+            var plainBytes = Encoding.UTF8.GetBytes(plainText);
+            var entropy = GetEntropy();
+            var encryptedBytes = System.Security.Cryptography.ProtectedData.Protect(
+                plainBytes, entropy, System.Security.Cryptography.DataProtectionScope.CurrentUser);
+            return Convert.ToBase64String(encryptedBytes);
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("DPAPI encryption failed", ex);
+            return plainText;
+        }
+    }
+
+    public string Decrypt(string encryptedText)
+    {
+        if (string.IsNullOrEmpty(encryptedText))
+            return string.Empty;
+
+        try
+        {
+            var encryptedBytes = Convert.FromBase64String(encryptedText);
+            var entropy = GetEntropy();
+            var plainBytes = System.Security.Cryptography.ProtectedData.Unprotect(
+                encryptedBytes, entropy, System.Security.Cryptography.DataProtectionScope.CurrentUser);
+            return Encoding.UTF8.GetString(plainBytes);
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("DPAPI decryption failed", ex);
+            return encryptedText;
+        }
+    }
+
+    public void EncryptConfig(ProviderConfig config)
+    {
+        config.ApiKey = Encrypt(config.ApiKey);
+        config.UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void DecryptConfig(ProviderConfig config)
+    {
+        config.ApiKey = Decrypt(config.ApiKey);
+    }
+
+    public bool ValidateEncryption(string originalText)
+    {
+        if (string.IsNullOrEmpty(originalText))
+            return true;
+
+        try
+        {
+            var encrypted = Encrypt(originalText);
+            var decrypted = Decrypt(encrypted);
+            return originalText == decrypted;
+        }
+        catch { return false; }
+    }
+
+    public void ClearEntropyCache()
+    {
+        lock (_lock) { _entropy = null; }
+    }
+}
+#endif

@@ -74,14 +74,12 @@ namespace MeetingAI.Core.State
             }
         }
 
-        public void AddTranscription(string meetingId, TranscriptionSegment segment)
+        public void AddTranscription(string meetingId, TranscriptSegment segment)
         {
             lock (_lock)
             {
                 var meeting = GetMeeting(meetingId);
                 if (meeting == null) return;
-                segment.MeetingId = meetingId;
-                segment.CreatedAt = DateTime.UtcNow;
                 meeting.Transcriptions.Add(segment);
                 OnStateChanged(meeting, MeetingAction.TranscriptionAdded);
             }

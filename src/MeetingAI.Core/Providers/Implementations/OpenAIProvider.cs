@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using MeetingAI.Core.Models;
+using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Shared.Configuration;
 using MeetingAI.Shared.Logging;
 

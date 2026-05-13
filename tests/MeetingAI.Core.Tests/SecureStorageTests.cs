@@ -3,173 +3,121 @@ using Xunit;
 
 namespace MeetingAI.Core.Tests;
 
-public class SecureStorageTests
+public class SecureStorageTests : IDisposable
 {
+    private readonly AesSecureStorage _storage = new();
+
+    public void Dispose()
+    {
+        _storage.ClearEntropyCache();
+    }
+
     [Fact]
     public void Encrypt_Decrypt_RoundTrip_ReturnsOriginalValue()
     {
-        // Arrange
         var originalText = "sk-test-api-key-12345";
-        
-        // Act
-        var encrypted = SecureStorage.Encrypt(originalText);
-        var decrypted = SecureStorage.Decrypt(encrypted);
-        
-        // Assert
+        var encrypted = _storage.Encrypt(originalText);
+        var decrypted = _storage.Decrypt(encrypted);
         Assert.NotEqual(originalText, encrypted);
         Assert.Equal(originalText, decrypted);
     }
-    
+
     [Fact]
     public void Encrypt_EmptyString_ReturnsEmptyString()
     {
-        // Arrange
-        var emptyText = "";
-        
-        // Act
-        var result = SecureStorage.Encrypt(emptyText);
-        
-        // Assert
+        var result = _storage.Encrypt("");
         Assert.Equal(string.Empty, result);
     }
-    
+
     [Fact]
     public void Decrypt_EmptyString_ReturnsEmptyString()
     {
-        // Arrange
-        var emptyText = "";
-        
-        // Act
-        var result = SecureStorage.Decrypt(emptyText);
-        
-        // Assert
+        var result = _storage.Decrypt("");
         Assert.Equal(string.Empty, result);
     }
-    
+
     [Fact]
     public void Encrypt_SameValueProducesDifferentCiphertext()
     {
-        // 由于使用了随机 Entropy，每次加密结果不同
-        // Arrange
         var originalText = "same-text";
-        
-        // Act
-        var encrypted1 = SecureStorage.Encrypt(originalText);
-        SecureStorage.ClearEntropyCache();
-        var encrypted2 = SecureStorage.Encrypt(originalText);
-        
-        // Assert - 由于 Entropy 不同，密文不同
-        // 注意：如果使用相同的 Entropy，密文应该相同
+        var encrypted1 = _storage.Encrypt(originalText);
+        _storage.ClearEntropyCache();
+        var encrypted2 = _storage.Encrypt(originalText);
         Assert.NotNull(encrypted1);
         Assert.NotNull(encrypted2);
     }
-    
+
     [Fact]
     public void Decrypt_InvalidBase64_ReturnsOriginalValue()
     {
-        // Arrange
         var invalidText = "not-a-valid-base64!!";
-        
-        // Act
-        var result = SecureStorage.Decrypt(invalidText);
-        
-        // Assert
+        var result = _storage.Decrypt(invalidText);
         Assert.Equal(invalidText, result);
     }
-    
+
     [Fact]
     public void ValidateEncryption_ValidText_ReturnsTrue()
     {
-        // Arrange
-        var originalText = "valid-api-key";
-        
-        // Act
-        var result = SecureStorage.ValidateEncryption(originalText);
-        
-        // Assert
+        var result = _storage.ValidateEncryption("valid-api-key");
         Assert.True(result);
     }
-    
+
     [Fact]
     public void ValidateEncryption_EmptyText_ReturnsTrue()
     {
-        // Arrange
-        var emptyText = "";
-        
-        // Act
-        var result = SecureStorage.ValidateEncryption(emptyText);
-        
-        // Assert
+        var result = _storage.ValidateEncryption("");
         Assert.True(result);
     }
-    
+
     [Fact]
     public void Encrypt_SpecialCharacters_PreservesContent()
     {
-        // Arrange
         var specialText = "!@#$%^&*()_+-=[]{}|;':\",./<>?`~";
-        
-        // Act
-        var encrypted = SecureStorage.Encrypt(specialText);
-        var decrypted = SecureStorage.Decrypt(encrypted);
-        
-        // Assert
+        var encrypted = _storage.Encrypt(specialText);
+        var decrypted = _storage.Decrypt(encrypted);
         Assert.Equal(specialText, decrypted);
     }
-    
+
     [Fact]
     public void Encrypt_UnicodeCharacters_PreservesContent()
     {
-        // Arrange
         var unicodeText = "中文测试📝🔑密码";
-        
-        // Act
-        var encrypted = SecureStorage.Encrypt(unicodeText);
-        var decrypted = SecureStorage.Decrypt(encrypted);
-        
-        // Assert
+        var encrypted = _storage.Encrypt(unicodeText);
+        var decrypted = _storage.Decrypt(encrypted);
         Assert.Equal(unicodeText, decrypted);
     }
-    
+
     [Fact]
     public void EncryptConfig_RoundTrip_DecryptsCorrectly()
     {
-        // Arrange
         var config = new ProviderConfig
         {
             Id = "test-provider",
             Name = "Test Provider",
             ApiKey = "sk-secret-key-12345"
         };
-        
-        // Act
-        SecureStorage.EncryptConfig(config);
+
+        _storage.EncryptConfig(config);
         Assert.NotEqual("sk-secret-key-12345", config.ApiKey);
-        
-        SecureStorage.DecryptConfig(config);
-        
-        // Assert
+
+        _storage.DecryptConfig(config);
         Assert.Equal("sk-secret-key-12345", config.ApiKey);
     }
-    
+
     [Fact]
     public void ClearEntropyCache_MultipleEncrypts_AllWork()
     {
-        // Arrange
         var text1 = "text-1";
         var text2 = "text-2";
-        
-        // Act - 加密并清除缓存
-        var encrypted1 = SecureStorage.Encrypt(text1);
-        SecureStorage.ClearEntropyCache();
-        var encrypted2 = SecureStorage.Encrypt(text2);
-        SecureStorage.ClearEntropyCache();
-        
-        // 两个加密的文本应该都能正确解密
-        var decrypted1 = SecureStorage.Decrypt(encrypted1);
-        var decrypted2 = SecureStorage.Decrypt(encrypted2);
-        
-        // Assert
+
+        var encrypted1 = _storage.Encrypt(text1);
+        _storage.ClearEntropyCache();
+        var encrypted2 = _storage.Encrypt(text2);
+        _storage.ClearEntropyCache();
+
+        var decrypted1 = _storage.Decrypt(encrypted1);
+        var decrypted2 = _storage.Decrypt(encrypted2);
+
         Assert.Equal(text1, decrypted1);
         Assert.Equal(text2, decrypted2);
     }

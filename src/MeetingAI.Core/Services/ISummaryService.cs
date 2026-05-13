@@ -9,4 +9,10 @@ public interface ISummaryService
         string? providerId = null,
         string? systemPrompt = null,
         CancellationToken ct = default);
+
+    IAsyncEnumerable<string> StreamSummarizeAsync(
+        Transcript transcript,
+        string? providerId = null,
+        string? systemPrompt = null,
+        CancellationToken ct = default);
 }

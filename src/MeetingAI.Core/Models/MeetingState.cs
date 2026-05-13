@@ -12,7 +12,7 @@ namespace MeetingAI.Core.Models
         public DateTime? RecordingStoppedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public MeetingStatus Status { get; set; }
-        public List<TranscriptionSegment> Transcriptions { get; set; } = new();
+        public List<TranscriptSegment> Transcriptions { get; set; } = new();
         public List<AiAnalysisResult> Analyses { get; set; } = new();
         public TimeSpan? RecordingDuration =>
             RecordingStartedAt.HasValue && RecordingStoppedAt.HasValue

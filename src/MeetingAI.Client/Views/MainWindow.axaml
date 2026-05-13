@@ -1,0 +1,420 @@
+<Window x:Class="MeetingAI.Client.Views.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:MeetingAI.Client.Views"
+        Title="MeetingAI - 智能会议助手"
+        Height="800" Width="1200"
+        MinHeight="700" MinWidth="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundSecondaryBrush}"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="48">
+
+    <Border Background="{StaticResource BackgroundBrush}"
+            CornerRadius="12"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            BoxShadow="{StaticResource ShadowLevel4}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title Bar -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource BackgroundBrush}"
+                    CornerRadius="12,12,0,0"
+                    Padding="16,8"
+                    PointerPressed="TitleBar_PointerPressed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- App Icon and Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Path Data="{StaticResource BrainIcon}"
+                              Fill="{StaticResource PrimaryBrush}"
+                              Width="24" Height="24" Stretch="Uniform"
+                              Margin="0,0,12,0"/>
+                        <TextBlock Text="MeetingAI"
+                                   Classes="Headline"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text=" v2.0"
+                                   Classes="Caption"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0,0,0"/>
+                    </StackPanel>
+
+                    <!-- Provider Selector -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,0">
+                        <Path Data="{StaticResource BrainIcon}"
+                              Fill="{StaticResource InfoBrush}"
+                              Width="16" Height="16" Stretch="Uniform"
+                              Margin="0,0,8,0"/>
+                        <ComboBox ItemsSource="{Binding Providers}"
+                                  SelectedItem="{Binding SelectedProvider}"
+                                  DisplayMemberPath="Name"
+                                  MinWidth="180"
+                                  HorizontalAlignment="Center"/>
+                        <Button Command="{Binding ReloadProvidersCommand}"
+                                Classes="Icon"
+                                ToolTip.Tip="刷新列表"
+                                Margin="8,0,0,0">
+                            <Path Data="{StaticResource RefreshIcon}"
+                                  Fill="{StaticResource TextSecondaryBrush}"
+                                  Width="16" Height="16" Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Window Controls -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Status Indicator -->
+                        <Ellipse Width="10" Height="10"
+                                 Fill="{Binding IsRecording, Converter={StaticResource RecordingStatusColorConverter}}"
+                                 Margin="0,0,12,0"/>
+                        <TextBlock Text="{Binding StatusText}"
+                                   Classes="BodySmall"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,16,0"/>
+
+                        <!-- Settings Button -->
+                        <Button Command="{Binding OpenSettingsCommand}"
+                                Classes="Icon"
+                                ToolTip.Tip="设置">
+                            <Path Data="{StaticResource SettingsIcon}"
+                                  Fill="{StaticResource TextSecondaryBrush}"
+                                  Width="18" Height="18" Stretch="Uniform"/>
+                        </Button>
+
+                        <!-- Window Control Buttons -->
+                        <Button x:Name="MinimizeButton"
+                                Classes="Icon"
+                                Click="MinimizeButton_Click"
+                                Width="32" Height="32"
+                                Margin="4,0,0,0">
+                            <Path Data="M0,10 L10,10"
+                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  StrokeThickness="1.5"
+                                  Width="10" Height="1.5"/>
+                        </Button>
+                        <Button x:Name="MaximizeButton"
+                                Classes="Icon"
+                                Click="MaximizeButton_Click"
+                                Width="32" Height="32">
+                            <Path Data="M0,0 L10,0 L10,10 L0,10 Z"
+                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  StrokeThickness="1.5"
+                                  Width="10" Height="10"/>
+                        </Button>
+                        <Button x:Name="CloseButton"
+                                Classes="Icon"
+                                Click="CloseButton_Click"
+                                Width="32" Height="32">
+                            <Path Data="M0,0 L10,10 M10,0 L0,10"
+                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  StrokeThickness="1.5"
+                                  Width="10" Height="10"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main Content Area -->
+            <Grid Grid.Row="1" Margin="16,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Panel - Recording & Transcript -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource BackgroundBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMedium}"
+                        Padding="24"
+                        BoxShadow="{StaticResource ShadowLevel2}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Recording Section Header -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                            <Path Data="{StaticResource MicIcon}"
+                                  Fill="{StaticResource PrimaryBrush}"
+                                  Width="24" Height="24" Stretch="Uniform"
+                                  Margin="0,0,12,0"/>
+                            <TextBlock Text="录音"
+                                       Classes="TitleSmall"/>
+                        </StackPanel>
+
+                        <!-- Duration and Volume -->
+                        <Border Grid.Row="1"
+                                Background="{StaticResource FillBrush}"
+                                CornerRadius="{StaticResource RadiusMedium}"
+                                Padding="24"
+                                Margin="0,0,0,20">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding DurationText}"
+                                           FontSize="56" FontWeight="Light"
+                                           FontFamily="{StaticResource PrimaryFont}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,16"/>
+
+                                <!-- Volume Indicator -->
+                                <ProgressBar Value="{Binding VolumeLevel}"
+                                             Maximum="1"
+                                             Height="8"
+                                             CornerRadius="4"
+                                             Background="{StaticResource FillTertiaryBrush}"
+                                             Foreground="{StaticResource PrimaryGradientBrush}"
+                                             VerticalAlignment="Center"/>
+
+                                <!-- Recording Status -->
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Center"
+                                            Margin="0,12,0,0"
+                                            IsVisible="{Binding IsRecording}">
+                                    <Ellipse Width="8" Height="8"
+                                             Fill="{StaticResource ErrorBrush}"
+                                             Margin="0,0,8,0"/>
+                                    <TextBlock Text="录音中..."
+                                               Classes="Caption"
+                                               Foreground="{StaticResource ErrorBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Transcript Section -->
+                        <Grid Grid.Row="2">
+                            <Border Background="{StaticResource FillBrush}"
+                                    CornerRadius="{StaticResource RadiusMedium}"
+                                    Padding="20">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Transcript Header -->
+                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                                        <Path Data="{StaticResource DocTextIcon}"
+                                              Fill="{StaticResource TextTertiaryBrush}"
+                                              Width="18" Height="18" Stretch="Uniform"
+                                              Margin="0,0,10,0"/>
+                                        <TextBlock Text="转录内容"
+                                                   Classes="Body"
+                                                   Foreground="{StaticResource TextTertiaryBrush}"/>
+                                    </StackPanel>
+
+                                    <!-- Transcript Content -->
+                                    <ScrollViewer Grid.Row="1"
+                                                  VerticalScrollBarVisibility="Auto">
+                                        <TextBlock Text="{Binding TranscriptText}"
+                                                   Classes="Body"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   LineHeight="26"/>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- Meeting History Section -->
+                        <local:MeetingHistoryControl Grid.Row="3" Margin="0,20,0,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Right Panel - Summary -->
+                <Border Grid.Column="2"
+                        Background="{StaticResource BackgroundBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMedium}"
+                        Padding="24"
+                        BoxShadow="{StaticResource ShadowLevel2}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Summary Header -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                            <Path Data="{StaticResource BrainIcon}"
+                                  Fill="{StaticResource InfoBrush}"
+                                  Width="24" Height="24" Stretch="Uniform"
+                                  Margin="0,0,12,0"/>
+                            <TextBlock Text="会议摘要"
+                                       Classes="TitleSmall"/>
+                        </StackPanel>
+
+                        <!-- Summary Content -->
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto">
+                            <Panel>
+                                <!-- Summary Text (shown when summary exists) -->
+                                <Border Background="{StaticResource FillBrush}"
+                                        CornerRadius="{StaticResource RadiusMedium}"
+                                        Padding="24"
+                                        IsVisible="{Binding HasSummary}">
+                                    <TextBlock Text="{Binding SummaryText}"
+                                               Classes="BodyLarge"
+                                               TextWrapping="Wrap"
+                                               LineHeight="28"/>
+                                </Border>
+
+                                <!-- Empty State (shown when no summary) -->
+                                <StackPanel HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            MinHeight="200"
+                                            IsVisible="{Binding HasSummary, Converter={StaticResource InverseBoolConverter}}">
+                                    <Path Data="{StaticResource DocTextIcon}"
+                                          Fill="{StaticResource TextTertiaryBrush}"
+                                          Width="64" Height="64" Stretch="Uniform"
+                                          HorizontalAlignment="Center"
+                                          Opacity="0.4"/>
+                                    <TextBlock Text="暂无摘要"
+                                               Classes="Headline"
+                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,20,0,12"/>
+                                    <TextBlock Text="录制并转录会议后，点击生成摘要"
+                                               Classes="BodySmall"
+                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"
+                                               MaxWidth="280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Panel>
+                        </ScrollViewer>
+
+                        <!-- Copy Button -->
+                        <Button Grid.Row="2"
+                                Command="{Binding CopySummaryCommand}"
+                                Classes="Secondary"
+                                HorizontalAlignment="Right"
+                                Margin="0,20,0,0"
+                                Padding="20,12">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource CopyIcon}"
+                                      Fill="{StaticResource TextPrimaryBrush}"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,10,0"/>
+                                <TextBlock Text="复制摘要"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Bottom Control Bar -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource BackgroundBrush}"
+                    CornerRadius="0,0,12,12"
+                    Padding="24,16"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1,0,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Record/Stop Button -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Record Button (shown when not recording) -->
+                        <Button Command="{Binding ToggleRecordingCommand}"
+                                Classes="Record"
+                                IsVisible="{Binding IsRecording, Converter={StaticResource InverseBoolConverter}}">
+                            <Path Data="{StaticResource MicIcon}"
+                                  Fill="White"
+                                  Width="28" Height="28" Stretch="Uniform"/>
+                        </Button>
+
+                        <!-- Stop Button (shown when recording) -->
+                        <Button Command="{Binding ToggleRecordingCommand}"
+                                Classes="Stop"
+                                IsVisible="{Binding IsRecording}">
+                            <Path Data="{StaticResource StopIcon}"
+                                  Fill="White"
+                                  Width="28" Height="28" Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Center: Other Controls -->
+                    <WrapPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <!-- Pause/Resume Button -->
+                        <Button Command="{Binding PauseResumeCommand}"
+                                Classes="Secondary"
+                                IsEnabled="{Binding IsRecording}"
+                                Margin="0,0,16,0"
+                                Padding="20,12">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource PauseIcon}"
+                                      Fill="{StaticResource TextPrimaryBrush}"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,10,0"/>
+                                <TextBlock Text="暂停"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Transcribe Button -->
+                        <Button Command="{Binding TranscribeCommand}"
+                                Classes="Secondary"
+                                Padding="20,12"
+                                Margin="0,0,16,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource DocTextIcon}"
+                                      Fill="{StaticResource TextPrimaryBrush}"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,10,0"/>
+                                <TextBlock Text="转录"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Generate Summary Button -->
+                        <Button Command="{Binding SummarizeCommand}"
+                                Classes="Primary"
+                                Padding="20,12">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource BrainIcon}"
+                                      Fill="White"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,10,0"/>
+                                <TextBlock Text="生成摘要"
+                                           Foreground="White"/>
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+
+                    <!-- Right: Status -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding DurationText}"
+                                   Classes="BodySmall"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

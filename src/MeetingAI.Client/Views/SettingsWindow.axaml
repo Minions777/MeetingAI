@@ -1,0 +1,375 @@
+<Window x:Class="MeetingAI.Client.Views.SettingsWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="设置 - MeetingAI"
+        Height="700" Width="950"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundSecondaryBrush}"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="48"
+        CanResize="False">
+
+    <Border Background="{StaticResource BackgroundBrush}"
+            CornerRadius="12"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            BoxShadow="{StaticResource ShadowLevel4}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title Bar -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource BackgroundBrush}"
+                    CornerRadius="12,12,0,0"
+                    Padding="16,8"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- App Icon and Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Path Data="{StaticResource SettingsIcon}"
+                              Fill="{StaticResource PrimaryBrush}"
+                              Width="20" Height="20" Stretch="Uniform"
+                              Margin="0,0,10,0"/>
+                        <TextBlock Text="设置"
+                                   Classes="Headline"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Window Controls -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="完成"
+                                Command="{Binding SaveAndCloseCommand}"
+                                Classes="Primary"
+                                Padding="20,8"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1" Margin="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Provider List Sidebar -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource BackgroundBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMedium}"
+                        Padding="16"
+                        BoxShadow="{StaticResource ShadowLevel2}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Sidebar Header -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                            <Path Data="{StaticResource BrainIcon}"
+                                  Fill="{StaticResource InfoBrush}"
+                                  Width="20" Height="20" Stretch="Uniform"
+                                  Margin="0,0,10,0"/>
+                            <TextBlock Text="AI Providers"
+                                       Classes="TitleSmall"/>
+                        </StackPanel>
+
+                        <!-- Provider List -->
+                        <ListBox Grid.Row="1"
+                                 ItemsSource="{Binding Providers}"
+                                 SelectedItem="{Binding SelectedProvider}"
+                                 MaxHeight="400"
+                                 SelectionChanged="ProviderList_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="12,10">
+                                            <TextBlock Text="{Binding Name}"
+                                                       Classes="Body"/>
+                                            <TextBlock Text="{Binding ProviderType}"
+                                                       Classes="Caption"
+                                                       Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                CommandParameter="{Binding}"
+                                                Classes="Icon"
+                                                Padding="4"
+                                                ToolTip.Tip="设为默认"
+                                                Margin="0,0,8,0">
+                                            <Path Data="{StaticResource StarIcon}"
+                                                  Fill="{StaticResource TextTertiaryBrush}"
+                                                  Width="16" Height="16" Stretch="Uniform"/>
+                                        </Button>
+                                        <Ellipse Grid.Column="2"
+                                                 Width="10" Height="10"
+                                                 VerticalAlignment="Center"
+                                                 Fill="{Binding IsEnabled, Converter={StaticResource BoolToBrushConverter}}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!-- Add Button -->
+                        <Button Grid.Row="2"
+                                Command="{Binding AddProviderCommand}"
+                                Classes="Secondary"
+                                Margin="0,16,0,0"
+                                Padding="0,12">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path Data="{StaticResource PlusIcon}"
+                                      Fill="{StaticResource PrimaryBrush}"
+                                      Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,10,0"/>
+                                <TextBlock Text="添加 Provider"
+                                           Foreground="{StaticResource PrimaryBrush}"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Provider Editor Panel -->
+                <Border Grid.Column="2"
+                        Background="{StaticResource BackgroundBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMedium}"
+                        Padding="24"
+                        BoxShadow="{StaticResource ShadowLevel2}">
+                    <Panel>
+                        <!-- Editor -->
+                        <Grid IsVisible="{Binding IsEditing}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Editor Header -->
+                            <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                                <TextBlock Text="编辑 Provider"
+                                           Classes="TitleSmall"/>
+                                <TextBlock Text="{Binding SelectedProvider.Name}"
+                                           Classes="BodySmall"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
+
+                            <!-- Editor Form -->
+                            <ScrollViewer Grid.Row="1"
+                                          VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <!-- 预设选择 -->
+                                    <TextBlock Text="选择厂商"
+                                               Classes="Caption"
+                                               Margin="0,0,0,8"/>
+                                    <ComboBox ItemsSource="{Binding AvailablePresets}"
+                                              SelectedItem="{Binding SelectedPreset}"
+                                              DisplayMemberPath="DisplayName"
+                                              Margin="0,0,0,8"/>
+
+                                    <!-- 预设描述 -->
+                                    <TextBlock Text="{Binding SelectedPreset.Description}"
+                                               Classes="Caption"
+                                               Margin="0,0,0,20"
+                                               IsVisible="{Binding SelectedPreset.Description, Converter={StaticResource StringNotEmptyConverter}}"/>
+
+                                    <!-- Name -->
+                                    <TextBlock Text="配置名称"
+                                               Classes="Caption"
+                                               Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding EditName}"
+                                             Margin="0,0,0,20"/>
+
+                                    <!-- API Key -->
+                                    <TextBlock Text="API Key"
+                                               Classes="Caption"
+                                               Margin="0,0,0,8"/>
+                                    <TextBox x:Name="ApiKeyBox"
+                                             PasswordChar="•"
+                                             Text="{Binding EditApiKey}"
+                                             Margin="0,0,0,8"/>
+                                    <TextBlock Text="Ollama 本地部署无需填写 API Key"
+                                               Classes="Caption"
+                                               Margin="0,0,0,20"/>
+
+                                    <!-- Base URL -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Base URL"
+                                                   Classes="Caption"/>
+                                        <Button Grid.Column="1"
+                                                Command="{Binding ToggleCustomUrlCommand}"
+                                                Classes="Icon"
+                                                Padding="4"
+                                                ToolTip.Tip="自定义 URL"
+                                                Margin="8,0,0,0">
+                                            <Path Data="{StaticResource SettingsIcon}"
+                                                  Width="14" Height="14" Stretch="Uniform"
+                                                  Fill="{Binding IsCustomUrl, Converter={x:Static BoolConverters.TrueIsTrue}}"/>
+                                        </Button>
+                                    </Grid>
+                                    <TextBox Text="{Binding EditBaseUrl}"
+                                             IsReadOnly="{Binding IsCustomUrl, Converter={StaticResource InverseBoolConverter}}"
+                                             Margin="0,0,0,20"/>
+
+                                    <!-- 聊天模型 -->
+                                    <TextBlock Text="聊天模型"
+                                               Classes="Caption"
+                                               Margin="0,0,0,8"/>
+                                    <ComboBox ItemsSource="{Binding AvailableChatModels}"
+                                              SelectedItem="{Binding EditModel}"
+                                              Margin="0,0,0,20"/>
+
+                                    <!-- Whisper 模型 -->
+                                    <TextBlock Text="语音转录模型（Whisper）"
+                                               Classes="Caption"
+                                               Margin="0,0,0,8"/>
+                                    <ComboBox ItemsSource="{Binding AvailableWhisperModels}"
+                                              SelectedItem="{Binding EditWhisperModel}"
+                                              Margin="0,0,0,20"/>
+
+                                    <!-- 高级设置 -->
+                                    <Expander Header="高级设置"
+                                              Margin="0,0,0,16">
+                                        <StackPanel Margin="0,12,0,0">
+                                            <!-- Max Tokens -->
+                                            <TextBlock Text="最大 Token 数"
+                                                       Classes="Caption"
+                                                       Margin="0,0,0,8"/>
+                                            <TextBox Text="{Binding EditMaxTokens}"
+                                                     Margin="0,0,0,20"/>
+
+                                            <!-- Temperature -->
+                                            <TextBlock Text="Temperature"
+                                                       Classes="Caption"
+                                                       Margin="0,0,0,8"/>
+                                            <Grid Margin="0,0,0,20">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="60"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Slider Grid.Column="0"
+                                                        Value="{Binding EditTemperature}"
+                                                        Minimum="0" Maximum="2"
+                                                        TickFrequency="0.1"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding EditTemperature, StringFormat='{}{0:F1}'}"
+                                                           Classes="Body"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+
+                                            <!-- Enabled -->
+                                            <CheckBox Content="启用此配置"
+                                                      IsChecked="{Binding EditIsEnabled}"
+                                                      Margin="0,0,0,20"/>
+                                        </StackPanel>
+                                    </Expander>
+
+                                    <!-- Test Connection -->
+                                    <Button Command="{Binding TestConnectionCommand}"
+                                            Classes="Secondary"
+                                            HorizontalAlignment="Left"
+                                            Padding="20,12"
+                                            Margin="0,0,0,16">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="{StaticResource InfoIcon}"
+                                                  Fill="{StaticResource PrimaryBrush}"
+                                                  Width="16" Height="16" Stretch="Uniform"
+                                                  Margin="0,0,10,0"/>
+                                            <TextBlock Text="测试连接"
+                                                       Foreground="{StaticResource PrimaryBrush}"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <!-- Status Text -->
+                                    <TextBlock Text="{Binding StatusText}"
+                                               Classes="BodySmall"
+                                               Foreground="{StaticResource SuccessBrush}"
+                                               IsVisible="{Binding StatusText, Converter={StaticResource StringNotEmptyConverter}}"/>
+                                </StackPanel>
+                            </ScrollViewer>
+
+                            <!-- Action Buttons -->
+                            <StackPanel Grid.Row="2"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,24,0,0">
+                                <Button Command="{Binding DeleteProviderCommand}"
+                                        CommandParameter="{Binding SelectedProvider}"
+                                        Classes="Secondary"
+                                        Padding="20,12"
+                                        Margin="0,0,16,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource TrashIcon}"
+                                              Fill="{StaticResource ErrorBrush}"
+                                              Width="16" Height="16" Stretch="Uniform"
+                                              Margin="0,0,10,0"/>
+                                        <TextBlock Text="删除"
+                                                   Foreground="{StaticResource ErrorBrush}"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Command="{Binding SaveProviderCommand}"
+                                        Classes="Primary"
+                                        Padding="24,12">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource CheckmarkIcon}"
+                                              Fill="White"
+                                              Width="16" Height="16" Stretch="Uniform"
+                                              Margin="0,0,10,0"/>
+                                        <TextBlock Text="保存"
+                                                   Foreground="White"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Empty State -->
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{Binding IsEditing, Converter={StaticResource InverseBoolConverter}}">
+                            <Path Data="{StaticResource SettingsIcon}"
+                                  Fill="{StaticResource TextTertiaryBrush}"
+                                  Width="72" Height="72" Stretch="Uniform"
+                                  HorizontalAlignment="Center"
+                                  Opacity="0.3"/>
+                            <TextBlock Text="选择一个 Provider 进行编辑"
+                                       Classes="Headline"
+                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,24,0,12"/>
+                            <TextBlock Text="或点击「添加 Provider」创建新的配置"
+                                       Classes="BodySmall"
+                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Panel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
