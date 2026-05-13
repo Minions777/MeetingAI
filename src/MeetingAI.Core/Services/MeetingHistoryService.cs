@@ -356,6 +356,23 @@ public class MeetingHistoryService
         sb.AppendLine();
     }
 
+    private static void AppendList(StringBuilder sb, string title, IEnumerable<ActionItem> items)
+    {
+        var values = items.ToList();
+        if (values.Count == 0)
+            return;
+
+        sb.AppendLine($"**{title}**:");
+        foreach (var item in values)
+        {
+            var assignee = string.IsNullOrEmpty(item.Assignee) ? "" : $" [@{item.Assignee}]";
+            var due = item.DueDate == null ? "" : $" (截止: {item.DueDate:yyyy-MM-dd})";
+            var priority = item.Priority == Priority.High || item.Priority == Priority.Critical ? " ⚠️" : "";
+            sb.AppendLine($"- {item.Description}{assignee}{due}{priority}");
+        }
+        sb.AppendLine();
+    }
+
     private static void AppendNumberedList(StringBuilder sb, string title, IEnumerable<string> items)
     {
         var values = items.ToList();
@@ -366,6 +383,22 @@ public class MeetingHistoryService
         sb.AppendLine($"【{title}】");
         foreach (var (item, index) in values.Select((item, index) => (item, index)))
             sb.AppendLine($"  {index + 1}. {item}");
+    }
+
+    private static void AppendNumberedList(StringBuilder sb, string title, IEnumerable<ActionItem> items)
+    {
+        var values = items.ToList();
+        if (values.Count == 0)
+            return;
+
+        sb.AppendLine();
+        sb.AppendLine($"【{title}】");
+        foreach (var (item, index) in values.Select((item, index) => (item, index)))
+        {
+            var assignee = string.IsNullOrEmpty(item.Assignee) ? "" : $" @{item.Assignee}";
+            var due = item.DueDate == null ? "" : $" (截止: {item.DueDate:yyyy-MM-dd})";
+            sb.AppendLine($"  {index + 1}. {item.Description}{assignee}{due}");
+        }
     }
 }
 
