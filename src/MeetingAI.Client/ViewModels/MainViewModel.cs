@@ -31,6 +31,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IRecordingService recordingService,
         ITranscriptionService transcriptionService,
         ISummaryService summaryService,
+        IAIAssistantService aiAssistantService,
         IConfigurationService configService,
         MeetingHistoryService historyService)
     {
@@ -38,7 +39,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         Recording = new RecordingViewModel(recordingService);
         Providers = new ProviderViewModel(configService);
         History = new HistoryViewModel(historyService);
-        Summary = new SummaryViewModel(summaryService, configService, transcriptionService);
+        Summary = new SummaryViewModel(summaryService, configService, transcriptionService, aiAssistantService);
 
         Recording.RecordingStoppedWithFile += OnRecordingStoppedWithFile;
         _recordingService.RecordingStopped += OnServiceRecordingStopped;

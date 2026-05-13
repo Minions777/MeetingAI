@@ -42,6 +42,8 @@ public partial class App : Application
         services.AddSingleton<MainViewModel>();
         services.AddTransient<ProviderManagementViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<MermaidRendererViewModel>();
+        services.AddSingleton<IMermaidRendererService, MermaidRendererService>();
         services.AddTransient<MainWindow>();
     }
 
