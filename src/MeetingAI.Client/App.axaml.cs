@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using MeetingAI.Client.ViewModels;
 using MeetingAI.Client.Views;
+using MeetingAI.Core.Services;
 using MeetingAI.Shared.Logging;
 using Microsoft.Extensions.DependencyInjection;
 

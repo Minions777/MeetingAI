@@ -129,13 +129,13 @@
         <PathGeometry x:Key="CloseIcon">M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z</PathGeometry>
 
         <!-- Converters -->
-        <x:Static x:Key="InverseBoolConverter" Member="client:InverseBoolConverter.Instance" />
-        <x:Static x:Key="RecordingStatusColorConverter" Member="client:RecordingStatusColorConverter.Instance" />
-        <x:Static x:Key="StringNotEmptyConverter" Member="client:StringNotEmptyConverter.Instance" />
-        <x:Static x:Key="CountToBoolConverter" Member="client:CountToBoolConverter.Instance" />
-        <x:Static x:Key="NotNullConverter" Member="client:NotNullConverter.Instance" />
-        <x:Static x:Key="BoolToBrushConverter" Member="client:BoolToBrushConverter.Instance" />
-        <x:Static x:Key="GreaterThanZeroConverter" Member="client:GreaterThanZeroConverter.Instance" />
+        <client:InverseBoolConverter x:Key="InverseBoolConverter" />
+        <client:RecordingStatusColorConverter x:Key="RecordingStatusColorConverter" />
+        <client:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
+        <client:CountToBoolConverter x:Key="CountToBoolConverter" />
+        <client:NotNullConverter x:Key="NotNullConverter" />
+        <client:BoolToBrushConverter x:Key="BoolToBrushConverter" />
+        <client:GreaterThanZeroConverter x:Key="GreaterThanZeroConverter" />
     </Styles.Resources>
 
     <!-- ============================================
