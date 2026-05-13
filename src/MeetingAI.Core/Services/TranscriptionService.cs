@@ -3,7 +3,6 @@ using MeetingAI.Core.Providers;
 using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Shared.Configuration;
 using MeetingAI.Shared.Logging;
-using NAudio.Wave;
 
 namespace MeetingAI.Core.Services;
 
@@ -97,17 +96,61 @@ public class TranscriptionService : ITranscriptionService, IDisposable
 
     private static AudioData LoadAudioFile(string path)
     {
-        using var reader = new WaveFileReader(path);
-        var duration = reader.TotalTime;
         var fileInfo = new FileInfo(path);
+        var format = Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
+        int sampleRate = 16000;
+        int channels = 1;
+        var duration = TimeSpan.Zero;
+
+        // Parse WAV header if it's a WAV file
+        if (format is "wav" or "wave" && fileInfo.Length >= 44)
+        {
+            try
+            {
+                using var fs = File.OpenRead();
+                using var reader = new BinaryReader(fs);
+                var riff = new string(reader.ReadChars(4));
+                if (riff == "RIFF")
+                {
+                    reader.ReadInt32(); // file size
+                    var wave = new string(reader.ReadChars(4));
+                    if (wave == "WAVE")
+                    {
+                        // Find fmt chunk
+                        while (fs.Position < fileInfo.Length - 8)
+                        {
+                            var chunkId = new string(reader.ReadChars(4));
+                            var chunkSize = reader.ReadInt32();
+                            if (chunkId == "fmt ")
+                            {
+                                reader.ReadInt16(); // format
+                                channels = reader.ReadInt16();
+                                sampleRate = reader.ReadInt32();
+                                var byteRate = reader.ReadInt32();
+                                reader.ReadInt16(); // block align
+                                reader.ReadInt16(); // bits per sample
+                                if (byteRate > 0)
+                                    duration = TimeSpan.FromSeconds((double)(fileInfo.Length - 44) / byteRate);
+                                break;
+                            }
+                            fs.Seek(chunkSize, SeekOrigin.Current);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Fall back to defaults if parsing fails
+            }
+        }
 
         return new AudioData
         {
             FilePath = path,
             Length = fileInfo.Length,
-            Format = Path.GetExtension(path).TrimStart('.').ToLowerInvariant(),
-            SampleRate = reader.WaveFormat.SampleRate,
-            Channels = reader.WaveFormat.Channels,
+            Format = format,
+            SampleRate = sampleRate,
+            Channels = channels,
             Duration = duration
         };
     }

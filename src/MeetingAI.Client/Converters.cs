@@ -1,135 +1,116 @@
 using System.Globalization;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Media;
+using Avalonia.Data.Converters;
+using Avalonia.Media;
 
 namespace MeetingAI.Client;
 
-public class BoolToVisibilityConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is bool boolValue)
-            return boolValue ? Visibility.Visible : Visibility.Collapsed;
-        return Visibility.Collapsed;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is Visibility visibility)
-            return visibility == Visibility.Visible;
-        return false;
-    }
-}
-
 public class InverseBoolConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public static readonly InverseBoolConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is bool boolValue)
-            return !boolValue;
-        return true;
+        return value is bool b ? !b : value;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is bool boolValue)
-            return !boolValue;
-        return false;
-    }
-}
-
-public class InverseBoolToVisibilityConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is bool boolValue)
-            return boolValue ? Visibility.Collapsed : Visibility.Visible;
-        return Visibility.Visible;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is Visibility visibility)
-            return visibility != Visibility.Visible;
-        return true;
-    }
-}
-
-public class PauseResumeIconConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is bool isPaused)
-            return isPaused 
-                ? Application.Current.FindResource("PlayIcon") 
-                : Application.Current.FindResource("PauseIcon");
-        return Application.Current.FindResource("PauseIcon");
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class PauseResumeTextConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is bool isPaused)
-            return isPaused ? "Resume" : "Pause";
-        return "Pause";
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
+        return value is bool b ? !b : value;
     }
 }
 
 public class RecordingStatusColorConverter : IValueConverter
 {
-    private static readonly SolidColorBrush RecordingBrush = new(Color.FromRgb(0xFF, 0x3B, 0x30)); // Red
-    private static readonly SolidColorBrush IdleBrush = new(Color.FromRgb(0x34, 0xC7, 0x59)); // Green
+    public static readonly RecordingStatusColorConverter Instance = new();
 
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    private static readonly IBrush RecordingBrush = new SolidColorBrush(Color.Parse("#FF3B30"));
+    private static readonly IBrush IdleBrush = new SolidColorBrush(Color.Parse("#34C759"));
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is bool isRecording)
-            return isRecording ? RecordingBrush : IdleBrush;
-        return IdleBrush;
+        return value is true ? RecordingBrush : IdleBrush;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
-    }
-}
-
-public class StringToVisibilityConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        return string.IsNullOrEmpty(value as string) ? Visibility.Collapsed : Visibility.Visible;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
     }
 }
 
-public class CountToVisibilityConverter : IValueConverter
+public class StringNotEmptyConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public static readonly StringNotEmptyConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is int count)
-            return count > 0 ? Visibility.Collapsed : Visibility.Visible;
-        return Visibility.Visible;
+        return !string.IsNullOrEmpty(value as string);
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
+    }
+}
+
+public class CountToBoolConverter : IValueConverter
+{
+    public static readonly CountToBoolConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is int count && count == 0;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+public class GreaterThanZeroConverter : IValueConverter
+{
+    public static readonly GreaterThanZeroConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is int count && count > 0;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+public class NotNullConverter : IValueConverter
+{
+    public static readonly NotNullConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value != null;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+public class BoolToBrushConverter : IValueConverter
+{
+    public static readonly BoolToBrushConverter Instance = new();
+
+    private static readonly IBrush TrueBrush = new SolidColorBrush(Color.Parse("#10B981"));
+    private static readonly IBrush FalseBrush = new SolidColorBrush(Color.Parse("#94A3B8"));
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is true ? TrueBrush : FalseBrush;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
     }
 }

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using MeetingAI.Core.Models;
 using MeetingAI.Core.Providers;
 using MeetingAI.Core.Providers.Abstractions;
@@ -116,6 +117,54 @@ public class SummaryService : ISummaryService, IDisposable
             $"Decisions={summary.Decisions.Count}");
 
         return summary;
+    }
+
+    public async IAsyncEnumerable<string> StreamSummarizeAsync(
+        Transcript transcript,
+        string? providerId = null,
+        string? systemPrompt = null,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await _initialization.Value;
+
+        var settings = _configService.Load();
+        var effectiveProviderId = providerId ?? settings.DefaultProviderId;
+        var providers = _providers;
+
+        if (!providers.TryGetValue(effectiveProviderId, out var provider))
+        {
+            var fallback = providers.FirstOrDefault(p => p.Value.SupportsChat);
+            if (fallback.Value == null)
+                throw new InvalidOperationException("No chat provider available");
+
+            effectiveProviderId = fallback.Key;
+            provider = fallback.Value;
+        }
+
+        var providerConfig = settings.Providers.FirstOrDefault(p => p.Id == effectiveProviderId)
+            ?? throw new InvalidOperationException($"Provider configuration not found: {effectiveProviderId}");
+
+        var request = new ChatRequest
+        {
+            Model = providerConfig.Model,
+            SystemPrompt = systemPrompt ?? providerConfig.SystemPrompt ?? DefaultSummaryPrompt,
+            Temperature = providerConfig.Temperature,
+            MaxTokens = providerConfig.MaxTokens,
+            Messages =
+            [
+                new ChatMessage
+                {
+                    Role = "user",
+                    Content = $"请总结以下会议记录：\n\n{transcript.Text}"
+                }
+            ]
+        };
+
+        LoggerService.Info($"Streaming summary with {provider.Name}");
+        await foreach (var chunk in provider.StreamChatAsync(request, ct))
+        {
+            yield return chunk;
+        }
     }
 
     private static Summary ParseSummaryResponse(string content)

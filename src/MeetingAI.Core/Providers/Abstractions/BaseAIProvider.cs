@@ -1,151 +1,123 @@
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using MeetingAI.Core.Models;
 using MeetingAI.Shared.Configuration;
 using MeetingAI.Shared.Logging;
+using Polly;
+using Polly.Retry;
 
 namespace MeetingAI.Core.Providers.Abstractions;
 
-/// <summary>
-/// AI Provider 基类，提供通用功能实现
-/// </summary>
-public abstract class BaseAIProvider : IAIProvider
+public abstract class BaseAIProvider : IAIProvider, IDisposable
 {
     protected ProviderConfig? _config;
     protected HttpClient? _httpClient;
-    
+    private bool _disposed;
+
     public abstract string Id { get; }
     public abstract string Name { get; }
     public abstract AIProviderType ProviderType { get; }
     public abstract IReadOnlyList<string> SupportedChatModels { get; }
     public abstract IReadOnlyList<string> SupportedTranscriptionModels { get; }
-    
-    public bool IsConfigured => !string.IsNullOrEmpty(_config?.ApiKey);
     public abstract bool SupportsTranscription { get; }
     public abstract bool SupportsChat { get; }
-    
+
+    public bool IsConfigured => _config != null && !string.IsNullOrEmpty(_config.ApiKey);
+
     public virtual void Configure(ProviderConfig config)
     {
         _config = config;
-        _httpClient = CreateHttpClient();
+        _httpClient = HttpClientManager.GetOrCreateClient(Id, config, ConfigureHttpClient);
+        LoggerService.Info($"{Name} Provider configured");
     }
-    
-    /// <summary>
-    /// 创建 HttpClient 实例
-    /// </summary>
-    protected virtual HttpClient CreateHttpClient()
+
+    protected virtual void ConfigureHttpClient(HttpClient client)
     {
-        return new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(120)
-        };
     }
-    
-    public abstract Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken ct = default);
+
+    public virtual Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken ct = default)
+    {
+        throw new NotSupportedException($"{Name} does not support chat");
+    }
 
     public virtual async IAsyncEnumerable<string> StreamChatAsync(
         ChatRequest request,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        // Fallback to non-streaming
         var response = await ChatAsync(request, ct);
         yield return response.Content;
     }
 
-    public abstract Task<Transcript> TranscribeAsync(AudioData audio, TranscriptionOptions? options = null, CancellationToken ct = default);
-    
-    /// <summary>
-    /// 默认的连接测试实现
-    /// 发送一个简单的测试请求来验证 API 连接
-    /// </summary>
-    public virtual async Task<bool> TestConnectionAsync(CancellationToken ct = default)
+    public virtual Task<Transcript> TranscribeAsync(AudioData audio, TranscriptionOptions? options = null, CancellationToken ct = default)
     {
-        if (_config == null || !IsConfigured)
+        throw new NotSupportedException($"{Name} does not support transcription");
+    }
+
+    public virtual Task<bool> TestConnectionAsync(CancellationToken ct = default)
+    {
+        return Task.FromResult(IsConfigured);
+    }
+
+    protected StringContent CreateJsonContent(object body)
+    {
+        var json = JsonSerializer.Serialize(body, new JsonSerializerOptions
         {
-            LoggerService.Warning($"{Name}: Provider 未配置");
-            return false;
-        }
-        
-        try
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        });
+        return new StringContent(json, Encoding.UTF8, "application/json");
+    }
+
+    protected async Task<string> SendRequestAsync(HttpClient client, string endpoint, Func<HttpContent> createContent, CancellationToken ct)
+    {
+        var retryPolicy = CreateRetryPolicy();
+
+        return await retryPolicy.ExecuteAsync(async () =>
         {
-            // 尝试发送一个最小的测试请求
-            var testRequest = new ChatRequest
+            using var content = createContent();
+            using var response = await client.PostAsync(endpoint, content, ct);
+            var json = await response.Content.ReadAsStringAsync(ct);
+
+            if (!response.IsSuccessStatusCode)
             {
-                Model = _config.Model,
-                Messages = new List<ChatMessage>
+                LoggerService.Error($"{Name} API Error: {json}");
+                throw new HttpRequestException($"API Error: {response.StatusCode}");
+            }
+
+            return json;
+        });
+    }
+
+    protected virtual AsyncRetryPolicy<string> CreateRetryPolicy()
+    {
+        return Policy<string>
+            .Handle<HttpRequestException>()
+            .Or<TaskCanceledException>(ex => !ex.CancellationToken.IsCancellationRequested)
+            .WaitAndRetryAsync(
+                retryCount: 3,
+                sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                onRetry: (outcome, timespan, retryCount, context) =>
                 {
-                    new() { Role = "user", Content = "Hi" }
-                },
-                MaxTokens = 5
-            };
-            
-            var response = await ChatAsync(testRequest, ct);
-            var success = !string.IsNullOrEmpty(response.Content);
-            
-            LoggerService.Info($"{Name}: 连接测试 {(success ? "成功" : "失败")}");
-            return success;
-        }
-        catch (Exception ex)
+                    LoggerService.Warning($"{Name} API 调用失败，{timespan.TotalSeconds}秒后进行第{retryCount}次重试");
+                });
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
         {
-            LoggerService.Error($"{Name}: 连接测试失败", ex);
-            return false;
+            if (disposing)
+            {
+                _httpClient = null;
+            }
+            _disposed = true;
         }
-    }
-    
-    /// <summary>
-    /// 发送 HTTP 请求的辅助方法
-    /// </summary>
-    protected async Task<T> SendRequestAsync<T>(
-        string url, 
-        HttpMethod method, 
-        object? body = null,
-        CancellationToken ct = default) where T : class
-    {
-        if (_httpClient == null)
-            throw new InvalidOperationException("HttpClient 未初始化");
-            
-        var request = new HttpRequestMessage(method, url);
-        
-        // 添加认证 Header
-        AddAuthHeaders(request);
-        
-        // 添加内容
-        if (body != null)
-        {
-            var json = JsonSerializer.Serialize(body);
-            request.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-        }
-        
-        var response = await _httpClient.SendAsync(request, ct);
-        response.EnsureSuccessStatusCode();
-        
-        var content = await response.Content.ReadAsStringAsync(ct);
-        return JsonSerializer.Deserialize<T>(content) ?? throw new InvalidOperationException("响应解析失败");
-    }
-    
-    /// <summary>
-    /// 添加认证 Header（由子类重写）
-    /// </summary>
-    protected abstract void AddAuthHeaders(HttpRequestMessage request);
-    
-    /// <summary>
-    /// 获取 API 基础 URL
-    /// </summary>
-    protected string GetBaseUrl()
-    {
-        return _config?.BaseUrl ?? GetDefaultBaseUrl();
-    }
-    
-    /// <summary>
-    /// 获取默认的 API 基础 URL（由子类实现）
-    /// </summary>
-    protected abstract string GetDefaultBaseUrl();
-    
-    /// <summary>
-    /// 生成请求追踪 ID
-    /// </summary>
-    protected string GenerateTraceId()
-    {
-        return Guid.NewGuid().ToString("N")[..8];
     }
 }

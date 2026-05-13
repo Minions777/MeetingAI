@@ -1,21 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
     <LangVersion>latest</LangVersion>
     <ApplicationIcon>MeetingAI.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <DefineConstants>WINDOWS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
+    <DefineConstants>MACOS</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\MeetingAI.Core\MeetingAI.Core.csproj" />
     <ProjectReference Include="..\MeetingAI.Shared\MeetingAI.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.2.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Serilog" Version="3.1.1" />

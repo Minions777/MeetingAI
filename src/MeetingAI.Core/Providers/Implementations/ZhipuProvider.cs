@@ -1,3 +1,4 @@
+using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Shared.Configuration;
 
 namespace MeetingAI.Core.Providers.Implementations;

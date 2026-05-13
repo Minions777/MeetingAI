@@ -1,5 +1,6 @@
 using System.Text.Json;
 using MeetingAI.Core.Models;
+using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Shared.Configuration;
 
 namespace MeetingAI.Core.Providers.Implementations;

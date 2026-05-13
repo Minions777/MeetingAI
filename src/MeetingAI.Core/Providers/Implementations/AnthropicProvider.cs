@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using MeetingAI.Core.Models;
+using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Shared.Configuration;
 
 namespace MeetingAI.Core.Providers.Implementations;
@@ -32,7 +33,8 @@ public class AnthropicProvider : BaseAIProvider
         if (_httpClient == null || _config == null)
             throw new InvalidOperationException("Provider not configured");
             
-        var endpoint = "https://api.anthropic.com/v1/messages";
+        var baseUrl = _config.BaseUrl.TrimEnd('/');
+        var endpoint = baseUrl.EndsWith("/messages") ? baseUrl : $"{baseUrl}/messages";
         
         var systemContent = string.IsNullOrEmpty(request.SystemPrompt) 
             ? "You is a professional meeting assistant." 

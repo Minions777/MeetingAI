@@ -11,12 +11,14 @@ public class ConfigurationService : IConfigurationService
 
     private readonly string _configPath;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly ISecureStorage _secureStorage;
     private AppSettings? _cachedSettings;
     private DateTime _lastLoadTime = DateTime.MinValue;
     private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(5);
-    
-    public ConfigurationService()
+
+    public ConfigurationService(ISecureStorage secureStorage)
     {
+        _secureStorage = secureStorage;
         _configPath = Constants.AppConstants.Paths.Settings;
         _jsonOptions = new JsonSerializerOptions
         {
@@ -59,7 +61,7 @@ public class ConfigurationService : IConfigurationService
             {
                 foreach (var provider in settings.Providers)
                 {
-                    SecureStorage.DecryptConfig(provider);
+                    _secureStorage.DecryptConfig(provider);
                 }
             }
             
@@ -111,7 +113,7 @@ public class ConfigurationService : IConfigurationService
             {
                 foreach (var provider in settings.Providers)
                 {
-                    SecureStorage.DecryptConfig(provider);
+                    _secureStorage.DecryptConfig(provider);
                 }
             }
             
@@ -142,7 +144,7 @@ public class ConfigurationService : IConfigurationService
             // Encrypt sensitive data before saving
             foreach (var provider in settings.Providers)
             {
-                SecureStorage.EncryptConfig(provider);
+                _secureStorage.EncryptConfig(provider);
             }
             
             settings.UpdatedAt = DateTime.UtcNow;
@@ -152,7 +154,7 @@ public class ConfigurationService : IConfigurationService
             // Decrypt after saving for in-memory use
             foreach (var provider in settings.Providers)
             {
-                SecureStorage.DecryptConfig(provider);
+                _secureStorage.DecryptConfig(provider);
             }
             
             _cachedSettings = settings;
@@ -183,7 +185,7 @@ public class ConfigurationService : IConfigurationService
             // Encrypt sensitive data before saving
             foreach (var provider in settings.Providers)
             {
-                SecureStorage.EncryptConfig(provider);
+                _secureStorage.EncryptConfig(provider);
             }
             
             settings.UpdatedAt = DateTime.UtcNow;
@@ -193,7 +195,7 @@ public class ConfigurationService : IConfigurationService
             // Decrypt after saving for in-memory use
             foreach (var provider in settings.Providers)
             {
-                SecureStorage.DecryptConfig(provider);
+                _secureStorage.DecryptConfig(provider);
             }
             
             _cachedSettings = settings;
