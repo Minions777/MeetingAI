@@ -40,6 +40,7 @@ public partial class App : Application
     {
         services.AddMeetingAICore();
         services.AddSingleton<MainViewModel>();
+        services.AddTransient<ProviderManagementViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<MainWindow>();
     }
