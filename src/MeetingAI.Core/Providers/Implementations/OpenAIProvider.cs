@@ -38,26 +38,33 @@ public class OpenAIProvider : OpenAICompatibleProvider
 
         var endpoint = $"{_config.BaseUrl.TrimEnd('/')}/audio/transcriptions";
 
-        using var content = new MultipartFormDataContent();
-        var audioContent = CreateAudioContent(audio);
-        audioContent.Headers.ContentType = new MediaTypeHeaderValue(GetAudioContentType(audio));
-        content.Add(audioContent, "file", GetAudioFileName(audio));
-        content.Add(new StringContent(_config.WhisperModel), "model");
+        var retryPolicy = CreateRetryPolicy();
 
-        if (options?.Language != null)
-            content.Add(new StringContent(options.Language), "language");
-
-        if (options?.Prompt != null)
-            content.Add(new StringContent(options.Prompt), "prompt");
-
-        using var response = await _httpClient.PostAsync(endpoint, content, ct);
-        var json = await response.Content.ReadAsStringAsync(ct);
-
-        if (!response.IsSuccessStatusCode)
+        var json = await retryPolicy.ExecuteAsync(async () =>
         {
-            LoggerService.Error($"Whisper API Error: {response.StatusCode} - {json}");
-            throw new HttpRequestException($"Whisper API Error: {response.StatusCode} - {json}");
-        }
+            using var reqContent = new MultipartFormDataContent();
+            var audioContent = CreateAudioContent(audio);
+            audioContent.Headers.ContentType = new MediaTypeHeaderValue(GetAudioContentType(audio));
+            reqContent.Add(audioContent, "file", GetAudioFileName(audio));
+            reqContent.Add(new StringContent(_config.WhisperModel), "model");
+
+            if (options?.Language != null)
+                reqContent.Add(new StringContent(options.Language), "language");
+
+            if (options?.Prompt != null)
+                reqContent.Add(new StringContent(options.Prompt), "prompt");
+
+            using var response = await _httpClient.PostAsync(endpoint, reqContent, ct);
+            var respJson = await response.Content.ReadAsStringAsync(ct);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                LoggerService.Error($"Whisper API Error: {response.StatusCode} - {respJson}");
+                throw new HttpRequestException($"Whisper API Error: {response.StatusCode} - {respJson}");
+            }
+
+            return respJson;
+        });
 
         using var doc = JsonDocument.Parse(json);
         var text = doc.RootElement.GetProperty("text").GetString() ?? "";

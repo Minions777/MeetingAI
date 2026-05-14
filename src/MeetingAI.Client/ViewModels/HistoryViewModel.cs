@@ -9,11 +9,11 @@ namespace MeetingAI.Client.ViewModels;
 
 public partial class HistoryViewModel : ObservableObject
 {
-    private readonly MeetingHistoryService _historyService;
+    private readonly IMeetingHistoryService _historyService;
 
     [ObservableProperty] private ObservableCollection<MeetingRecord> _meetingHistory = new();
 
-    public HistoryViewModel(MeetingHistoryService historyService)
+    public HistoryViewModel(IMeetingHistoryService historyService)
     {
         _historyService = historyService;
     }

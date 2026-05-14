@@ -9,15 +9,15 @@ public class RecordingService : IRecordingService, IDisposable
     private Stream? _outputStream;
     private volatile BinaryWriter? _writer;
     private string _currentFilePath = string.Empty;
-    private DateTime _recordingStartTime;
+    private DateTime _recordingStartTimeUtc;
     private TimeSpan _pausedDuration;
-    private DateTime? _pauseStartTime;
+    private DateTime? _pauseStartTimeUtc;
     private volatile bool _isPaused;
     private readonly object _lock = new();
     private bool _disposed;
     private long _dataBytesWritten;
 
-    private DateTime _lastVolumeUpdate = DateTime.MinValue;
+    private DateTime _lastVolumeUpdateUtc = DateTime.MinValue;
     private readonly TimeSpan _volumeUpdateInterval = TimeSpan.FromMilliseconds(100);
 
     public RecordingService(IAudioCapture audioCapture)
@@ -34,7 +34,7 @@ public class RecordingService : IRecordingService, IDisposable
         {
             if (!_audioCapture.IsRecording) return TimeSpan.Zero;
             if (_isPaused) return _pausedDuration;
-            return DateTime.Now - _recordingStartTime + _pausedDuration;
+            return DateTime.UtcNow - _recordingStartTimeUtc + _pausedDuration;
         }
     }
 
@@ -69,7 +69,7 @@ public class RecordingService : IRecordingService, IDisposable
                 _audioCapture.DataAvailable += OnDataAvailable;
                 _audioCapture.RecordingStopped += OnRecordingStopped;
 
-                _recordingStartTime = DateTime.Now;
+                _recordingStartTimeUtc = DateTime.UtcNow;
                 _pausedDuration = TimeSpan.Zero;
                 _isPaused = false;
 
@@ -118,7 +118,7 @@ public class RecordingService : IRecordingService, IDisposable
         {
             if (!_audioCapture.IsRecording || _isPaused) return;
             _isPaused = true;
-            _pauseStartTime = DateTime.Now;
+            _pauseStartTimeUtc = DateTime.UtcNow;
             LoggerService.Info("Recording paused");
         }
     }
@@ -127,11 +127,11 @@ public class RecordingService : IRecordingService, IDisposable
     {
         lock (_lock)
         {
-            if (!_audioCapture.IsRecording || !_isPaused || !_pauseStartTime.HasValue) return;
+            if (!_audioCapture.IsRecording || !_isPaused || !_pauseStartTimeUtc.HasValue) return;
 
-            _pausedDuration += DateTime.Now - _pauseStartTime.Value;
+            _pausedDuration += DateTime.UtcNow - _pauseStartTimeUtc.Value;
             _isPaused = false;
-            _pauseStartTime = null;
+            _pauseStartTimeUtc = null;
             LoggerService.Info("Recording resumed");
         }
     }
@@ -149,23 +149,24 @@ public class RecordingService : IRecordingService, IDisposable
                 _writer.Write(data);
                 _dataBytesWritten += data.Length;
 
-                // Calculate volume level
+                // Calculate volume level from 16-bit PCM samples
                 float max = 0;
-                if (data.Length >= 4)
+                if (data.Length >= 2)
                 {
-                    for (int i = 0; i <= data.Length - 4; i += 4)
+                    for (int i = 0; i <= data.Length - 2; i += 2)
                     {
-                        var sample = BitConverter.ToSingle(data, i);
-                        if (sample > max) max = sample;
+                        var sample = Math.Abs(BitConverter.ToInt16(data, i));
+                        var normalized = sample / 32768f;
+                        if (normalized > max) max = normalized;
                     }
                 }
 
                 CurrentVolume = max;
 
                 var now = DateTime.UtcNow;
-                if (now - _lastVolumeUpdate >= _volumeUpdateInterval)
+                if (now - _lastVolumeUpdateUtc >= _volumeUpdateInterval)
                 {
-                    _lastVolumeUpdate = now;
+                    _lastVolumeUpdateUtc = now;
                     VolumeChanged?.Invoke(this, max);
                 }
             }

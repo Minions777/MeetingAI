@@ -24,7 +24,7 @@ public static class ServiceExtensions
         services.AddSingleton<ITranscriptionService, TranscriptionService>();
         services.AddSingleton<ISummaryService, SummaryService>();
         services.AddSingleton<IAIAssistantService, AIAssistantService>();
-        services.AddSingleton<MeetingHistoryService>();
+        services.AddSingleton<IMeetingHistoryService, MeetingHistoryService>();
 
         // Additional services
         services.AddSingleton<ILanguageDetectionService, LanguageDetectionService>();
@@ -39,7 +39,7 @@ public static class ServiceExtensions
             new SpeakerDiarizationService(sp.GetRequiredService<OnnxSpeakerDiarizationService>()));
 
         // Combined transcription (Whisper + diarization)
-        services.AddSingleton<CombinedTranscriptionService>();
+        services.AddSingleton<ICombinedTranscriptionService, CombinedTranscriptionService>();
 
         return services;
     }

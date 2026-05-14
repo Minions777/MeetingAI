@@ -149,7 +149,7 @@ Respond in the same language as the transcript. Format clearly for readability."
         }
     }
 
-    private static Summary ParseSummaryResponse(string content)
+    internal static Summary ParseSummaryResponse(string content)
     {
         var summary = new Summary();
 

@@ -18,10 +18,10 @@ public class WindowsHotkeyService : IPlatformHotkeyService
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
     [DllImport("user32.dll")]
@@ -54,7 +54,13 @@ public class WindowsHotkeyService : IPlatformHotkeyService
 
         // Subclass the window to receive WM_HOTKEY messages
         _wndProcDelegate = WndProc;
-        _oldWndProc = SetWindowLongPtr(_windowHandle, GWL_WNDPROC, Marshal.GetFunctionPointerForDelegate(_wndProcDelegate));
+        var result = SetWindowLongPtr(_windowHandle, GWL_WNDPROC, Marshal.GetFunctionPointerForDelegate(_wndProcDelegate));
+        if (result == IntPtr.Zero)
+        {
+            var error = Marshal.GetLastWin32Error();
+            LoggerService.Warning($"SetWindowLongPtr returned zero (error: {error}), subclassing may not have worked");
+        }
+        _oldWndProc = result;
 
         LoggerService.Info("Windows hotkey service initialized");
     }

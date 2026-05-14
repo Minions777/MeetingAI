@@ -4,7 +4,7 @@ This file defines repository-wide instructions for AI coding agents working on M
 
 ## Project Overview
 
-MeetingAI is a Windows desktop meeting assistant built with .NET 8 and WPF. The active architecture is the modular solution under `src/`:
+MeetingAI is a cross-platform desktop meeting assistant built with .NET 10 and Avalonia. The active architecture is the modular solution under `src/`:
 
 - `src/MeetingAI.Client/` - WPF application, Views, ViewModels, themes, converters, and composition root.
 - `src/MeetingAI.Core/` - business logic, audio recording, transcription, summaries, providers, resilience, repositories, and state.
@@ -16,9 +16,9 @@ Prefer this modular `src/MeetingAI.Client`, `src/MeetingAI.Core`, and `src/Meeti
 
 ## Required Environment
 
-- Windows 10/11.
-- .NET 8 SDK.
-- Visual Studio 2022 or equivalent .NET tooling for WPF development.
+- Windows 10/11 or macOS.
+- .NET 10 SDK.
+- Visual Studio 2022 / JetBrains Rider, or equivalent .NET tooling.
 - Network/API access only when a task explicitly requires real AI provider calls.
 
 ## Common Commands
@@ -70,7 +70,7 @@ Use `dotnet format MeetingAI.sln` when formatting is needed or after broad C# ed
 - Keep AI provider contracts in `src/MeetingAI.Core/Providers/Abstractions/`.
 - Put provider implementations in `src/MeetingAI.Core/Providers/Implementations/`.
 - Register or construct new providers through the existing provider factory pattern.
-- Preserve resilience behavior in `src/MeetingAI.Core/Resilience/` when modifying provider calls.
+- Retry behavior is handled via Polly in `BaseAIProvider.CreateRetryPolicy()` — preserve it when modifying provider HTTP calls.
 
 ### Shared
 
@@ -90,7 +90,7 @@ Use `dotnet format MeetingAI.sln` when formatting is needed or after broad C# ed
 ## Security And Privacy
 
 - Never hard-code API keys, access tokens, personal data, machine-specific paths, or secrets.
-- API keys must be encrypted through DPAPI-backed `SecureStorage`.
+- API keys must be encrypted through AES-256-GCM-backed `SecureStorage`.
 - Validate user-controlled file paths, provider configuration, and imported/exported data.
 - Avoid logging secrets, full transcripts containing sensitive content, or raw provider credentials.
 - When changing provider HTTP calls, preserve timeout, cancellation, and error-handling behavior.
