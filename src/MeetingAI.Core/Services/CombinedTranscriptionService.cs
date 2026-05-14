@@ -6,7 +6,20 @@ namespace MeetingAI.Core.Services;
 /// <summary>
 /// Combined transcription service that merges Whisper transcription with speaker diarization.
 /// </summary>
-public sealed class CombinedTranscriptionService
+public interface ICombinedTranscriptionService
+{
+    Task<Transcript> TranscribeWithSpeakerDiarizationAsync(
+        string audioFilePath,
+        string? providerId = null,
+        TranscriptionOptions? options = null,
+        IProgress<float>? progress = null,
+        CancellationToken ct = default);
+}
+
+/// <summary>
+/// Combined transcription service that merges Whisper transcription with speaker diarization.
+/// </summary>
+public sealed class CombinedTranscriptionService : ICombinedTranscriptionService
 {
     private readonly ITranscriptionService _transcriptionService;
     private readonly ISpeakerDiarizationService _diarizationService;

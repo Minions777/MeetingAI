@@ -35,7 +35,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ISummaryService summaryService,
         IAIAssistantService aiAssistantService,
         IConfigurationService configService,
-        MeetingHistoryService historyService)
+        IMeetingHistoryService historyService)
     {
         _recordingService = recordingService;
         Recording = new RecordingViewModel(recordingService);
@@ -46,13 +46,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
         Recording.RecordingStoppedWithFile += OnRecordingStoppedWithFile;
         _recordingService.RecordingStopped += OnServiceRecordingStopped;
 
-        _ = InitializeAsync();
+        InitializeAsync();
     }
 
-    private async Task InitializeAsync()
+    private async void InitializeAsync()
     {
-        await Providers.LoadProvidersAsync();
-        await History.LoadRecentAsync();
+        try
+        {
+            await Providers.LoadProvidersAsync();
+            await History.LoadRecentAsync();
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("Failed to initialize MainViewModel", ex);
+        }
     }
 
     private void OnRecordingStoppedWithFile(MeetingRecord record)

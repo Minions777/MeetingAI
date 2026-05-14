@@ -8,7 +8,7 @@ namespace MeetingAI.Core.Tests.Services;
 public sealed class MeetingHistoryServiceTests : IDisposable
 {
     private readonly string _historyDirectory;
-    private readonly MeetingHistoryService _sut;
+    private readonly IMeetingHistoryService _sut;
 
     public MeetingHistoryServiceTests()
     {

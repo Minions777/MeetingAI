@@ -5,7 +5,22 @@ using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Services;
 
-public class MeetingHistoryService
+public interface IMeetingHistoryService
+{
+    Task SaveAsync(MeetingRecord record);
+    Task<MeetingRecord?> LoadAsync(string id);
+    Task<IReadOnlyList<MeetingRecord>> GetAllAsync();
+    Task<IReadOnlyList<MeetingRecord>> GetRecentAsync(int count);
+    Task<bool> DeleteAsync(string id);
+    Task<IReadOnlyList<MeetingRecord>> SearchAsync(string keyword);
+    Task<IReadOnlyList<MeetingRecord>> GetByDateRangeAsync(DateTime start, DateTime end);
+    string ExportToMarkdown(MeetingRecord record);
+    string ExportToText(MeetingRecord record);
+    Task ExportAllAsync(string outputDirectory, ExportFormat format);
+    Task<MeetingHistoryStats> GetStatsAsync();
+}
+
+public class MeetingHistoryService : IMeetingHistoryService
 {
     private readonly string _historyDirectory;
     private readonly string _historyDirectoryRoot;

@@ -40,7 +40,7 @@ public class ConfigurationService : IConfigurationService
             {
                 LoggerService.Info("配置文件不存在，创建默认配置");
                 _cachedSettings = AppSettings.CreateDefault();
-                Task.Run(() => PersistSettingsSync(_cachedSettings, raiseEvent: false));
+                _ = PersistSettingsSafeAsync(_cachedSettings, false);
                 return _cachedSettings;
             }
 
@@ -51,7 +51,7 @@ public class ConfigurationService : IConfigurationService
             {
                 LoggerService.Warning("配置文件为空，创建默认配置");
                 _cachedSettings = AppSettings.CreateDefault();
-                Task.Run(() => PersistSettingsSync(_cachedSettings, raiseEvent: false));
+                _ = PersistSettingsSafeAsync(_cachedSettings, false);
                 return _cachedSettings;
             }
 
@@ -111,44 +111,12 @@ public class ConfigurationService : IConfigurationService
 
     public void Save(AppSettings settings)
     {
-        PersistSettingsSync(settings, raiseEvent: true);
+        _ = PersistSettingsSafeAsync(settings, true);
     }
 
     public async Task SaveAsync(AppSettings settings)
     {
         await PersistSettingsAsync(settings, raiseEvent: true);
-    }
-
-    private void PersistSettingsSync(AppSettings settings, bool raiseEvent)
-    {
-        _saveLock.Wait();
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
-
-            EncryptAllProviders(settings);
-            settings.UpdatedAt = DateTime.UtcNow;
-            var json = JsonSerializer.Serialize(settings, _jsonOptions);
-            File.WriteAllText(_configPath, json);
-
-            DecryptAllProviders(settings);
-
-            _cachedSettings = settings;
-            _lastLoadTime = DateTime.UtcNow;
-            LoggerService.Info("配置已保存并更新缓存");
-
-            if (raiseEvent)
-                SettingsChanged?.Invoke(this, EventArgs.Empty);
-        }
-        catch (Exception ex)
-        {
-            LoggerService.Error("保存配置失败", ex);
-            throw;
-        }
-        finally
-        {
-            _saveLock.Release();
-        }
     }
 
     private async Task PersistSettingsAsync(AppSettings settings, bool raiseEvent)
@@ -196,6 +164,18 @@ public class ConfigurationService : IConfigurationService
     }
 
     private bool IsCacheExpired() => DateTime.UtcNow - _lastLoadTime > _cacheExpiration;
+
+    private async Task PersistSettingsSafeAsync(AppSettings settings, bool raiseEvent)
+    {
+        try
+        {
+            await PersistSettingsAsync(settings, raiseEvent);
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("Failed to persist settings", ex);
+        }
+    }
 
     public AppSettings Reload()
     {

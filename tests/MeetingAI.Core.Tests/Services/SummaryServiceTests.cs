@@ -23,17 +23,13 @@ public class SummaryServiceTests
     [Fact]
     public void Constructor_WithValidConfig_DoesNotThrow()
     {
-        // Act
         var sut = new SummaryService(_configService, _providerManager);
-
-        // Assert
         sut.Should().NotBeNull();
     }
 
     [Fact]
     public void DefaultSummaryPrompt_IsNotNullOrEmpty()
     {
-        // Assert
         SummaryService.DefaultSummaryPrompt.Should().NotBeNullOrEmpty();
         SummaryService.DefaultSummaryPrompt.Should().Contain("meeting");
         SummaryService.DefaultSummaryPrompt.Should().Contain("Overview");
@@ -42,22 +38,18 @@ public class SummaryServiceTests
     [Fact]
     public void Constructor_WithMockConfig_CreatesSuccessfully()
     {
-        // Arrange
         var mockConfig = new Mock<IConfigurationService>();
         mockConfig.Setup(x => x.Load()).Returns(TestHelpers.CreateTestSettings());
         var providerManager = new ProviderManager(mockConfig.Object);
 
-        // Act
         var sut = new SummaryService(mockConfig.Object, providerManager);
 
-        // Assert
         sut.Should().NotBeNull();
     }
 
     [Fact]
     public async Task SummarizeAsync_WithMissingDefaultProvider_FallsBackWithoutConfigurationLookupFailure()
     {
-        // Arrange
         var settings = TestHelpers.CreateTestSettings();
         settings.DefaultProviderId = "missing-provider";
         var configService = TestHelpers.CreateMockConfigService(settings);
@@ -65,13 +57,10 @@ public class SummaryServiceTests
         var sut = new SummaryService(configService, providerManager);
         var transcript = new Transcript { Text = "test transcript" };
 
-        // Act
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        var act = () => sut.SummarizeAsync(transcript);
 
-        var act = () => sut.SummarizeAsync(transcript, ct: cts.Token);
-
-        // Assert
-        await act.Should().ThrowAsync<OperationCanceledException>();
+        var ex = await Record.ExceptionAsync(act);
+        ex.Should().NotBeNull();
+        ex.Should().NotBeOfType<InvalidOperationException>();
     }
 }

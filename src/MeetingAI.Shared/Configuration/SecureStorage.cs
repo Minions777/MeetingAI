@@ -120,7 +120,7 @@ public class AesSecureStorage : ISecureStorage
             var data = Convert.FromBase64String(encryptedText);
 
             if (data.Length < 28) // 12 nonce + 16 tag minimum
-                return encryptedText;
+                throw new InvalidOperationException("Encrypted data is too short or corrupted");
 
             var nonce = data[..12];
             var tag = data[12..28];

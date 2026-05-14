@@ -1,4 +1,6 @@
 using System.Globalization;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
@@ -24,17 +26,26 @@ public class RecordingStatusColorConverter : IValueConverter
 {
     public static readonly RecordingStatusColorConverter Instance = new();
 
-    private static readonly IBrush RecordingBrush = new SolidColorBrush(Color.Parse("#FF3B30"));
-    private static readonly IBrush IdleBrush = new SolidColorBrush(Color.Parse("#34C759"));
-
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is true ? RecordingBrush : IdleBrush;
+        return value is true ? GetBrush("ErrorBrush") : GetBrush("SuccessBrush");
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotSupportedException();
+    }
+
+    private static IBrush GetBrush(string key) => BrushCache.SharedGetBrush(key);
+}
+
+internal static class BrushCache
+{
+    public static IBrush SharedGetBrush(string key)
+    {
+        if (Application.Current?.TryFindResource(key, null, out var resource) == true && resource is IBrush brush)
+            return brush;
+        return Brushes.Transparent;
     }
 }
 
@@ -102,18 +113,17 @@ public class BoolToBrushConverter : IValueConverter
 {
     public static readonly BoolToBrushConverter Instance = new();
 
-    private static readonly IBrush TrueBrush = new SolidColorBrush(Color.Parse("#10B981"));
-    private static readonly IBrush FalseBrush = new SolidColorBrush(Color.Parse("#94A3B8"));
-
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is true ? TrueBrush : FalseBrush;
+        return value is true ? GetBrush("SuccessBrush") : GetBrush("TextTertiaryBrush");
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotSupportedException();
     }
+
+    private static IBrush GetBrush(string key) => BrushCache.SharedGetBrush(key);
 }
 
 public class EnumBooleanConverter : IValueConverter

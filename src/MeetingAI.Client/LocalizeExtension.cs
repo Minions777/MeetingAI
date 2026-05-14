@@ -1,3 +1,4 @@
+using Avalonia.Data;
 using Avalonia.Markup.Xaml;
 using MeetingAI.Shared.i18n;
 
@@ -14,6 +15,10 @@ public class LocalizeExtension : MarkupExtension
 
     public override object ProvideValue(IServiceProvider serviceProvider)
     {
-        return LocalizationManager.Get(Key);
+        return new Binding
+        {
+            Source = LocalizationManager.Instance,
+            Path = $"[{Key}]"
+        };
     }
 }

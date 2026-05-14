@@ -1,9 +1,15 @@
-using System.Globalization;
+using System.ComponentModel;
 
 namespace MeetingAI.Shared.i18n;
 
-public class LocalizationManager
+public class LocalizationManager : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public static LocalizationManager Instance { get; } = new();
+
+    public string this[string key] => Get(key);
+
     private static readonly Dictionary<string, Dictionary<string, string>> _strings = new()
     {
         ["zh-CN"] = new Dictionary<string, string>
@@ -96,8 +102,18 @@ public class LocalizationManager
         set
         {
             if (_strings.ContainsKey(value))
+            {
                 _currentLanguage = value;
+                Instance.NotifyAllPropertiesChanged();
+            }
         }
+    }
+
+    private void NotifyAllPropertiesChanged()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(""));
+        foreach (var key in _strings[_currentLanguage].Keys)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
     }
     
     public static string Get(string key)

@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using MeetingAI.Shared.Configuration;
+using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Providers;
 
@@ -47,33 +48,42 @@ public static class HttpClientManager
 
     public static void UpdateApiKey(string providerId, string apiKey)
     {
-        foreach (var entry in FindEntries(providerId))
+        lock (_sync)
         {
-            entry.Value.Client.DefaultRequestHeaders.Authorization = string.IsNullOrWhiteSpace(apiKey)
-                ? null
-                : new AuthenticationHeaderValue("Bearer", apiKey);
+            foreach (var entry in FindEntries(providerId))
+            {
+                entry.Value.Client.DefaultRequestHeaders.Authorization = string.IsNullOrWhiteSpace(apiKey)
+                    ? null
+                    : new AuthenticationHeaderValue("Bearer", apiKey);
+            }
         }
     }
 
     public static void RemoveClient(string providerId)
     {
-        foreach (var entry in FindEntries(providerId).ToList())
+        lock (_sync)
         {
-            if (_clients.TryRemove(entry.Key, out var removed))
+            foreach (var entry in FindEntries(providerId).ToList())
             {
-                ScheduleDispose(removed.Client);
+                if (_clients.TryRemove(entry.Key, out var removed))
+                {
+                    ScheduleDispose(removed.Client);
+                }
             }
         }
     }
 
     public static void ClearAll()
     {
-        foreach (var entry in _clients.Values)
+        lock (_sync)
         {
-            entry.Client.Dispose();
-        }
+            foreach (var entry in _clients.Values)
+            {
+                entry.Client.Dispose();
+            }
 
-        _clients.Clear();
+            _clients.Clear();
+        }
     }
 
     private static HttpClient CreateClient(ProviderConfig config)
@@ -134,8 +144,9 @@ public static class HttpClientManager
             await Task.Delay(_disposeDelay);
             client.Dispose();
         }
-        catch
+        catch (Exception ex)
         {
+            LoggerService.Warning($"Failed to dispose HttpClient on delay: {ex.Message}");
             client.Dispose();
         }
     }
