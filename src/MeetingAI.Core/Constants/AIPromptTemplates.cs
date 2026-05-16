@@ -2,10 +2,10 @@ namespace MeetingAI.Core.Constants;
 
 public static class AIPromptTemplates
 {
-    public const string AskAIPrompt = @"基于以下会议片段回答问题。
-选中文本：{0}
-当前讨论：{1}
-时间戳：{2}
+    private const string AskAIPromptTemplate = @"基于以下会议片段回答问题。
+选中文本：{selectedText}
+当前讨论：{context}
+时间戳：{timestamp}
 
 要求：
 1. 回答 ≤100 字
@@ -19,10 +19,9 @@ public static class AIPromptTemplates
             ? timestamp.Value.ToString(@"mm\:ss")
             : "未知";
 
-        return string.Format(
-            AskAIPrompt,
-            selectedText,
-            context,
-            timestampStr);
+        return AskAIPromptTemplate
+            .Replace("{selectedText}", selectedText)
+            .Replace("{context}", context)
+            .Replace("{timestamp}", timestampStr);
     }
 }

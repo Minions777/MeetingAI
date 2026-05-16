@@ -118,12 +118,14 @@ public class WindowsHotkeyService : IPlatformHotkeyService
         return result;
     }
 
-    private static uint ConvertKey(string key) => key.ToUpperInvariant() switch
+    private static uint ConvertKey(string key)
     {
-        "R" => 0x52,
-        "S" => 0x53,
-        _ => throw new ArgumentException($"Unsupported key: {key}")
-    };
+        var upper = key.ToUpperInvariant();
+        if (upper.Length == 1 && upper[0] >= 'A' && upper[0] <= 'Z')
+            return upper[0]; // 'A' = 0x41, 'Z' = 0x5A
+
+        throw new ArgumentException($"Unsupported key: {key}");
+    }
 
     private IntPtr WndProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam)
     {

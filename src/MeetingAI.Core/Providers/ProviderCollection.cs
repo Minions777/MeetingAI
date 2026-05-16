@@ -29,14 +29,40 @@ public sealed class ProviderCollection : IDisposable
 
     public IReadOnlyDictionary<string, IAIProvider> GetProviders()
     {
-        if (_initialization.IsValueCreated)
-            _initialization.Value.GetAwaiter().GetResult();
+        if (!_initialization.IsValueCreated)
+            return _providers;
+
+        try
+        {
+            Task.Run(() => _initialization.Value).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("Failed to initialize providers synchronously", ex);
+        }
+
         return _providers;
     }
 
     private void OnSettingsChanged(object? sender, EventArgs e)
     {
-        _ = Task.Run(RefreshProviders);
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await RefreshProvidersAsync();
+            }
+            catch (Exception ex)
+            {
+                LoggerService.Error("Failed to refresh providers after settings change", ex);
+            }
+        });
+    }
+
+    private async Task RefreshProvidersAsync()
+    {
+        var providers = await Task.Run(CreateProviders);
+        ReplaceProviders(providers);
     }
 
     private void RefreshProviders()

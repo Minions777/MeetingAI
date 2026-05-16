@@ -6,16 +6,16 @@
         Height="800" Width="1200"
         MinHeight="700" MinWidth="1000"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundSecondaryBrush}"
+        Background="{DynamicResource BackgroundSecondaryBrush}"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="48">
 
-    <Border Background="{StaticResource BackgroundBrush}"
+    <Border Background="{DynamicResource BackgroundBrush}"
             CornerRadius="12"
-            BorderBrush="{StaticResource BorderBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="1"
-            BoxShadow="{StaticResource ShadowLevel4}">
+            BoxShadow="{DynamicResource ShadowLevel4}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -25,7 +25,7 @@
 
             <!-- Title Bar -->
             <Border Grid.Row="0"
-                    Background="{StaticResource BackgroundBrush}"
+                    Background="{DynamicResource BackgroundBrush}"
                     CornerRadius="12,12,0,0"
                     Padding="16,8"
                     PointerPressed="TitleBar_PointerPressed">
@@ -39,7 +39,7 @@
                     <!-- App Icon and Title -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <Path Data="{StaticResource BrainIcon}"
-                              Fill="{StaticResource PrimaryBrush}"
+                              Fill="{DynamicResource PrimaryBrush}"
                               Width="24" Height="24" Stretch="Uniform"
                               Margin="0,0,12,0"/>
                         <TextBlock Text="MeetingAI"
@@ -54,7 +54,7 @@
                     <!-- Provider Selector -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,0">
                         <Path Data="{StaticResource BrainIcon}"
-                              Fill="{StaticResource InfoBrush}"
+                              Fill="{DynamicResource InfoBrush}"
                               Width="16" Height="16" Stretch="Uniform"
                               Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding Providers.Providers}"
@@ -72,7 +72,7 @@
                                 ToolTip.Tip="刷新列表"
                                 Margin="8,0,0,0">
                             <Path Data="{StaticResource RefreshIcon}"
-                                  Fill="{StaticResource TextSecondaryBrush}"
+                                  Fill="{DynamicResource TextSecondaryBrush}"
                                   Width="16" Height="16" Stretch="Uniform"/>
                         </Button>
                     </StackPanel>
@@ -93,7 +93,7 @@
                                 Classes="Icon"
                                 ToolTip.Tip="设置">
                             <Path Data="{StaticResource SettingsIcon}"
-                                  Fill="{StaticResource TextSecondaryBrush}"
+                                  Fill="{DynamicResource TextSecondaryBrush}"
                                   Width="18" Height="18" Stretch="Uniform"/>
                         </Button>
 
@@ -104,7 +104,7 @@
                                 Width="32" Height="32"
                                 Margin="4,0,0,0">
                             <Path Data="M0,10 L10,10"
-                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  Stroke="{DynamicResource TextSecondaryBrush}"
                                   StrokeThickness="1.5"
                                   Width="10" Height="1.5"/>
                         </Button>
@@ -113,7 +113,7 @@
                                 Click="MaximizeButton_Click"
                                 Width="32" Height="32">
                             <Path Data="M0,0 L10,0 L10,10 L0,10 Z"
-                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  Stroke="{DynamicResource TextSecondaryBrush}"
                                   StrokeThickness="1.5"
                                   Width="10" Height="10"/>
                         </Button>
@@ -122,7 +122,7 @@
                                 Click="CloseButton_Click"
                                 Width="32" Height="32">
                             <Path Data="M0,0 L10,10 M10,0 L0,10"
-                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  Stroke="{DynamicResource TextSecondaryBrush}"
                                   StrokeThickness="1.5"
                                   Width="10" Height="10"/>
                         </Button>
@@ -140,12 +140,12 @@
 
                 <!-- Left Panel - Recording & Transcript -->
                 <Border Grid.Column="0"
-                        Background="{StaticResource BackgroundBrush}"
-                        BorderBrush="{StaticResource BorderBrush}"
+                        Background="{DynamicResource BackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="{StaticResource RadiusMedium}"
                         Padding="24"
-                        BoxShadow="{StaticResource ShadowLevel2}">
+                        BoxShadow="{DynamicResource ShadowLevel2}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -157,7 +157,7 @@
                         <!-- Recording Section Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
                             <Path Data="{StaticResource MicIcon}"
-                                  Fill="{StaticResource PrimaryBrush}"
+                                  Fill="{DynamicResource PrimaryBrush}"
                                   Width="24" Height="24" Stretch="Uniform"
                                   Margin="0,0,12,0"/>
                             <TextBlock Text="录音"
@@ -166,15 +166,17 @@
 
                         <!-- Duration and Volume -->
                         <Border Grid.Row="1"
-                                Background="{StaticResource FillBrush}"
+                                Background="{DynamicResource FillBrush}"
                                 CornerRadius="{StaticResource RadiusMedium}"
                                 Padding="24"
-                                Margin="0,0,0,20">
+                                Margin="0,0,0,20"
+                                BorderBrush="{DynamicResource PrimaryBrush}"
+                                BorderThickness="4,0,0,0">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="{Binding Recording.DurationText}"
                                            FontSize="56" FontWeight="Light"
-                                           FontFamily="{StaticResource PrimaryFont}"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontFamily="{DynamicResource PrimaryFont}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                            HorizontalAlignment="Center"
                                            Margin="0,0,0,16"/>
 
@@ -182,9 +184,6 @@
                                 <ProgressBar Value="{Binding Recording.VolumeLevel}"
                                              Maximum="1"
                                              Height="8"
-                                             CornerRadius="4"
-                                             Background="{StaticResource FillTertiaryBrush}"
-                                             Foreground="{StaticResource PrimaryGradientBrush}"
                                              VerticalAlignment="Center"/>
 
                                 <!-- Recording Status -->
@@ -193,18 +192,19 @@
                                             Margin="0,12,0,0"
                                             IsVisible="{Binding Recording.IsRecording}">
                                     <Ellipse Width="8" Height="8"
-                                             Fill="{StaticResource ErrorBrush}"
-                                             Margin="0,0,8,0"/>
+                                             Fill="{DynamicResource ErrorBrush}"
+                                             Margin="0,0,8,0"
+                                             Classes.RecordingPulse="{Binding Recording.IsRecording}"/>
                                     <TextBlock Text="录音中..."
                                                Classes="Caption"
-                                               Foreground="{StaticResource ErrorBrush}"/>
+                                               Foreground="{DynamicResource ErrorBrush}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
 
                         <!-- Transcript Section -->
                         <Grid Grid.Row="2">
-                            <Border Background="{StaticResource FillBrush}"
+                            <Border Background="{DynamicResource FillBrush}"
                                     CornerRadius="{StaticResource RadiusMedium}"
                                     Padding="20">
                                 <Grid>
@@ -216,12 +216,12 @@
                                     <!-- Transcript Header -->
                                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
                                         <Path Data="{StaticResource DocTextIcon}"
-                                              Fill="{StaticResource TextTertiaryBrush}"
+                                              Fill="{DynamicResource TextTertiaryBrush}"
                                               Width="18" Height="18" Stretch="Uniform"
                                               Margin="0,0,10,0"/>
                                         <TextBlock Text="转录内容"
                                                    Classes="Body"
-                                                   Foreground="{StaticResource TextTertiaryBrush}"/>
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
                                     </StackPanel>
 
                                     <!-- Transcript Content -->
@@ -229,7 +229,7 @@
                                                   VerticalScrollBarVisibility="Auto">
                                         <TextBlock Text="{Binding Summary.TranscriptText}"
                                                    Classes="Body"
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                                    TextWrapping="Wrap"
                                                    LineHeight="26"/>
                                     </ScrollViewer>
@@ -242,14 +242,21 @@
                     </Grid>
                 </Border>
 
+                <!-- Column Separator -->
+                <Border Grid.Column="1"
+                        Width="1"
+                        Background="{DynamicResource BorderBrush}"
+                        VerticalAlignment="Stretch"
+                        Margin="7,0"/>
+
                 <!-- Right Panel - Summary -->
                 <Border Grid.Column="2"
-                        Background="{StaticResource BackgroundBrush}"
-                        BorderBrush="{StaticResource BorderBrush}"
+                        Background="{DynamicResource BackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="{StaticResource RadiusMedium}"
                         Padding="24"
-                        BoxShadow="{StaticResource ShadowLevel2}">
+                        BoxShadow="{DynamicResource ShadowLevel2}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -261,7 +268,7 @@
                         <!-- Summary Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
                             <Path Data="{StaticResource BrainIcon}"
-                                  Fill="{StaticResource InfoBrush}"
+                                  Fill="{DynamicResource InfoBrush}"
                                   Width="24" Height="24" Stretch="Uniform"
                                   Margin="0,0,12,0"/>
                             <TextBlock Text="会议摘要"
@@ -273,9 +280,11 @@
                                       VerticalScrollBarVisibility="Auto">
                             <Panel>
                                 <!-- Summary Text (shown when summary exists) -->
-                                <Border Background="{StaticResource FillBrush}"
+                                <Border Background="{DynamicResource FillBrush}"
                                         CornerRadius="{StaticResource RadiusMedium}"
                                         Padding="24"
+                                        BorderBrush="{DynamicResource InfoBrush}"
+                                        BorderThickness="4,0,0,0"
                                         IsVisible="{Binding Summary.HasSummary}">
                                     <TextBlock Text="{Binding Summary.SummaryText}"
                                                Classes="BodyLarge"
@@ -289,18 +298,18 @@
                                             MinHeight="200"
                                             IsVisible="{Binding Summary.HasSummary, Converter={StaticResource InverseBoolConverter}}">
                                     <Path Data="{StaticResource DocTextIcon}"
-                                          Fill="{StaticResource TextTertiaryBrush}"
+                                          Fill="{DynamicResource TextTertiaryBrush}"
                                           Width="64" Height="64" Stretch="Uniform"
                                           HorizontalAlignment="Center"
-                                          Opacity="0.4"/>
+                                          Opacity="0.3"/>
                                     <TextBlock Text="暂无摘要"
                                                Classes="Headline"
-                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
                                                HorizontalAlignment="Center"
                                                Margin="0,20,0,12"/>
                                     <TextBlock Text="录制并转录会议后，点击生成摘要"
                                                Classes="BodySmall"
-                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
                                                HorizontalAlignment="Center"
                                                TextAlignment="Center"
                                                MaxWidth="280"
@@ -311,10 +320,12 @@
 
                         <!-- Ask AI Panel -->
                         <Border Grid.Row="2"
-                                Background="{StaticResource FillBrush}"
+                                Background="{DynamicResource BackgroundGlassBrush}"
                                 CornerRadius="{StaticResource RadiusMedium}"
                                 Padding="16"
                                 Margin="0,16,0,0"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
                                 IsVisible="{Binding Summary.ShowAIPanel}">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -327,7 +338,7 @@
                                 <Grid Grid.Row="0" Margin="0,0,0,12">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Data="{StaticResource BrainIcon}"
-                                              Fill="{StaticResource InfoBrush}"
+                                              Fill="{DynamicResource InfoBrush}"
                                               Width="18" Height="18" Stretch="Uniform"
                                               Margin="0,0,8,0"/>
                                         <TextBlock Text="AI 问答"
@@ -339,26 +350,26 @@
                                             Width="24" Height="24"
                                             Command="{Binding Summary.CloseAIPanelCommand}">
                                         <Path Data="{StaticResource CloseIcon}"
-                                              Fill="{StaticResource TextTertiaryBrush}"
+                                              Fill="{DynamicResource TextTertiaryBrush}"
                                               Width="12" Height="12" Stretch="Uniform"/>
                                     </Button>
                                 </Grid>
 
                                 <!-- Selected Text -->
                                 <Border Grid.Row="1"
-                                        Background="{StaticResource BackgroundTertiaryBrush}"
+                                        Background="{DynamicResource BackgroundTertiaryBrush}"
                                         CornerRadius="6"
                                         Padding="12"
                                         Margin="0,0,0,8">
                                     <TextBlock Text="{Binding Summary.SelectedText}"
                                                Classes="Caption"
                                                TextWrapping="Wrap"
-                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
                                 </Border>
 
                                 <!-- AI Response -->
                                 <Border Grid.Row="2"
-                                        Background="{StaticResource BackgroundBrush}"
+                                        Background="{DynamicResource BackgroundBrush}"
                                         CornerRadius="6"
                                         Padding="12">
                                     <StackPanel>
@@ -368,20 +379,20 @@
                                                     Margin="0,0,0,8">
                                             <TextBlock Text="思考中..."
                                                        Classes="Caption"
-                                                       Foreground="{StaticResource TextTertiaryBrush}"/>
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
                                         </StackPanel>
 
                                         <!-- Response text -->
                                         <TextBlock Text="{Binding Summary.AiResponseText}"
                                                    Classes="Body"
                                                    TextWrapping="Wrap"
-                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
                                                    IsVisible="{Binding Summary.IsAskingAI, Converter={StaticResource InverseBoolConverter}}"/>
 
                                         <!-- Error message -->
                                         <TextBlock Text="{Binding Summary.AiErrorMessage}"
                                                    Classes="Caption"
-                                                   Foreground="{StaticResource ErrorBrush}"
+                                                   Foreground="{DynamicResource ErrorBrush}"
                                                    TextWrapping="Wrap"
                                                    IsVisible="{Binding Summary.AiErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"/>
                                     </StackPanel>
@@ -398,11 +409,11 @@
                                 Padding="20,12">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource CopyIcon}"
-                                      Fill="{StaticResource TextPrimaryBrush}"
+                                      Fill="{DynamicResource TextPrimaryBrush}"
                                       Width="16" Height="16" Stretch="Uniform"
                                       Margin="0,0,10,0"/>
                                 <TextBlock Text="复制摘要"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -411,10 +422,10 @@
 
             <!-- Bottom Control Bar -->
             <Border Grid.Row="2"
-                    Background="{StaticResource BackgroundBrush}"
+                    Background="{DynamicResource BackgroundBrush}"
                     CornerRadius="0,0,12,12"
                     Padding="24,16"
-                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1,0,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -431,7 +442,7 @@
                                 IsVisible="{Binding Recording.IsRecording, Converter={StaticResource InverseBoolConverter}}">
                             <Path Data="{StaticResource MicIcon}"
                                   Fill="White"
-                                  Width="28" Height="28" Stretch="Uniform"/>
+                                  Width="32" Height="32" Stretch="Uniform"/>
                         </Button>
 
                         <!-- Stop Button (shown when recording) -->
@@ -440,7 +451,7 @@
                                 IsVisible="{Binding Recording.IsRecording}">
                             <Path Data="{StaticResource StopIcon}"
                                   Fill="White"
-                                  Width="28" Height="28" Stretch="Uniform"/>
+                                  Width="32" Height="32" Stretch="Uniform"/>
                         </Button>
                     </StackPanel>
 
@@ -454,11 +465,11 @@
                                 Padding="20,12">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource PauseIcon}"
-                                      Fill="{StaticResource TextPrimaryBrush}"
+                                      Fill="{DynamicResource TextPrimaryBrush}"
                                       Width="16" Height="16" Stretch="Uniform"
                                       Margin="0,0,10,0"/>
                                 <TextBlock Text="暂停"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                             </StackPanel>
                         </Button>
 
@@ -469,11 +480,11 @@
                                 Margin="0,0,16,0">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource DocTextIcon}"
-                                      Fill="{StaticResource TextPrimaryBrush}"
+                                      Fill="{DynamicResource TextPrimaryBrush}"
                                       Width="16" Height="16" Stretch="Uniform"
                                       Margin="0,0,10,0"/>
                                 <TextBlock Text="转录"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                             </StackPanel>
                         </Button>
 
@@ -496,7 +507,7 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="{Binding Recording.DurationText}"
                                    Classes="BodySmall"
-                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                 </Grid>

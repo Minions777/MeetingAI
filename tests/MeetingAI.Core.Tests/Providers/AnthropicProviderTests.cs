@@ -1,5 +1,7 @@
+using System.Net.Http;
 using FluentAssertions;
 using MeetingAI.Core.Models;
+using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Core.Providers.Implementations;
 using MeetingAI.Shared.Configuration;
 using Xunit;
@@ -87,7 +89,7 @@ public class AnthropicProviderTests
         var provider = new AnthropicProvider();
         var config = new ProviderConfig
         {
-            Id = "test-anthropic",
+            Id = "test-anthropic-header",
             Name = "Test Anthropic",
             ProviderType = AIProviderType.Anthropic,
             ApiKey = "sk-ant-test-key",
@@ -96,6 +98,15 @@ public class AnthropicProviderTests
         };
 
         provider.Configure(config);
+
+        // Access protected _httpClient field via reflection
+        var httpClientField = typeof(BaseAIProvider).GetField("_httpClient",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var httpClient = (HttpClient?)httpClientField!.GetValue(provider);
+
+        httpClient.Should().NotBeNull();
+        httpClient!.DefaultRequestHeaders.Contains("anthropic-version").Should().BeTrue();
+        httpClient.DefaultRequestHeaders.GetValues("anthropic-version").Should().Contain("2023-06-01");
     }
 
     [Fact]

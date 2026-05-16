@@ -21,23 +21,23 @@ public class ProviderConfig
     public bool IsEnabled { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
-    
+
     // Computed properties based on ProviderType
     [JsonIgnore]
     public bool SupportsChat => ProviderType switch
     {
-        AIProviderType.OpenAI or AIProviderType.DeepSeek or AIProviderType.Anthropic 
+        AIProviderType.OpenAI or AIProviderType.DeepSeek or AIProviderType.Anthropic
           or AIProviderType.Ollama or AIProviderType.Zhipu or AIProviderType.MiniMax => true,
         _ => false
     };
-    
+
     [JsonIgnore]
     public bool SupportsTranscription => ProviderType switch
     {
         AIProviderType.OpenAI or AIProviderType.Ollama or AIProviderType.MiniMax => true,
         _ => false
     };
-    
+
     public static ProviderConfig CreateDefault(AIProviderType type)
     {
         return type switch

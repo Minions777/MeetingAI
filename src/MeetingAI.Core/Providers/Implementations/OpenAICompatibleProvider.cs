@@ -3,6 +3,7 @@ using System.Text.Json;
 using MeetingAI.Core.Models;
 using MeetingAI.Core.Providers.Abstractions;
 using MeetingAI.Shared.Configuration;
+using MeetingAI.Shared.Logging;
 
 namespace MeetingAI.Core.Providers.Implementations;
 
@@ -24,18 +25,22 @@ public abstract class OpenAICompatibleProvider : BaseAIProvider
     {
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
-        
-        var content = root.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString() ?? "";
-        var tokens = root.TryGetProperty("usage", out var usage) 
-            ? usage.GetProperty("total_tokens").GetInt32() 
+
+        var choices = root.GetProperty("choices");
+        if (choices.GetArrayLength() == 0)
+            throw new InvalidOperationException("API returned empty choices array");
+
+        var content = choices[0].GetProperty("message").GetProperty("content").GetString() ?? "";
+        var tokens = root.TryGetProperty("usage", out var usage)
+            ? usage.GetProperty("total_tokens").GetInt32()
             : 0;
-            
+
         return new ChatResponse
         {
             Content = content,
             Model = request.Model ?? _config!.Model,
             TokensUsed = tokens,
-            FinishReason = root.GetProperty("choices")[0].GetProperty("finish_reason").GetString() ?? "",
+            FinishReason = choices[0].GetProperty("finish_reason").GetString() ?? "",
             IsSuccess = true
         };
     }
@@ -44,9 +49,9 @@ public abstract class OpenAICompatibleProvider : BaseAIProvider
     {
         if (_httpClient == null || _config == null)
             throw new InvalidOperationException("Provider not configured");
-            
+
         var endpoint = $"{_config.BaseUrl.TrimEnd('/')}{ChatEndpoint}";
-        
+
         var body = new
         {
             model = request.Model ?? _config.Model,
@@ -58,7 +63,7 @@ public abstract class OpenAICompatibleProvider : BaseAIProvider
             top_p = request.TopP,
             max_tokens = request.MaxTokens
         };
-        
+
         var json = await SendRequestAsync(_httpClient, endpoint, () => CreateJsonContent(body), ct);
         return ParseChatResponse(json, request);
     }
@@ -88,7 +93,13 @@ public abstract class OpenAICompatibleProvider : BaseAIProvider
         requestMsg.Content = CreateJsonContent(body);
 
         using var response = await _httpClient.SendAsync(requestMsg, HttpCompletionOption.ResponseHeadersRead, ct);
-        response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(ct);
+            LoggerService.Error($"{Name} Stream API Error: {errorBody}");
+            throw new HttpRequestException($"API Error: {response.StatusCode}");
+        }
 
         using var stream = await response.Content.ReadAsStreamAsync(ct);
         using var reader = new StreamReader(stream);
@@ -102,20 +113,32 @@ public abstract class OpenAICompatibleProvider : BaseAIProvider
                 var data = line["data: ".Length..];
                 if (data == "[DONE]") yield break;
 
-                using var doc = JsonDocument.Parse(data);
-                var root = doc.RootElement;
-
-                if (root.TryGetProperty("choices", out var choices) &&
-                    choices.ValueKind == JsonValueKind.Array &&
-                    choices.GetArrayLength() > 0)
+                JsonDocument doc;
+                try
                 {
-                    var delta = choices[0];
-                    if (delta.TryGetProperty("delta", out var deltaObj) &&
-                        deltaObj.TryGetProperty("content", out var contentEl))
+                    doc = JsonDocument.Parse(data);
+                }
+                catch (JsonException)
+                {
+                    continue;
+                }
+
+                using (doc)
+                {
+                    var root = doc.RootElement;
+
+                    if (root.TryGetProperty("choices", out var choices) &&
+                        choices.ValueKind == JsonValueKind.Array &&
+                        choices.GetArrayLength() > 0)
                     {
-                        var content = contentEl.GetString();
-                        if (!string.IsNullOrEmpty(content))
-                            yield return content;
+                        var delta = choices[0];
+                        if (delta.TryGetProperty("delta", out var deltaObj) &&
+                            deltaObj.TryGetProperty("content", out var contentEl))
+                        {
+                            var content = contentEl.GetString();
+                            if (!string.IsNullOrEmpty(content))
+                                yield return content;
+                        }
                     }
                 }
             }

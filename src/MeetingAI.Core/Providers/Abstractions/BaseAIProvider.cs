@@ -115,6 +115,7 @@ public abstract class BaseAIProvider : IAIProvider, IDisposable
         {
             if (disposing)
             {
+                // HttpClient is owned and managed by HttpClientManager — do not dispose here.
                 _httpClient = null;
             }
             _disposed = true;

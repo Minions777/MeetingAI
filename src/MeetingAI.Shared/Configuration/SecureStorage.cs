@@ -47,7 +47,9 @@ public class AesSecureStorage : ISecureStorage
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(keyPath)!);
+                var dir = Path.GetDirectoryName(keyPath)!;
+                Directory.CreateDirectory(dir);
+                SetDirectoryPermissions(dir);
                 File.WriteAllBytes(keyPath, _key);
                 SetFilePermissions(keyPath);
             }
@@ -68,7 +70,37 @@ public class AesSecureStorage : ISecureStorage
         // Unix: chmod 600 (owner read/write only)
         try
         {
-            System.Diagnostics.Process.Start("chmod", $"600 \"{path}\"")?.WaitForExit(1000);
+            var psi = new System.Diagnostics.ProcessStartInfo("chmod")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            psi.ArgumentList.Add("600");
+            psi.ArgumentList.Add(path);
+            System.Diagnostics.Process.Start(psi)?.WaitForExit(1000);
+        }
+        catch
+        {
+            // Best effort
+        }
+    }
+
+    private static void SetDirectoryPermissions(string dirPath)
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        // Unix: chmod 700 (owner rwx only) for the directory
+        try
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo("chmod")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            psi.ArgumentList.Add("700");
+            psi.ArgumentList.Add(dirPath);
+            System.Diagnostics.Process.Start(psi)?.WaitForExit(1000);
         }
         catch
         {
@@ -171,7 +203,11 @@ public class AesSecureStorage : ISecureStorage
     {
         lock (_lock)
         {
-            _key = null;
+            if (_key != null)
+            {
+                CryptographicOperations.ZeroMemory(_key);
+                _key = null;
+            }
         }
     }
 }

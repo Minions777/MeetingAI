@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MeetingAI.Core.Models;
@@ -104,10 +105,16 @@ public partial class SummaryViewModel : ObservableObject
             await foreach (var chunk in _summaryService.StreamSummarizeAsync(transcript))
             {
                 sb.Append(chunk);
-                SummaryText = sb.ToString();
+                var text = sb.ToString();
+                Dispatcher.UIThread.Post(() => SummaryText = text);
             }
 
-            HasSummary = !string.IsNullOrWhiteSpace(SummaryText);
+            var finalText = sb.ToString();
+            Dispatcher.UIThread.Post(() =>
+            {
+                SummaryText = finalText;
+                HasSummary = !string.IsNullOrWhiteSpace(finalText);
+            });
             StatusText = "成功";
             LoggerService.Info("Streaming summary completed");
         }
@@ -146,7 +153,8 @@ public partial class SummaryViewModel : ObservableObject
             await foreach (var chunk in _aiAssistantService.AskAsync(selectedText, context, null))
             {
                 sb.Append(chunk);
-                AiResponseText = sb.ToString();
+                var text = sb.ToString();
+                Dispatcher.UIThread.Post(() => AiResponseText = text);
             }
 
             LoggerService.Info("AI Assistant response completed");

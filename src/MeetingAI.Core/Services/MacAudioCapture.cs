@@ -19,7 +19,8 @@ public class MacAudioCapture : IAudioCapture
     private IntPtr _queue;
     private IntPtr[] _buffers = new IntPtr[3];
     private GCHandle _gcHandle;
-    private bool _isRecording;
+    private AudioQueueInputCallback? _callbackDelegate; // prevent GC while native code holds reference
+    private volatile bool _isRecording;
     private bool _disposed;
 
     public bool IsRecording => _isRecording;
@@ -27,7 +28,7 @@ public class MacAudioCapture : IAudioCapture
     public int Channels => 1;
 
     public event EventHandler<byte[]>? DataAvailable;
-    public event EventHandler<Exception>? RecordingStopped;
+    public event EventHandler<Exception?>? RecordingStopped;
 
     public void StartRecording()
     {
@@ -48,7 +49,8 @@ public class MacAudioCapture : IAudioCapture
             BytesPerPacket = (uint)(2 * Channels)
         };
 
-        var status = AudioQueueNewInput(ref format, AudioQueueCallback, GCHandle.ToIntPtr(_gcHandle),
+        _callbackDelegate = AudioQueueCallback; // prevent GC while native code holds reference
+        var status = AudioQueueNewInput(ref format, _callbackDelegate, GCHandle.ToIntPtr(_gcHandle),
             IntPtr.Zero, IntPtr.Zero, 0, out _queue);
         if (status != 0)
             throw new InvalidOperationException($"AudioQueueNewInput failed: {status}");
@@ -81,11 +83,13 @@ public class MacAudioCapture : IAudioCapture
             _queue = IntPtr.Zero;
         }
 
+        _callbackDelegate = null;
+
         if (_gcHandle.IsAllocated)
             _gcHandle.Free();
 
         LoggerService.Info("macOS audio capture stopped");
-        RecordingStopped?.Invoke(this, null!);
+        RecordingStopped?.Invoke(this, null);
     }
 
     private static void AudioQueueCallback(IntPtr userData, IntPtr queue, IntPtr buffer,

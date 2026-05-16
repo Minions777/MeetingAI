@@ -142,7 +142,7 @@ public class EnumBooleanConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is true && parameter != null)
+        if (value is true && parameter != null && targetType.IsEnum)
         {
             return Enum.Parse(targetType, parameter.ToString()!);
         }

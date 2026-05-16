@@ -93,9 +93,9 @@ public class LocalizationManager : INotifyPropertyChanged
             ["NoRecordingHistory"] = "No recording history",
         }
     };
-    
+
     private static string _currentLanguage = "zh-CN";
-    
+
     public static string CurrentLanguage
     {
         get => _currentLanguage;
@@ -115,7 +115,7 @@ public class LocalizationManager : INotifyPropertyChanged
         foreach (var key in _strings[_currentLanguage].Keys)
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
     }
-    
+
     public static string Get(string key)
     {
         if (_strings.TryGetValue(_currentLanguage, out var langStrings))
@@ -123,13 +123,13 @@ public class LocalizationManager : INotifyPropertyChanged
             if (langStrings.TryGetValue(key, out var value))
                 return value;
         }
-        
+
         // Fallback to zh-CN
         if (_strings["zh-CN"].TryGetValue(key, out var fallback))
             return fallback;
-            
+
         return key;
     }
-    
+
     public static IReadOnlyList<string> AvailableLanguages => _strings.Keys.ToList();
 }

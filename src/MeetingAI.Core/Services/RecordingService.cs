@@ -33,8 +33,9 @@ public class RecordingService : IRecordingService, IDisposable
         get
         {
             if (!_audioCapture.IsRecording) return TimeSpan.Zero;
-            if (_isPaused) return _pausedDuration;
-            return DateTime.UtcNow - _recordingStartTimeUtc + _pausedDuration;
+            if (_isPaused && _pauseStartTimeUtc.HasValue)
+                return _pauseStartTimeUtc.Value - _recordingStartTimeUtc - _pausedDuration;
+            return DateTime.UtcNow - _recordingStartTimeUtc - _pausedDuration;
         }
     }
 
@@ -43,7 +44,7 @@ public class RecordingService : IRecordingService, IDisposable
     public event EventHandler<float>? VolumeChanged;
     public event EventHandler<string>? RecordingStarted;
     public event EventHandler<string>? RecordingStopped;
-    public event EventHandler<Exception>? RecordingError;
+    public event EventHandler<Exception?>? RecordingError;
 
     public Task StartRecordingAsync(RecordingOptions? options = null)
     {
@@ -96,17 +97,19 @@ public class RecordingService : IRecordingService, IDisposable
         {
             if (!_audioCapture.IsRecording)
                 throw new InvalidOperationException("Not recording");
+        }
 
-            try
-            {
-                _audioCapture.StopRecording();
-            }
-            catch (Exception ex)
-            {
-                LoggerService.Error("Error stopping recording", ex);
-                Cleanup();
-                throw;
-            }
+        // Release lock before calling StopRecording to avoid deadlock:
+        // OnRecordingStopped callback also acquires _lock.
+        try
+        {
+            _audioCapture.StopRecording();
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("Error stopping recording", ex);
+            Cleanup();
+            throw;
         }
 
         return Task.FromResult(_currentFilePath);

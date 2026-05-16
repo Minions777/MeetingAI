@@ -67,23 +67,6 @@ public sealed class AIAssistantService : IAIAssistantService
         return sb.ToString();
     }
 
-    private async Task<(IAIProvider Provider, ProviderConfig Config)> GetProviderWithConfigAsync(string? providerId)
-    {
-        var providers = await _providerManager.GetChatProvidersAsync();
-        var settings = _configService.Load();
-        var effectiveProviderId = providerId ?? settings.DefaultProviderId;
-
-        if (!string.IsNullOrEmpty(effectiveProviderId) && providers.TryGetValue(effectiveProviderId, out var provider))
-        {
-            var config = settings.Providers.FirstOrDefault(p => p.Id == effectiveProviderId)!;
-            return (provider, config);
-        }
-
-        var fallback = providers.FirstOrDefault(p => p.Value.SupportsChat);
-        if (fallback.Value == null)
-            throw new InvalidOperationException("No chat provider available for AI assistant");
-
-        var fallbackConfig = settings.Providers.FirstOrDefault(p => p.Id == fallback.Key)!;
-        return (fallback.Value, fallbackConfig);
-    }
+    private Task<(IAIProvider Provider, ProviderConfig Config)> GetProviderWithConfigAsync(string? providerId)
+        => _providerManager.ResolveChatProviderAsync(providerId);
 }

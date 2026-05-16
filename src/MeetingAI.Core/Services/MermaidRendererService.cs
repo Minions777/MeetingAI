@@ -161,8 +161,10 @@ public sealed class MermaidRendererService : IMermaidRendererService
 
     private string GenerateHtml(string mermaidSyntax, string chartTypeLabel)
     {
+        var escapedSyntax = System.Net.WebUtility.HtmlEncode(mermaidSyntax);
+        var escapedLabel = System.Net.WebUtility.HtmlEncode(chartTypeLabel);
         return MermaidHtmlTemplate
-            .Replace("{mermaidCode}", mermaidSyntax)
-            .Replace("{chartType}", chartTypeLabel);
+            .Replace("{mermaidCode}", escapedSyntax)
+            .Replace("{chartType}", escapedLabel);
     }
 }

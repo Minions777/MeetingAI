@@ -14,7 +14,7 @@ public class WindowsAudioCapture : IAudioCapture
     public int Channels { get; private set; } = 2;
 
     public event EventHandler<byte[]>? DataAvailable;
-    public event EventHandler<Exception>? RecordingStopped;
+    public event EventHandler<Exception?>? RecordingStopped;
 
     public void StartRecording()
     {
@@ -64,7 +64,7 @@ public class WindowsAudioCapture : IAudioCapture
             LoggerService.Error("Windows audio capture stopped with error", ex);
 
         Cleanup();
-        RecordingStopped?.Invoke(this, ex!);
+        RecordingStopped?.Invoke(this, ex);
     }
 
     private void Cleanup()

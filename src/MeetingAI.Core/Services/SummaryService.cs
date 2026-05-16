@@ -50,23 +50,7 @@ Respond in the same language as the transcript. Format clearly for readability."
         string? terminologyList = null,
         CancellationToken ct = default)
     {
-        var providers = await _providerManager.GetChatProvidersAsync();
-
-        var settings = _configService.Load();
-        var effectiveProviderId = providerId ?? settings.DefaultProviderId;
-
-        if (!providers.TryGetValue(effectiveProviderId, out var provider))
-        {
-            var fallback = providers.FirstOrDefault(p => p.Value.SupportsChat);
-            if (fallback.Value == null)
-                throw new InvalidOperationException("No chat provider available");
-
-            effectiveProviderId = fallback.Key;
-            provider = fallback.Value;
-        }
-
-        var providerConfig = settings.Providers.FirstOrDefault(p => p.Id == effectiveProviderId)
-            ?? throw new InvalidOperationException($"Provider configuration not found: {effectiveProviderId}");
+        var (provider, providerConfig) = await _providerManager.ResolveChatProviderAsync(providerId);
 
         var effectiveSystemPrompt = BuildSystemPrompt(systemPrompt, terminologyList);
 
@@ -106,23 +90,7 @@ Respond in the same language as the transcript. Format clearly for readability."
         string? terminologyList = null,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        var providers = await _providerManager.GetChatProvidersAsync();
-
-        var settings = _configService.Load();
-        var effectiveProviderId = providerId ?? settings.DefaultProviderId;
-
-        if (!providers.TryGetValue(effectiveProviderId, out var provider))
-        {
-            var fallback = providers.FirstOrDefault(p => p.Value.SupportsChat);
-            if (fallback.Value == null)
-                throw new InvalidOperationException("No chat provider available");
-
-            effectiveProviderId = fallback.Key;
-            provider = fallback.Value;
-        }
-
-        var providerConfig = settings.Providers.FirstOrDefault(p => p.Id == effectiveProviderId)
-            ?? throw new InvalidOperationException($"Provider configuration not found: {effectiveProviderId}");
+        var (provider, providerConfig) = await _providerManager.ResolveChatProviderAsync(providerId);
 
         var effectiveSystemPrompt = BuildSystemPrompt(systemPrompt, terminologyList);
 

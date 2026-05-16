@@ -45,6 +45,7 @@ public class SecureStorageTests : IDisposable
         var encrypted2 = _storage.Encrypt(originalText);
         Assert.NotNull(encrypted1);
         Assert.NotNull(encrypted2);
+        Assert.NotEqual(encrypted1, encrypted2);
     }
 
     [Fact]
