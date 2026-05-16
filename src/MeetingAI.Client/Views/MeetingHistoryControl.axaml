@@ -2,7 +2,7 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:MeetingAI.Client">
-    <Border Background="{StaticResource FillBrush}"
+    <Border Background="{DynamicResource FillBrush}"
             CornerRadius="{StaticResource RadiusMedium}"
             Padding="20">
         <Grid>
@@ -14,12 +14,12 @@
             <!-- Header -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
                 <Path Data="{StaticResource HistoryIcon}"
-                      Fill="{StaticResource TextTertiaryBrush}"
+                      Fill="{DynamicResource TextTertiaryBrush}"
                       Width="18" Height="18" Stretch="Uniform"
                       Margin="0,0,10,0"/>
                 <TextBlock Text="录音历史"
                            Classes="Body"
-                           Foreground="{StaticResource TextTertiaryBrush}"/>
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
             </StackPanel>
 
             <!-- History List (visible when count > 0) -->
@@ -50,7 +50,7 @@
                                     Padding="4"
                                     ToolTip.Tip="删除">
                                 <Path Data="{StaticResource TrashIcon}"
-                                      Fill="{StaticResource ErrorBrush}"
+                                      Fill="{DynamicResource ErrorBrush}"
                                       Width="14" Height="14" Stretch="Uniform"/>
                             </Button>
                         </Grid>
@@ -64,13 +64,13 @@
                         VerticalAlignment="Center"
                         IsVisible="{Binding MeetingHistory.Count, Converter={x:Static converters:CountToBoolConverter.Instance}}">
                 <Path Data="{StaticResource HistoryIcon}"
-                      Fill="{StaticResource TextTertiaryBrush}"
+                      Fill="{DynamicResource TextTertiaryBrush}"
                       Width="32" Height="32" Stretch="Uniform"
                       HorizontalAlignment="Center"
-                      Opacity="0.4"/>
+                      Opacity="0.3"/>
                 <TextBlock Text="暂无录音记录"
                            Classes="BodySmall"
-                           Foreground="{StaticResource TextTertiaryBrush}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
                            HorizontalAlignment="Center"
                            Margin="0,8,0,0"/>
             </StackPanel>

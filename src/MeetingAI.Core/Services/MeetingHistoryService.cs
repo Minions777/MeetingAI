@@ -20,7 +20,7 @@ public interface IMeetingHistoryService
     Task<MeetingHistoryStats> GetStatsAsync();
 }
 
-public class MeetingHistoryService : IMeetingHistoryService
+public class MeetingHistoryService : IMeetingHistoryService, IDisposable
 {
     private readonly string _historyDirectory;
     private readonly string _historyDirectoryRoot;
@@ -82,20 +82,36 @@ public class MeetingHistoryService : IMeetingHistoryService
     {
         var filePath = GetRecordPath(id);
 
-        if (!File.Exists(filePath))
+        await _ioLock.WaitAsync();
+        try
         {
-            LoggerService.Warning($"会议记录不存在: {id}");
-            return null;
-        }
+            if (!File.Exists(filePath))
+            {
+                LoggerService.Warning($"会议记录不存在: {id}");
+                return null;
+            }
 
-        var json = await File.ReadAllTextAsync(filePath);
-        return JsonSerializer.Deserialize<MeetingRecord>(json, _jsonOptions);
+            var json = await File.ReadAllTextAsync(filePath);
+            return JsonSerializer.Deserialize<MeetingRecord>(json, _jsonOptions);
+        }
+        finally
+        {
+            _ioLock.Release();
+        }
     }
 
     public async Task<IReadOnlyList<MeetingRecord>> GetAllAsync()
     {
-        if (_cache != null && !IsCacheExpired())
-            return _cache;
+        await _cacheLock.WaitAsync();
+        try
+        {
+            if (_cache != null && !IsCacheExpired())
+                return _cache;
+        }
+        finally
+        {
+            _cacheLock.Release();
+        }
 
         var records = await LoadRecordsAsync(Directory.EnumerateFiles(_historyDirectory, "*.json"));
         var sorted = records.OrderByDescending(GetRecordSortTime).ToList();
@@ -332,8 +348,16 @@ public class MeetingHistoryService : IMeetingHistoryService
 
     private void InvalidateCache()
     {
-        _cache = null;
-        _cacheTime = DateTime.MinValue;
+        _cacheLock.Wait();
+        try
+        {
+            _cache = null;
+            _cacheTime = DateTime.MinValue;
+        }
+        finally
+        {
+            _cacheLock.Release();
+        }
     }
 
     private static string NormalizeRecordId(string id)
@@ -414,6 +438,12 @@ public class MeetingHistoryService : IMeetingHistoryService
             var due = item.DueDate == null ? "" : $" (截止: {item.DueDate:yyyy-MM-dd})";
             sb.AppendLine($"  {index + 1}. {item.Description}{assignee}{due}");
         }
+    }
+
+    public void Dispose()
+    {
+        _ioLock.Dispose();
+        _cacheLock.Dispose();
     }
 }
 

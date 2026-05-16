@@ -47,15 +47,16 @@ public partial class ProviderViewModel : ObservableObject
     [RelayCommand]
     private async Task SetAsDefaultAsync()
     {
-        if (SelectedProvider == null) return;
+        var provider = SelectedProvider;
+        if (provider == null) return;
 
         await Task.Run(() =>
         {
             var settings = _configService.Load();
-            settings.DefaultProviderId = SelectedProvider.Id;
+            settings.DefaultProviderId = provider.Id;
             _configService.Save(settings);
         });
 
-        LoggerService.Info($"Default provider set to: {SelectedProvider.Name}");
+        LoggerService.Info($"Default provider set to: {provider.Name}");
     }
 }

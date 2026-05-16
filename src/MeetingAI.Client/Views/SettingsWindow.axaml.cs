@@ -24,6 +24,13 @@ public partial class SettingsWindow : Window
         };
     }
 
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+        if (DataContext is IDisposable disposable)
+            disposable.Dispose();
+    }
+
     private void CloseButton_Click(object? sender, RoutedEventArgs e)
     {
         Close(false);

@@ -172,7 +172,7 @@ public partial class ProviderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void SaveProvider()
+    private async Task SaveProvider()
     {
         if (string.IsNullOrWhiteSpace(EditName))
         {
@@ -241,7 +241,7 @@ public partial class ProviderManagementViewModel : ObservableObject
         config.IsEnabled = EditIsEnabled;
         config.UpdatedAt = DateTime.UtcNow;
 
-        _configService.Save(settings);
+        await _configService.SaveAsync(settings);
         _configService.ClearCache();
 
         IsEditing = false;

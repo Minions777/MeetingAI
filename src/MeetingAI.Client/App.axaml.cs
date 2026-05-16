@@ -5,6 +5,8 @@ using MeetingAI.Client.ViewModels;
 using MeetingAI.Client.Views;
 using MeetingAI.Core.Providers;
 using MeetingAI.Core.Services;
+using MeetingAI.Shared.Configuration;
+using MeetingAI.Shared.Helpers;
 using MeetingAI.Shared.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -45,17 +47,31 @@ public partial class App : Application
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<MermaidRendererViewModel>();
         services.AddTransient<SettingsWindow>();
-        services.AddTransient<MainWindow>();
+        services.AddSingleton<MainWindow>();
     }
 
     private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
-        var mainViewModel = Services.GetService<MainViewModel>();
-        mainViewModel?.Dispose();
-        var providerManager = Services.GetService<ProviderManager>();
-        providerManager?.Dispose();
-        if (Services is IDisposable disposable)
-            disposable.Dispose();
+        // Dispose all IDisposable singletons in reverse dependency order
+        // MainViewModel first (depends on services), then services, then infrastructure
+        foreach (var serviceType in new[]
+        {
+            typeof(MainViewModel),
+            typeof(IPlatformHotkeyService),
+            typeof(IRecordingService),
+            typeof(IAudioCapture),
+            typeof(ProviderManager),
+            typeof(IConfigurationService),
+            typeof(ISecureStorage),
+        })
+        {
+            if (Services.GetService(serviceType) is IDisposable disposable)
+                disposable.Dispose();
+        }
+
+        if (Services is IDisposable spDisposable)
+            spDisposable.Dispose();
+
         LoggerService.Shutdown();
     }
 }

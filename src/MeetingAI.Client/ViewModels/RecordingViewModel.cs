@@ -17,6 +17,7 @@ public partial class RecordingViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _isPaused;
     [ObservableProperty] private string _durationText = "00:00:00";
     [ObservableProperty] private float _volumeLevel;
+    [ObservableProperty] private bool _canToggleRecording = true;
 
     public event Action<MeetingRecord>? RecordingStoppedWithFile;
 
@@ -30,9 +31,10 @@ public partial class RecordingViewModel : ObservableObject, IDisposable
         _durationTimer.Tick += OnDurationTimerTick;
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanToggleRecording))]
     private async Task ToggleRecordingAsync()
     {
+        CanToggleRecording = false;
         try
         {
             if (IsRecording)
@@ -43,6 +45,10 @@ public partial class RecordingViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             LoggerService.Error("Recording toggle failed", ex);
+        }
+        finally
+        {
+            CanToggleRecording = true;
         }
     }
 
@@ -58,10 +64,20 @@ public partial class RecordingViewModel : ObservableObject, IDisposable
     public async Task StopAsync()
     {
         _durationTimer.Stop();
-        var filePath = await _recordingService.StopRecordingAsync();
-        IsRecording = false;
-        IsPaused = false;
-        RecordingStoppedWithFile?.Invoke(new MeetingRecord { FilePath = filePath });
+        try
+        {
+            var filePath = await _recordingService.StopRecordingAsync();
+            IsRecording = false;
+            IsPaused = false;
+            RecordingStoppedWithFile?.Invoke(new MeetingRecord { FilePath = filePath });
+        }
+        catch (Exception ex)
+        {
+            IsRecording = false;
+            IsPaused = false;
+            LoggerService.Error("Failed to stop recording", ex);
+            throw;
+        }
     }
 
     [RelayCommand]

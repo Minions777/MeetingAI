@@ -15,24 +15,24 @@ public static class ProviderFactory
         [AIProviderType.MiniMax] = () => new MiniMaxProvider(),
         [AIProviderType.Zhipu] = () => new ZhipuProvider(),
     };
-    
+
     private static IReadOnlyList<AIProviderType>? _cachedSupportedTypes;
-    
+
     public static IAIProvider Create(AIProviderType type)
     {
         if (_providers.TryGetValue(type, out var factory))
             return factory();
-            
+
         throw new NotSupportedException($"Provider type {type} is not supported");
     }
-    
+
     public static IAIProvider Create(ProviderConfig config)
     {
         var provider = Create(config.ProviderType);
         provider.Configure(config);
         return provider;
     }
-    
-    public static IReadOnlyList<AIProviderType> SupportedTypes => 
+
+    public static IReadOnlyList<AIProviderType> SupportedTypes =>
         _cachedSupportedTypes ??= _providers.Keys.ToList();
 }

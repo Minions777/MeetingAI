@@ -1,9 +1,9 @@
 # MeetingAI
 
-智能会议助手 — 基于 .NET 8 + Avalonia 的实时语音转文字与 AI 会议摘要系统，支持 Windows 与 macOS。
+智能会议助手 — 基于 .NET 10 + Avalonia 的实时语音转文字与 AI 会议摘要系统，支持 Windows 与 macOS。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://avaloniaui.net/)
 
 ## 功能特性

@@ -88,6 +88,7 @@ public static class MermaidTemplateGenerator
             {
                 var decisionText = EscapeMermaid(decision.Length > 50 ? decision[..47] + "..." : decision);
                 sb.AppendLine($"    {decisionNodeId} --> D{nodeId}[✓ {decisionText}]");
+                nodeId++;
             }
         }
 
@@ -104,6 +105,7 @@ public static class MermaidTemplateGenerator
             {
                 var pointText = EscapeMermaid(point.Length > 40 ? point[..37] + "..." : point);
                 sb.AppendLine($"    {pointsNodeId} --> P{nodeId}[• {pointText}]");
+                nodeId++;
             }
         }
 
@@ -121,6 +123,7 @@ public static class MermaidTemplateGenerator
                 var itemText = EscapeMermaid(item.Description.Length > 40 ? item.Description[..37] + "..." : item.Description);
                 var assignee = string.IsNullOrWhiteSpace(item.Assignee) ? "" : $" @{item.Assignee}";
                 sb.AppendLine($"    {actionNodeId} --> AI{nodeId}[• {itemText}{assignee}]");
+                nodeId++;
             }
         }
 

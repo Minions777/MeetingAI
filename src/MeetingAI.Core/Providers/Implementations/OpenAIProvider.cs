@@ -12,25 +12,25 @@ public class OpenAIProvider : OpenAICompatibleProvider
     public override string Id => "openai";
     public override string Name => "OpenAI";
     public override AIProviderType ProviderType => AIProviderType.OpenAI;
-    
+
     public override IReadOnlyList<string> SupportedChatModels { get; } = new[]
     {
         "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"
     };
-    
+
     public override IReadOnlyList<string> SupportedTranscriptionModels { get; } = new[]
     {
         "whisper-1"
     };
-    
+
     public override bool SupportsTranscription => true;
     public override bool SupportsChat => true;
-    
+
     protected override void ConfigureHttpClient(HttpClient client)
     {
         // OpenAI 特定的配置（如果有）
     }
-    
+
     public override async Task<Transcript> TranscribeAsync(AudioData audio, TranscriptionOptions? options = null, CancellationToken ct = default)
     {
         if (_httpClient == null || _config == null)

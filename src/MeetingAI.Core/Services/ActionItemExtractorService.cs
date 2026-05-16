@@ -21,27 +21,28 @@ public sealed class ActionItemExtractorService : IActionItemExtractor
 
     public async Task<IReadOnlyList<ActionItem>> ExtractAsync(string summaryText, CancellationToken ct = default)
     {
-        var providers = await _providerManager.GetChatProvidersAsync();
-        var settings = _configService.Load();
-
-        IAIProvider? provider = null;
-        if (!string.IsNullOrEmpty(settings.DefaultProviderId) && providers.TryGetValue(settings.DefaultProviderId, out var p))
-            provider = p;
-        provider ??= providers.FirstOrDefault(p => p.Value.SupportsChat).Value;
-
-        if (provider == null)
+        IReadOnlyDictionary<string, IAIProvider> providers;
+        try
+        {
+            providers = await _providerManager.GetChatProvidersAsync();
+        }
+        catch
         {
             LoggerService.Warning("No chat provider available for action item extraction, using regex fallback");
             return RegexExtract(summaryText);
         }
 
+        if (providers.Count == 0)
+        {
+            LoggerService.Warning("No chat provider available for action item extraction, using regex fallback");
+            return RegexExtract(summaryText);
+        }
+
+        var (provider, providerConfig) = await _providerManager.ResolveChatProviderAsync(null);
+
         try
         {
-            var providerConfig = settings.Providers.FirstOrDefault(p => p.Id == provider.Id)
-                ?? settings.Providers.FirstOrDefault(p => p.IsEnabled && p.SupportsChat)
-                ?? settings.Providers.First();
-
-            var prompt = BuildExtractionPrompt(summaryText);
+            var prompt = BuildExtractionPrompt(summaryText, DateTime.UtcNow);
             var request = new ChatRequest
             {
                 Model = providerConfig.Model,
@@ -61,14 +62,14 @@ public sealed class ActionItemExtractorService : IActionItemExtractor
         }
     }
 
-    private static string BuildExtractionPrompt(string summaryText)
+    private static string BuildExtractionPrompt(string summaryText, DateTime referenceDate)
     {
         return $@"从以下会议摘要中提取所有待办事项（行动项），并以 JSON 格式输出。
 
 要求：
 1. 每个待办事项包含：description（描述）、assignee（负责人，如有）、dueDate（截止日期，如有时区设为 UTC）、priority（优先级：Low/Medium/High/Critical）
 2. 只提取明确的行动项，忽略讨论性质的描述
-3. 截止日期如果提到""本周""、""下周""、""月底""等模糊时间，转换为具体日期（以今天 {DateTime.UtcNow:yyyy-MM-dd} 为基准）
+3. 截止日期如果提到""本周""、""下周""、""月底""等模糊时间，转换为具体日期（以今天 {referenceDate:yyyy-MM-dd} 为基准）
 4. 如果没有待办事项，返回空数组 []
 
 会议摘要：

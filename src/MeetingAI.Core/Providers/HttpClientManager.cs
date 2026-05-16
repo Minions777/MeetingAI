@@ -142,12 +142,17 @@ public static class HttpClientManager
         try
         {
             await Task.Delay(_disposeDelay);
+
+            // Only dispose if the client is no longer registered (was replaced).
+            if (_clients.Values.Any(e => ReferenceEquals(e.Client, client)))
+                return;
+
             client.Dispose();
         }
         catch (Exception ex)
         {
             LoggerService.Warning($"Failed to dispose HttpClient on delay: {ex.Message}");
-            client.Dispose();
+            try { client.Dispose(); } catch { /* best effort */ }
         }
     }
 

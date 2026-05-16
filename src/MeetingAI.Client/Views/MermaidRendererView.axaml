@@ -4,7 +4,7 @@
              xmlns:vm="clr-namespace:MeetingAI.Client.ViewModels"
              xmlns:services="clr-namespace:MeetingAI.Core.Services"
              MinHeight="400"
-             Background="{StaticResource BackgroundBrush}">
+             Background="{DynamicResource BackgroundBrush}">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -15,10 +15,12 @@
 
         <!-- Header with chart type selector -->
         <Border Grid.Row="0"
-                Background="{StaticResource FillBrush}"
+                Background="{DynamicResource FillBrush}"
                 CornerRadius="{StaticResource RadiusMedium}"
                 Padding="16,12"
-                Margin="0,0,0,16">
+                Margin="0,0,0,16"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -27,7 +29,7 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Path Data="{StaticResource BrainIcon}"
-                          Fill="{StaticResource PrimaryBrush}"
+                          Fill="{DynamicResource PrimaryBrush}"
                           Width="20" Height="20" Stretch="Uniform"
                           Margin="0,0,12,0"/>
                     <TextBlock Text="可视化摘要"
@@ -35,12 +37,12 @@
                                VerticalAlignment="Center"/>
                     <TextBlock Text=" - "
                                Classes="BodySmall"
-                               Foreground="{StaticResource TextTertiaryBrush}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
                                VerticalAlignment="Center"
                                Margin="8,0"/>
                     <TextBlock Text="{Binding ChartTypeLabel}"
                                Classes="Body"
-                               Foreground="{StaticResource PrimaryBrush}"
+                               Foreground="{DynamicResource PrimaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -58,27 +60,29 @@
 
         <!-- Main content area -->
         <Border Grid.Row="1"
-                Background="{StaticResource FillBrush}"
+                Background="{DynamicResource FillBrush}"
                 CornerRadius="{StaticResource RadiusMedium}"
-                Padding="24">
+                Padding="24"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1">
             <Panel>
                 <!-- Empty state -->
                 <StackPanel HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             IsVisible="{Binding HasContent, Converter={StaticResource InverseBoolConverter}}">
                     <Path Data="{StaticResource DocTextIcon}"
-                          Fill="{StaticResource TextTertiaryBrush}"
+                          Fill="{DynamicResource TextTertiaryBrush}"
                           Width="56" Height="56" Stretch="Uniform"
                           HorizontalAlignment="Center"
-                          Opacity="0.4"/>
+                          Opacity="0.3"/>
                     <TextBlock Text="暂无可视化内容"
                                Classes="Headline"
-                               Foreground="{StaticResource TextTertiaryBrush}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,20,0,12"/>
                     <TextBlock Text="先生成摘要，然后查看可视化"
                                Classes="BodySmall"
-                               Foreground="{StaticResource TextTertiaryBrush}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"/>
                 </StackPanel>
@@ -89,36 +93,39 @@
                     <StackPanel>
                         <TextBlock Text="Mermaid 语法"
                                    Classes="Caption"
-                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
                                    Margin="0,0,0,8"/>
-                        <Border Background="{StaticResource BackgroundBrush}"
+                        <Border Background="{DynamicResource BackgroundBrush}"
                                 CornerRadius="{StaticResource RadiusSmall}"
-                                Padding="16">
+                                Padding="16"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1">
                             <TextBlock Text="{Binding MermaidSyntax}"
-                                       Classes="BodySmall"
-                                       FontFamily="Cascadia Code, Consolas, monospace"
+                                       Classes="Mono"
                                        TextWrapping="Wrap"
                                        LineHeight="22"/>
                         </Border>
 
                         <!-- Preview hint -->
-                        <Border Background="{StaticResource BackgroundSecondaryBrush}"
+                        <Border Background="{DynamicResource BackgroundSecondaryBrush}"
                                 CornerRadius="{StaticResource RadiusSmall}"
                                 Padding="16"
-                                Margin="0,16,0,0">
+                                Margin="0,16,0,0"
+                                BorderBrush="{DynamicResource InfoBrush}"
+                                BorderThickness="4,0,0,0">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                     <Path Data="{StaticResource InfoIcon}"
-                                          Fill="{StaticResource InfoBrush}"
+                                          Fill="{DynamicResource InfoBrush}"
                                           Width="16" Height="16" Stretch="Uniform"
                                           Margin="0,0,8,0"/>
                                     <TextBlock Text="提示"
                                                Classes="BodySmall"
-                                               Foreground="{StaticResource InfoBrush}"/>
+                                               Foreground="{DynamicResource InfoBrush}"/>
                                 </StackPanel>
                                 <TextBlock Text="点击「导出 HTML」在浏览器中查看完整的图形渲染，或点击「导出 Mermaid」保存语法文件。"
                                            Classes="BodySmall"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
@@ -139,11 +146,11 @@
                     Margin="0,0,12,0">
                 <StackPanel Orientation="Horizontal">
                     <Path Data="{StaticResource SaveIcon}"
-                          Fill="{StaticResource TextPrimaryBrush}"
+                          Fill="{DynamicResource TextPrimaryBrush}"
                           Width="14" Height="14" Stretch="Uniform"
                           Margin="0,0,8,0"/>
                     <TextBlock Text="导出 Mermaid"
-                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
                 </StackPanel>
             </Button>
 

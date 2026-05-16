@@ -254,7 +254,7 @@ public class ProviderPreset
     /// </summary>
     public static ProviderPreset GetDefault(AIProviderType type)
     {
-        return GetAll().FirstOrDefault(p => p.ProviderType == type) 
+        return GetAll().FirstOrDefault(p => p.ProviderType == type)
                ?? GetAll().Last(); // fallback to Custom
     }
 }

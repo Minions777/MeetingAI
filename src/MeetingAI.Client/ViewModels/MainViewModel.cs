@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MeetingAI.Client.Views;
@@ -64,21 +65,27 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private void OnRecordingStoppedWithFile(MeetingRecord record)
     {
-        if (CurrentRecord != null)
+        Dispatcher.UIThread.Post(() =>
         {
-            CurrentRecord.FilePath = record.FilePath;
-            CurrentRecord.Status = RecordingStatus.Completed;
-            _ = History.SaveAsync(CurrentRecord);
-        }
+            if (CurrentRecord != null)
+            {
+                CurrentRecord.FilePath = record.FilePath;
+                CurrentRecord.Status = RecordingStatus.Completed;
+                _ = History.SaveAsync(CurrentRecord);
+            }
+        });
     }
 
     private void OnServiceRecordingStopped(object? sender, string filePath)
     {
-        if (CurrentRecord != null)
+        Dispatcher.UIThread.Post(() =>
         {
-            CurrentRecord.FilePath = filePath;
-            CurrentRecord.Status = RecordingStatus.Completed;
-        }
+            if (CurrentRecord != null)
+            {
+                CurrentRecord.FilePath = filePath;
+                CurrentRecord.Status = RecordingStatus.Completed;
+            }
+        });
     }
 
     [RelayCommand]
@@ -190,6 +197,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 Recording.RecordingStoppedWithFile -= OnRecordingStoppedWithFile;
                 _recordingService.RecordingStopped -= OnServiceRecordingStopped;
                 Recording.Dispose();
+                if (Providers is IDisposable provDisposable) provDisposable.Dispose();
+                if (History is IDisposable histDisposable) histDisposable.Dispose();
+                if (Summary is IDisposable sumDisposable) sumDisposable.Dispose();
             }
             _disposed = true;
         }

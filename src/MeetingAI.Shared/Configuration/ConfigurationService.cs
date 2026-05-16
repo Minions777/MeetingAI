@@ -12,10 +12,11 @@ public class ConfigurationService : IConfigurationService
     private readonly string _configPath;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly ISecureStorage _secureStorage;
-    private AppSettings? _cachedSettings;
+    private volatile AppSettings? _cachedSettings;
     private DateTime _lastLoadTime = DateTime.MinValue;
     private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(5);
     private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private readonly object _cacheLock = new();
 
     public ConfigurationService(ISecureStorage secureStorage)
     {
@@ -31,8 +32,11 @@ public class ConfigurationService : IConfigurationService
 
     public AppSettings Load()
     {
-        if (_cachedSettings != null && !IsCacheExpired())
-            return _cachedSettings;
+        lock (_cacheLock)
+        {
+            if (_cachedSettings != null && !IsCacheExpired())
+                return _cachedSettings;
+        }
 
         try
         {
@@ -57,22 +61,32 @@ public class ConfigurationService : IConfigurationService
 
             DecryptAllProviders(settings);
             LoggerService.Info($"加载了 {settings.Providers.Count} 个Provider配置");
-            _cachedSettings = settings;
-            _lastLoadTime = DateTime.UtcNow;
+            lock (_cacheLock)
+            {
+                _cachedSettings = settings;
+                _lastLoadTime = DateTime.UtcNow;
+            }
             return settings;
         }
         catch (Exception ex)
         {
             LoggerService.Error("加载配置失败", ex);
-            _cachedSettings = AppSettings.CreateDefault();
-            return _cachedSettings;
+            var defaults = AppSettings.CreateDefault();
+            lock (_cacheLock)
+            {
+                _cachedSettings = defaults;
+            }
+            return defaults;
         }
     }
 
     public async Task<AppSettings> LoadAsync()
     {
-        if (_cachedSettings != null && !IsCacheExpired())
-            return _cachedSettings;
+        lock (_cacheLock)
+        {
+            if (_cachedSettings != null && !IsCacheExpired())
+                return _cachedSettings;
+        }
 
         try
         {
@@ -97,21 +111,34 @@ public class ConfigurationService : IConfigurationService
 
             DecryptAllProviders(settings);
             LoggerService.Info($"加载了 {settings.Providers.Count} 个Provider配置");
-            _cachedSettings = settings;
-            _lastLoadTime = DateTime.UtcNow;
+            lock (_cacheLock)
+            {
+                _cachedSettings = settings;
+                _lastLoadTime = DateTime.UtcNow;
+            }
             return settings;
         }
         catch (Exception ex)
         {
             LoggerService.Error("加载配置失败", ex);
-            _cachedSettings = AppSettings.CreateDefault();
+            lock (_cacheLock)
+            {
+                _cachedSettings = AppSettings.CreateDefault();
+            }
             return _cachedSettings;
         }
     }
 
     public void Save(AppSettings settings)
     {
-        _ = PersistSettingsSafeAsync(settings, true);
+        try
+        {
+            PersistSettingsAsync(settings, raiseEvent: true).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("Failed to persist settings synchronously", ex);
+        }
     }
 
     public async Task SaveAsync(AppSettings settings)
@@ -186,8 +213,11 @@ public class ConfigurationService : IConfigurationService
 
     public void ClearCache()
     {
-        _cachedSettings = null;
-        _lastLoadTime = DateTime.MinValue;
+        lock (_cacheLock)
+        {
+            _cachedSettings = null;
+            _lastLoadTime = DateTime.MinValue;
+        }
         LoggerService.Debug("配置缓存已清除");
     }
 

@@ -11,25 +11,25 @@ public sealed class TerminologyService : ITerminologyService
         PropertyNameCaseInsensitive = true
     };
 
-    public Task<TerminologyDb?> LoadFromFileAsync(string filePath, CancellationToken ct = default)
+    public async Task<TerminologyDb?> LoadFromFileAsync(string filePath, CancellationToken ct = default)
     {
         if (!File.Exists(filePath))
         {
             LoggerService.Warning($"Terminology file not found: {filePath}");
-            return Task.FromResult<TerminologyDb?>(null);
+            return null;
         }
 
         try
         {
-            var json = File.ReadAllText(filePath);
+            var json = await File.ReadAllTextAsync(filePath, ct);
             var db = JsonSerializer.Deserialize<TerminologyDb>(json, JsonOptions);
             LoggerService.Info($"Loaded {db?.Terms.Count ?? 0} terminology entries from {filePath}");
-            return Task.FromResult(db);
+            return db;
         }
         catch (Exception ex)
         {
             LoggerService.Error($"Failed to load terminology from {filePath}", ex);
-            return Task.FromResult<TerminologyDb?>(null);
+            return null;
         }
     }
 

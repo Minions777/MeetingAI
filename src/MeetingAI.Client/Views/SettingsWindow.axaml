@@ -4,17 +4,17 @@
         Title="设置 - MeetingAI"
         Height="700" Width="950"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundSecondaryBrush}"
+        Background="{DynamicResource BackgroundSecondaryBrush}"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="48"
         CanResize="False">
 
-    <Border Background="{StaticResource BackgroundBrush}"
+    <Border Background="{DynamicResource BackgroundBrush}"
             CornerRadius="12"
-            BorderBrush="{StaticResource BorderBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="1"
-            BoxShadow="{StaticResource ShadowLevel4}">
+            BoxShadow="{DynamicResource ShadowLevel4}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -23,10 +23,10 @@
 
             <!-- Title Bar -->
             <Border Grid.Row="0"
-                    Background="{StaticResource BackgroundBrush}"
+                    Background="{DynamicResource BackgroundBrush}"
                     CornerRadius="12,12,0,0"
                     Padding="16,8"
-                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="0,0,0,1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -38,7 +38,7 @@
                     <!-- App Icon and Title -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <Path Data="{StaticResource SettingsIcon}"
-                              Fill="{StaticResource PrimaryBrush}"
+                              Fill="{DynamicResource PrimaryBrush}"
                               Width="20" Height="20" Stretch="Uniform"
                               Margin="0,0,10,0"/>
                         <TextBlock Text="设置"
@@ -66,12 +66,12 @@
 
                 <!-- Provider List Sidebar -->
                 <Border Grid.Column="0"
-                        Background="{StaticResource BackgroundBrush}"
-                        BorderBrush="{StaticResource BorderBrush}"
+                        Background="{DynamicResource BackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="{StaticResource RadiusMedium}"
                         Padding="16"
-                        BoxShadow="{StaticResource ShadowLevel2}">
+                        BoxShadow="{DynamicResource ShadowLevel2}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -82,7 +82,7 @@
                         <!-- Sidebar Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
                             <Path Data="{StaticResource BrainIcon}"
-                                  Fill="{StaticResource InfoBrush}"
+                                  Fill="{DynamicResource InfoBrush}"
                                   Width="20" Height="20" Stretch="Uniform"
                                   Margin="0,0,10,0"/>
                             <TextBlock Text="AI Providers"
@@ -118,7 +118,7 @@
                                                 ToolTip.Tip="设为默认"
                                                 Margin="0,0,8,0">
                                             <Path Data="{StaticResource StarIcon}"
-                                                  Fill="{StaticResource TextTertiaryBrush}"
+                                                  Fill="{DynamicResource TextTertiaryBrush}"
                                                   Width="16" Height="16" Stretch="Uniform"/>
                                         </Button>
                                         <Ellipse Grid.Column="2"
@@ -138,11 +138,11 @@
                                 Padding="0,12">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <Path Data="{StaticResource PlusIcon}"
-                                      Fill="{StaticResource PrimaryBrush}"
+                                      Fill="{DynamicResource PrimaryBrush}"
                                       Width="16" Height="16" Stretch="Uniform"
                                       Margin="0,0,10,0"/>
                                 <TextBlock Text="添加 Provider"
-                                           Foreground="{StaticResource PrimaryBrush}"/>
+                                           Foreground="{DynamicResource PrimaryBrush}"/>
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -150,12 +150,12 @@
 
                 <!-- Provider Editor Panel -->
                 <Border Grid.Column="2"
-                        Background="{StaticResource BackgroundBrush}"
-                        BorderBrush="{StaticResource BorderBrush}"
+                        Background="{DynamicResource BackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="{StaticResource RadiusMedium}"
                         Padding="24"
-                        BoxShadow="{StaticResource ShadowLevel2}">
+                        BoxShadow="{DynamicResource ShadowLevel2}">
                     <Panel>
                         <!-- Editor -->
                         <Grid IsVisible="{Binding Provider.IsEditing}">
@@ -180,7 +180,7 @@
                                 <StackPanel>
                                     <!-- 预设选择 -->
                                     <TextBlock Text="选择厂商"
-                                               Classes="Caption"
+                                               Classes="Label"
                                                Margin="0,0,0,8"/>
                                      <ComboBox ItemsSource="{Binding Provider.AvailablePresets}"
                                                SelectedItem="{Binding Provider.SelectedPreset}"
@@ -200,18 +200,20 @@
 
                                     <!-- Name -->
                                     <TextBlock Text="配置名称"
-                                               Classes="Caption"
+                                               Classes="Label"
                                                Margin="0,0,0,8"/>
                                      <TextBox Text="{Binding Provider.EditName}"
+                                             Watermark="输入配置名称"
                                              Margin="0,0,0,20"/>
 
                                     <!-- API Key -->
                                     <TextBlock Text="API Key"
-                                               Classes="Caption"
+                                               Classes="Label"
                                                Margin="0,0,0,8"/>
                                     <TextBox x:Name="ApiKeyBox"
                                              PasswordChar="•"
                                               Text="{Binding Provider.EditApiKey}"
+                                             Watermark="输入 API Key"
                                              Margin="0,0,0,8"/>
                                     <TextBlock Text="Ollama 本地部署无需填写 API Key"
                                                Classes="Caption"
@@ -224,7 +226,7 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="Base URL"
-                                                   Classes="Caption"/>
+                                                   Classes="Label"/>
                                         <Button Grid.Column="1"
                                                 Command="{Binding Provider.ToggleCustomUrlCommand}"
                                                 Classes="Icon"
@@ -238,11 +240,12 @@
                                      </Grid>
                                      <TextBox Text="{Binding Provider.EditBaseUrl}"
                                               IsReadOnly="{Binding Provider.IsCustomUrl, Converter={StaticResource InverseBoolConverter}}"
+                                              Watermark="https://api.example.com"
                                              Margin="0,0,0,20"/>
 
                                     <!-- 聊天模型 -->
                                     <TextBlock Text="聊天模型"
-                                               Classes="Caption"
+                                               Classes="Label"
                                                Margin="0,0,0,8"/>
                                      <ComboBox ItemsSource="{Binding Provider.AvailableChatModels}"
                                                SelectedItem="{Binding Provider.EditModel}"
@@ -250,7 +253,7 @@
 
                                     <!-- Whisper 模型 -->
                                     <TextBlock Text="语音转录模型（Whisper）"
-                                               Classes="Caption"
+                                               Classes="Label"
                                                Margin="0,0,0,8"/>
                                      <ComboBox ItemsSource="{Binding Provider.AvailableWhisperModels}"
                                                SelectedItem="{Binding Provider.EditWhisperModel}"
@@ -262,14 +265,15 @@
                                         <StackPanel Margin="0,12,0,0">
                                             <!-- Max Tokens -->
                                             <TextBlock Text="最大 Token 数"
-                                                       Classes="Caption"
+                                                       Classes="Label"
                                                        Margin="0,0,0,8"/>
                                              <TextBox Text="{Binding Provider.EditMaxTokens}"
+                                                     Watermark="4096"
                                                      Margin="0,0,0,20"/>
 
                                             <!-- Temperature -->
                                             <TextBlock Text="Temperature"
-                                                       Classes="Caption"
+                                                       Classes="Label"
                                                        Margin="0,0,0,8"/>
                                             <Grid Margin="0,0,0,20">
                                                 <Grid.ColumnDefinitions>
@@ -302,18 +306,18 @@
                                             Margin="0,0,0,16">
                                         <StackPanel Orientation="Horizontal">
                                             <Path Data="{StaticResource InfoIcon}"
-                                                  Fill="{StaticResource PrimaryBrush}"
+                                                  Fill="{DynamicResource PrimaryBrush}"
                                                   Width="16" Height="16" Stretch="Uniform"
                                                   Margin="0,0,10,0"/>
                                             <TextBlock Text="测试连接"
-                                                       Foreground="{StaticResource PrimaryBrush}"/>
+                                                       Foreground="{DynamicResource PrimaryBrush}"/>
                                         </StackPanel>
                                     </Button>
 
                                     <!-- Status Text -->
                                      <TextBlock Text="{Binding Provider.StatusText}"
                                                 Classes="BodySmall"
-                                                Foreground="{StaticResource SuccessBrush}"
+                                                Foreground="{DynamicResource SuccessBrush}"
                                                 IsVisible="{Binding Provider.StatusText, Converter={StaticResource StringNotEmptyConverter}}"/>
                                 </StackPanel>
                             </ScrollViewer>
@@ -330,11 +334,11 @@
                                         Margin="0,0,16,0">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Data="{StaticResource TrashIcon}"
-                                              Fill="{StaticResource ErrorBrush}"
+                                              Fill="{DynamicResource ErrorBrush}"
                                               Width="16" Height="16" Stretch="Uniform"
                                               Margin="0,0,10,0"/>
                                         <TextBlock Text="删除"
-                                                   Foreground="{StaticResource ErrorBrush}"/>
+                                                   Foreground="{DynamicResource ErrorBrush}"/>
                                     </StackPanel>
                                 </Button>
 
@@ -358,18 +362,18 @@
                                     VerticalAlignment="Center"
                                     IsVisible="{Binding Provider.IsEditing, Converter={StaticResource InverseBoolConverter}}">
                             <Path Data="{StaticResource SettingsIcon}"
-                                  Fill="{StaticResource TextTertiaryBrush}"
+                                  Fill="{DynamicResource TextTertiaryBrush}"
                                   Width="72" Height="72" Stretch="Uniform"
                                   HorizontalAlignment="Center"
                                   Opacity="0.3"/>
                             <TextBlock Text="选择一个 Provider 进行编辑"
                                        Classes="Headline"
-                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"
                                        HorizontalAlignment="Center"
                                        Margin="0,24,0,12"/>
                             <TextBlock Text="或点击「添加 Provider」创建新的配置"
                                        Classes="BodySmall"
-                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"
                                        HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Panel>
