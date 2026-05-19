@@ -36,9 +36,9 @@ public class AesSecureStorage : ISecureStorage
                     if (_key.Length == 32)
                         return _key;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Regenerate if read fails
+                    LoggerService.Warning($"Failed to read existing encryption key, will regenerate: {ex.Message}");
                 }
             }
 
@@ -79,9 +79,9 @@ public class AesSecureStorage : ISecureStorage
             psi.ArgumentList.Add(path);
             System.Diagnostics.Process.Start(psi)?.WaitForExit(1000);
         }
-        catch
+        catch (Exception ex)
         {
-            // Best effort
+            LoggerService.Debug($"Failed to set file permissions (best effort): {ex.Message}");
         }
     }
 
@@ -102,9 +102,9 @@ public class AesSecureStorage : ISecureStorage
             psi.ArgumentList.Add(dirPath);
             System.Diagnostics.Process.Start(psi)?.WaitForExit(1000);
         }
-        catch
+        catch (Exception ex)
         {
-            // Best effort
+            LoggerService.Debug($"Failed to set directory permissions (best effort): {ex.Message}");
         }
     }
 
@@ -193,8 +193,9 @@ public class AesSecureStorage : ISecureStorage
             var decrypted = Decrypt(encrypted);
             return originalText == decrypted;
         }
-        catch
+        catch (Exception ex)
         {
+            LoggerService.Debug($"Encryption validation failed: {ex.Message}");
             return false;
         }
     }

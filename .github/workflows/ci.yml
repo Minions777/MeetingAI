@@ -25,11 +25,23 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore MeetingAI.sln
 
+      - name: Check formatting
+        run: dotnet format MeetingAI.sln --verify-no-changes --no-restore
+        continue-on-error: true
+
       - name: Build
         run: dotnet build MeetingAI.sln -c Debug --no-restore
 
-      - name: Run tests
-        run: dotnet test MeetingAI.sln -c Debug --no-build --verbosity normal
+      - name: Run tests with coverage
+        run: dotnet test MeetingAI.sln -c Debug --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.os }}
+          path: ./coverage/
+          retention-days: 7
 
   build-release:
     runs-on: windows-latest

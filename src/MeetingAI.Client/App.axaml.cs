@@ -25,6 +25,10 @@ public partial class App : Application
     {
         LoggerService.Initialize();
 
+        // Register global unhandled exception handlers
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+
         var services = new ServiceCollection();
         ConfigureServices(services);
         Services = services.BuildServiceProvider();
@@ -37,6 +41,18 @@ public partial class App : Application
 
         LoggerService.Info("MeetingAI started");
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+            LoggerService.Fatal($"Unhandled domain exception: {ex.Message}", ex);
+    }
+
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        LoggerService.Error($"Unobserved task exception: {e.Exception.Message}", e.Exception);
+        e.SetObserved(); // Prevent app crash from unobserved task exceptions
     }
 
     private static void ConfigureServices(IServiceCollection services)
