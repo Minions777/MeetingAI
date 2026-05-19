@@ -3,9 +3,9 @@ namespace MeetingAI.Shared.Configuration;
 public interface IConfigurationService
 {
     AppSettings Load();
-    Task<AppSettings> LoadAsync();
+    Task<AppSettings> LoadAsync(CancellationToken ct = default);
     void Save(AppSettings settings);
-    Task SaveAsync(AppSettings settings);
+    Task SaveAsync(AppSettings settings, CancellationToken ct = default);
     AppSettings Reload();
     void ClearCache();
     string GetBackupPath();

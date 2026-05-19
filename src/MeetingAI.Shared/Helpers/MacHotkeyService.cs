@@ -184,8 +184,9 @@ public class MacHotkeyService : IPlatformHotkeyService
         {
             return AXIsProcessTrusted();
         }
-        catch
+        catch (Exception ex)
         {
+            LoggerService.Debug($"Accessibility trust check failed: {ex.Message}");
             return false;
         }
     }

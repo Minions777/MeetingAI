@@ -7,7 +7,7 @@ namespace MeetingAI.Core.Services;
 
 public interface IMeetingHistoryService
 {
-    Task SaveAsync(MeetingRecord record);
+    Task SaveAsync(MeetingRecord record, CancellationToken ct = default);
     Task<MeetingRecord?> LoadAsync(string id);
     Task<IReadOnlyList<MeetingRecord>> GetAllAsync();
     Task<IReadOnlyList<MeetingRecord>> GetRecentAsync(int count);
@@ -52,7 +52,7 @@ public class MeetingHistoryService : IMeetingHistoryService, IDisposable
         };
     }
 
-    public async Task SaveAsync(MeetingRecord record)
+    public async Task SaveAsync(MeetingRecord record, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(record);
 
@@ -64,10 +64,10 @@ public class MeetingHistoryService : IMeetingHistoryService, IDisposable
         var filePath = GetRecordPath(record.Id);
         var json = JsonSerializer.Serialize(record, _jsonOptions);
 
-        await _ioLock.WaitAsync();
+        await _ioLock.WaitAsync(ct);
         try
         {
-            await File.WriteAllTextAsync(filePath, json);
+            await File.WriteAllTextAsync(filePath, json, ct);
             InvalidateCache();
         }
         finally

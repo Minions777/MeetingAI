@@ -80,7 +80,7 @@ public class ConfigurationService : IConfigurationService
         }
     }
 
-    public async Task<AppSettings> LoadAsync()
+    public async Task<AppSettings> LoadAsync(CancellationToken ct = default)
     {
         lock (_cacheLock)
         {
@@ -133,7 +133,7 @@ public class ConfigurationService : IConfigurationService
     {
         try
         {
-            PersistSettingsAsync(settings, raiseEvent: true).GetAwaiter().GetResult();
+            PersistSettingsSync(settings, raiseEvent: true);
         }
         catch (Exception ex)
         {
@@ -141,14 +141,14 @@ public class ConfigurationService : IConfigurationService
         }
     }
 
-    public async Task SaveAsync(AppSettings settings)
+    public async Task SaveAsync(AppSettings settings, CancellationToken ct = default)
     {
-        await PersistSettingsAsync(settings, raiseEvent: true);
+        await PersistSettingsAsync(settings, raiseEvent: true, ct);
     }
 
-    private async Task PersistSettingsAsync(AppSettings settings, bool raiseEvent)
+    private async Task PersistSettingsAsync(AppSettings settings, bool raiseEvent, CancellationToken ct = default)
     {
-        await _saveLock.WaitAsync();
+        await _saveLock.WaitAsync(ct);
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
@@ -156,7 +156,7 @@ public class ConfigurationService : IConfigurationService
             EncryptAllProviders(settings);
             settings.UpdatedAt = DateTime.UtcNow;
             var json = JsonSerializer.Serialize(settings, _jsonOptions);
-            await File.WriteAllTextAsync(_configPath, json);
+            await File.WriteAllTextAsync(_configPath, json, ct);
 
             DecryptAllProviders(settings);
 
@@ -191,6 +191,38 @@ public class ConfigurationService : IConfigurationService
     }
 
     private bool IsCacheExpired() => DateTime.UtcNow - _lastLoadTime > _cacheExpiration;
+
+    private void PersistSettingsSync(AppSettings settings, bool raiseEvent)
+    {
+        _saveLock.Wait();
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
+
+            EncryptAllProviders(settings);
+            settings.UpdatedAt = DateTime.UtcNow;
+            var json = JsonSerializer.Serialize(settings, _jsonOptions);
+            File.WriteAllText(_configPath, json);
+
+            DecryptAllProviders(settings);
+
+            _cachedSettings = settings;
+            _lastLoadTime = DateTime.UtcNow;
+            LoggerService.Info("配置已保存并更新缓存（同步）");
+
+            if (raiseEvent)
+                SettingsChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Error("保存配置失败（同步）", ex);
+            throw;
+        }
+        finally
+        {
+            _saveLock.Release();
+        }
+    }
 
     private async Task PersistSettingsSafeAsync(AppSettings settings, bool raiseEvent)
     {

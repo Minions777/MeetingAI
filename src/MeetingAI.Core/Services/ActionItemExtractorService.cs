@@ -26,9 +26,9 @@ public sealed class ActionItemExtractorService : IActionItemExtractor
         {
             providers = await _providerManager.GetChatProvidersAsync();
         }
-        catch
+        catch (Exception ex)
         {
-            LoggerService.Warning("No chat provider available for action item extraction, using regex fallback");
+            LoggerService.Warning($"No chat provider available for action item extraction, using regex fallback: {ex.Message}");
             return RegexExtract(summaryText);
         }
 

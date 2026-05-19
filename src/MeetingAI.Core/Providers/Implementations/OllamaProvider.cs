@@ -150,8 +150,9 @@ public class OllamaProvider : BaseAIProvider
             var response = await _httpClient.GetAsync($"{_config.BaseUrl.TrimEnd('/')}/tags", ct);
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex)
         {
+            LoggerService.Debug($"Ollama connection test failed: {ex.Message}");
             return false;
         }
     }

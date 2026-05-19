@@ -15,7 +15,7 @@
 - **多模型配置** — 可配置多个 AI Provider 并随时切换
 - **全局快捷键** — `Ctrl+Shift+R` 切换录音，`Ctrl+Shift+S` 停止录音
 - **会议历史** — 自动保存会议记录，支持搜索和导出（2 分钟内存缓存）
-- **安全加密** — 使用 DPAPI（Windows）加密敏感信息
+- **安全加密** — 使用 AES-256-GCM 加密敏感信息（跨平台）
 - **跨平台** — 从 WPF 迁移至 Avalonia UI，支持 macOS
 
 ## 快速开始
@@ -24,8 +24,8 @@
 
 | 平台 | 要求 |
 |------|------|
-| Windows | Windows 10/11 (64位)，.NET 8 SDK |
-| macOS | macOS 11+，.NET 8 SDK |
+| Windows | Windows 10/11 (64位)，.NET 10 SDK |
+| macOS | macOS 11+，.NET 10 SDK |
 | 其他 | API Key（根据使用的 AI 模型） |
 
 ### 构建与运行
@@ -118,7 +118,7 @@ var response = await provider.ChatAsync(request, cancellationToken);
 
 ### 配置加密
 
-敏感信息（API Key）通过 DPAPI（Windows）加密存储，支持安全导出（Key 脱敏）：
+敏感信息（API Key）通过 AES-256-GCM 加密存储（跨平台），支持安全导出（Key 脱敏）：
 
 ```csharp
 secureStorage.EncryptConfig(providerConfig);
@@ -167,12 +167,12 @@ dotnet test --collect:"XPlat Code Coverage"
 
 | 分类 | 技术 |
 |------|------|
-| 框架 | .NET 8，Avalonia 11.2（跨平台 UI） |
+| 框架 | .NET 10，Avalonia 11.2（跨平台 UI） |
 | MVVM | CommunityToolkit.Mvvm 8.2 |
 | 日志 | Serilog |
 | 弹性 | Polly 8.3 |
 | 测试 | xUnit + Moq + FluentAssertions |
-| 加密 | System.Security.Cryptography（DPAPI） |
+| 加密 | System.Security.Cryptography（AES-256-GCM） |
 
 ## License
 

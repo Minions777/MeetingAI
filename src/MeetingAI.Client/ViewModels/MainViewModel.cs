@@ -47,10 +47,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         Recording.RecordingStoppedWithFile += OnRecordingStoppedWithFile;
         _recordingService.RecordingStopped += OnServiceRecordingStopped;
 
-        InitializeAsync();
+        // Fire-and-forget initialization with proper error handling
+        _ = InitializeAsync();
     }
 
-    private async void InitializeAsync()
+    private async Task InitializeAsync()
     {
         try
         {
@@ -60,6 +61,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             LoggerService.Error("Failed to initialize MainViewModel", ex);
+            // Update status on UI thread so user sees the error
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                StatusText = $"初始化失败: {ex.Message}";
+            });
         }
     }
 
