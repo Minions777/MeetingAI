@@ -6,13 +6,13 @@ This file defines repository-wide instructions for AI coding agents working on M
 
 MeetingAI is a cross-platform desktop meeting assistant built with .NET 10 and Avalonia. The active architecture is the modular solution under `src/`:
 
-- `src/MeetingAI.Client/` - WPF application, Views, ViewModels, themes, converters, and composition root.
-- `src/MeetingAI.Core/` - business logic, audio recording, transcription, summaries, providers, resilience, repositories, and state.
+- `src/MeetingAI.Client/` - Avalonia application, Views, ViewModels, themes, converters, and composition root.
+- `src/MeetingAI.Core/` - business logic, audio recording, transcription, summaries, providers, and state.
 - `src/MeetingAI.Shared/` - shared configuration, secure storage, hotkeys, logging, constants, and localization.
 - `tests/MeetingAI.Core.Tests/` - xUnit tests for core/shared behavior.
 - `docs/` - design and setup documentation.
 
-Prefer this modular `src/MeetingAI.Client`, `src/MeetingAI.Core`, and `src/MeetingAI.Shared` structure for new work. The root-level WPF files and `src/MeetingAI/` appear to be legacy or transitional code unless the task explicitly targets them.
+Prefer this modular `src/MeetingAI.Client`, `src/MeetingAI.Core`, and `src/MeetingAI.Shared` structure for new work. The root-level files and `src/MeetingAI/` appear to be legacy or transitional code unless the task explicitly targets them.
 
 ## Required Environment
 
