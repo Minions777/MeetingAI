@@ -62,12 +62,12 @@ BaseAIProvider → 内置 Polly 重试策略
 
 ## 开发工作流
 
-遵循 [用户规则](../rules/zh/):
+遵循 [AGENTS.md](AGENTS.md) 中的开发规范：
 
 1. **研究优先** — 查找现有实现/模式
-2. **规划** — 使用 planner 代理设计实现方案
-3. **TDD** — 使用 tdd-guide 代理，先写测试（RED → GREEN → IMPROVE）
-4. **代码审查** — 使用 code-reviewer 代理，80%+ 覆盖率
+2. **规划** — 设计实现方案，明确验收标准
+3. **测试驱动** — 核心逻辑变更需覆盖单元测试
+4. **代码审查** — 提交前进行自查
 5. **提交** — 约定式提交（feat/fix/refactor/docs/test/chore/perf/ci）
 
 ## 安全要求
